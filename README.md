@@ -4,7 +4,7 @@ All our group projects are organized here, in their own folders.
 # Common Commands Reference
 Below is a list of common commands and their descriptions. If you don't know how to use git or the workflow we're using, ask Lavender to show you.
 
-Items in [brackets] are to be replaced.
+Items in [brackets] are to be replaced (ex. "[branch name]" -> "main").
 
 Most common:
 - `git add . && git commit -m "[message]"` -- combination of the two below; stage all changes, then commit with a message
