@@ -10,6 +10,7 @@ Most common:
 - `git add . && git commit -m "[message]"` -- combination of the two below; stage all changes, then commit with a message
 - `git add .` or `git add [file/dirname]` -- stage everything (dot) or a specific file or directory
 - `git commit -m "[commit message]"` -- commit staged changes with a message
+- `git status` -- see the status of current changes
 - `git pull` -- pull changes from remote into the current branch
 - `git push` -- push changes to the current upstream branch
 - `git branch` -- list all local branches
