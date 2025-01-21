@@ -16,7 +16,7 @@ Most common:
 - `git checkout [branch name]` -- switch to a different branch
 
 Less common, but still often:
-- `git fetch -p` -- download changes from remote (including deleted remote branches)
+- `git fetch origin -p` -- download changes from remote (including deleted remote branches)
 - `git push -u origin [branch name]` -- if there is no upstream branch, publish the current one
 - `git branch -r` -- list all remote branches
 - `git branch [branch name]` -- create a new branch from the current branch
