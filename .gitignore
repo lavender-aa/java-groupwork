@@ -1,0 +1,17 @@
+# ignore everything
+*
+
+# except:
+# -------
+
+# this gitignore
+!.gitignore
+
+# the readme
+!README.md
+
+# project folders
+
+
+# java source files
+!*.java

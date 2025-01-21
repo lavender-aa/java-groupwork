@@ -5,7 +5,6 @@
         - Camron Mellott (mel98378@pennwest.edu)
         - Lavender Wilson (wil81891@pennwest.edu)
         - Nicola Razumic-Rushin (raz73517@pennwest.edu)
-
 */
 
 import java.io.*;
@@ -27,7 +26,13 @@ class Average {
             line = stdin.readLine();
 
             // convert string input into double
-            grade = Double.parseDouble(line);
+            try {
+                grade = Double.parseDouble(line);
+            }
+            catch (NumberFormatException e) {
+                System.out.println("Input cannot be interpreted as a double.\n");
+                continue;
+            }
 
             // check if number entered is valid
             if(grade <= 100 && grade >= 0) {
@@ -36,7 +41,7 @@ class Average {
             }
             else {
                 // if not, stop the loop
-                System.out.println("Invalid score; stopping loop.");
+                System.out.println("Invalid score; stopping loop.\n");
                 cont = false;
             }
         }
