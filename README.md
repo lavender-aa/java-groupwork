@@ -7,7 +7,6 @@ Below is a list of common commands and their descriptions. If you don't know how
 Items in [brackets] are to be replaced (ex. "[branch name]" -> "main").
 
 Most common:
-- `git add . && git commit -m "[message]"` -- combination of the two below; stage all changes, then commit with a message
 - `git add .` or `git add [file/dirname]` -- stage everything (dot) or a specific file or directory
 - `git commit -m "[commit message]"` -- commit staged changes with a message
 - `git status` -- see the status of current changes
