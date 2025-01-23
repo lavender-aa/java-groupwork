@@ -7,8 +7,11 @@
 # this gitignore
 !.gitignore
 
-# the readme
-!README.md
+# markdown files
+!*.md
 
 # java source files
 !*.java
+
+# search one level deep
+!*/
