@@ -23,3 +23,7 @@ Less common, but still often:
 - `git checkout -b [local name] origin/[remote branch]` -- create a branch that tracks a remote one
 - `git branch -d [branch name]` -- delete a branch
 - `git merge [branch to merge]` -- merge a branch into current branch 
+
+# Practice Section
+Use this section to add your favorite animal:
+    - lavender: cat
