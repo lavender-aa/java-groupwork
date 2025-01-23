@@ -27,3 +27,5 @@ Less common, but still often:
 # Practice Section
 Use this section to add your favorite animal:
     - lavender: cat
+	- nicola: dog
+	
