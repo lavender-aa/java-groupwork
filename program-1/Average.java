@@ -16,6 +16,7 @@ class Average {
         String line;
         double grade;
         double sum = 0.0;
+        double average;
         int numGrades = 0;
         boolean cont = true;
         
@@ -41,20 +42,20 @@ class Average {
             }
             else {
                 // if not, stop the loop
-                System.out.println("Invalid score; stopping loop.\n");
+                System.out.println("Score outside range; stopping loop.\n");
                 cont = false;
             }
         }
 
-        // calculate the average (sum is now average)
-        sum /= numGrades;
+        // calculate the average
+        average = sum / numGrades;
 
-        // make sure the value isn't NaN (possibly that 0 values were entered properly)
-        if(Double.isNaN(sum)) {
-            System.out.println("Error: average is NaN.");
+        // make sure the value isn't NaN (possibly that 0 values were entered properly)s
+        if(Double.isNaN(average)) {
+            System.out.println("Error: cannot calculate average of 0 grades (NaN).");
         }
         else {
-            System.out.println("The sum of all " + numGrades + " grades is " + sum);
+            System.out.println("The average of all " + numGrades + " grades is " + average);
         }
     }
 }
