@@ -12,3 +12,6 @@
 
 # java source files
 !*.java
+
+# look one folder deep for items
+!*/
