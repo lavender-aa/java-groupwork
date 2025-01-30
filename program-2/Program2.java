@@ -46,16 +46,16 @@ class Program2 {
             Data data = new Data();
     
             // open input file or quit
-            get_valid_input(args);
+            get_valid_input(data, args);
     
             // open output file or quit
-            if(!data.get_quit()) get_valid_output(args);
+            if(!data.get_quit()) get_valid_output(data, args);
     
             // parse input file or quit
-            if(!data.get_quit()) parse_input();
+            if(!data.get_quit()) parse_input(data);
     
             // print data to output file or quit
-            if(!data.get_quit()) print_info();
+            if(!data.get_quit()) print_info(data);
             
             // print appropriate exit message
             if(data.get_quit()) System.out.println("\nQuitting program.");
@@ -64,25 +64,25 @@ class Program2 {
 
         // result: opens an input file that exists 
         //         OR sets the quit flag
-        static void get_valid_input(String[] args) { // asignee: lavender
+        static void get_valid_input(Data data, String[] args) { // asignee: lavender
 
         }
 
         // result: opens a new output file (includes backing up if necessary)
         //         OR sets the quit flag
-        static void get_valid_output(String[] args) { // asignee: camron
+        static void get_valid_output(Data data, String[] args) { // asignee: camron
 
         }
 
         // result: accumulates Words and the sum of the integers
         // OR sets the quit flag (due to possible errors)
-        static void parse_input() { // asignee: nicola 
+        static void parse_input(Data data) { // asignee: nicola 
 
         }
 
         // result: prints the accumulated information to the output file
         //         OR sets the quit flag (due to possible errors)
-        static void print_info() { // asignee: lavender
+        static void print_info(Data data) { // asignee: lavender
 
         }
 }
