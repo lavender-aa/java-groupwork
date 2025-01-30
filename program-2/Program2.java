@@ -61,25 +61,25 @@ class Program2 {
 
         // result: opens an input file that exists 
         //         OR sets the quit flag
-        static void get_valid_input(String[] args) {
+        static void get_valid_input(String[] args) { // asignee: 
 
         }
 
         // result: opens a new output file (includes backing up if necessary)
         //         OR sets the quit flag
-        static void get_valid_output(String[] args) {
+        static void get_valid_output(String[] args) { // asignee: 
 
         }
 
         // result: accumulates Words and the sum of the integers
         // OR sets the quit flag (due to possible errors)
-        static void parse_input() {
+        static void parse_input() { // asignee: 
 
         }
 
         // result: prints the accumulated information to the output file
         //         OR sets the quit flag (due to possible errors)
-        static void print_info() {
+        static void print_info() { // asignee: 
 
         }
 }
@@ -103,6 +103,6 @@ methods:
     index of word (string) in list of words
 
 */
-class Word {
+class Word { // assignee: nicola
     
 }
