@@ -13,7 +13,7 @@ output file:
 
 notes:
     - can enter input or input and output files in command line
-    - validate files; reprompt until valid or until nothing (quit)
+    - validate files; reprompt until valid or until no input
     - use StringTokenizer to parse input file
     - for each word, either add to count (if exists) or create new Word, add to list
 
@@ -35,28 +35,31 @@ more detailed steps:
 
 */
 
+import java.io.*;
+
 class Program2 {
         // variables used by class functions
-        private static String in_name, out_name;
-        private static boolean quit = false;
     
         public static void main(String[] args) {
+
+            // instantiate data object
+            Data data = new Data();
     
             // open input file or quit
             get_valid_input(args);
     
             // open output file or quit
-            if(!quit) get_valid_output(args);
+            if(!data.get_quit()) get_valid_output(args);
     
             // parse input file or quit
-            if(!quit) parse_input();
+            if(!data.get_quit()) parse_input();
     
             // print data to output file or quit
-            if(!quit) print_info();
+            if(!data.get_quit()) print_info();
             
             // print appropriate exit message
-            if(quit) System.out.println("\nQuitting program.");
-            else System.out.println("\nFinished processing; Output in " + out_name + ".");
+            if(data.get_quit()) System.out.println("\nQuitting program.");
+            else System.out.println("\nFinished processing; Output in " + data.get_out_file().getName() + ".");
         }
 
         // result: opens an input file that exists 
@@ -105,4 +108,52 @@ methods:
 */
 class Word { // assignee: nicola
     
+}
+
+// data class: contains all program data 
+// that needs to be modified/read across methods
+class Data {
+    private File in_file;
+    private File out_file;
+    private Word[] list;
+    private boolean quit;
+
+    public Data() {
+        in_file = null;
+        out_file = null;
+        list = new Word[100];
+        quit = false;
+    }
+
+    // getters and setters for each piece of data
+
+    public File get_in_file() {
+        return in_file;
+    }
+    
+    public void set_in_file(File input) {
+        in_file = input;
+    }
+
+    public File get_out_file() {
+        return out_file;
+    }
+    
+    public void set_out_file(File input) {
+        out_file = input;
+    }
+
+    public Word[] get_list() {
+        return list;
+    }
+
+    // no setter for list since only it's elements will be modified
+
+    public boolean get_quit() {
+        return quit;
+    }
+    
+    public void set_quit(boolean input) {
+        quit = input;
+    }
 }
