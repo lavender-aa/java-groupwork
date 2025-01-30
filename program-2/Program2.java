@@ -36,9 +36,52 @@ more detailed steps:
 */
 
 class Program2 {
-    public static void main(String[] args) {
-        
-    }
+        // variables used by class functions
+        private static String in_name, out_name;
+        private static boolean quit = false;
+    
+        public static void main(String[] args) {
+    
+            // open input file or quit
+            get_valid_input(args);
+    
+            // open output file or quit
+            if(!quit) get_valid_output(args);
+    
+            // parse input file or quit
+            if(!quit) parse_input();
+    
+            // print data to output file or quit
+            if(!quit) print_info();
+            
+            // print appropriate exit message
+            if(quit) System.out.println("\nQuitting program.");
+            else System.out.println("\nFinished processing; Output in " + out_name + ".");
+        }
+
+        // result: opens an input file that exists 
+        //         OR sets the quit flag
+        static void get_valid_input(String[] args) {
+
+        }
+
+        // result: opens a new output file (includes backing up if necessary)
+        //         OR sets the quit flag
+        static void get_valid_output(String[] args) {
+
+        }
+
+        // result: accumulates Words and the sum of the integers
+        // OR sets the quit flag (due to possible errors)
+        static void parse_input() {
+
+        }
+
+        // result: prints the accumulated information to the output file
+        //         OR sets the quit flag (due to possible errors)
+        static void print_info() {
+
+        }
 }
 
 /* 
@@ -60,3 +103,6 @@ methods:
     index of word (string) in list of words
 
 */
+class Word {
+    
+}
