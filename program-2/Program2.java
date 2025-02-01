@@ -133,6 +133,7 @@ public class Program2 {
         //         OR sets the quit flag (due to possible errors)
         static void print_info(Data data) { // asignee: lavender
 
+
         }
 }
 
@@ -166,6 +167,7 @@ class Data {
     private File out_file;
     private Word[] list;
     private BufferedReader reader;
+    private PrintWriter writer;
     private boolean quit;
     private int sum;
 
@@ -198,15 +200,23 @@ class Data {
         return list;
     }
 
-    public void set_reader(BufferedReader reader) {
-        this.reader = reader;
-    }
-
     public BufferedReader get_reader() {
         return reader;
     }
 
-    // no setter for list since only it's elements will be modified
+    public void set_reader(BufferedReader reader) {
+        this.reader = reader;
+    }
+
+    public PrintWriter get_write() {
+        return writer;
+    }
+
+    public void set_writer(PrintWriter writer) {
+        this.writer = writer;
+    }
+
+    // (no setter for list since only its elements will be modified)
 
     public boolean get_quit() {
         return quit;
