@@ -133,7 +133,43 @@ public class Program2 {
         //         OR sets the quit flag (due to possible errors)
         static void print_info(Data data) { // asignee: lavender
 
+            PrintWriter writer = null;
 
+            // open a writer to the output file
+            try {
+                writer = new PrintWriter(data.get_out_file());
+            } catch (FileNotFoundException e) {
+                System.out.println("Error opening output file for writing.");
+                data.set_quit(true);
+            }
+
+            if(!data.get_quit()) {
+
+                // get the list of words and the writer
+                Word[] list = data.get_list();
+
+                // label
+                writer.println("Words:\n-----");
+
+                // for each word: print the word and its number of occurrences
+                int i;
+                for(i = 0; list[i] != null; i++) {
+                    Word word = list[i];
+                    // to be uncommented after Word class gets written
+                    // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
+                    writer.println("printing word data...");
+                }
+
+                // label
+                writer.println("\nData Information:\n-----------------");
+
+                // print number of unique words, sum of all integers
+                writer.println("Number of unique words: " + i);
+                writer.println("Sum of integers: " + data.get_sum());
+
+                // close the printwriter
+                writer.close();
+            }
         }
 }
 
@@ -167,7 +203,6 @@ class Data {
     private File out_file;
     private Word[] list;
     private BufferedReader reader;
-    private PrintWriter writer;
     private boolean quit;
     private int sum;
 
@@ -206,14 +241,6 @@ class Data {
 
     public void set_reader(BufferedReader reader) {
         this.reader = reader;
-    }
-
-    public PrintWriter get_write() {
-        return writer;
-    }
-
-    public void set_writer(PrintWriter writer) {
-        this.writer = writer;
     }
 
     // (no setter for list since only its elements will be modified)
