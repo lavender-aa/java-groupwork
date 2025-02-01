@@ -37,7 +37,7 @@ more detailed steps:
 
 import java.io.*;
 
-class Program2 {
+public class Program2 {
         // variables used by class functions
     
         public static void main(String[] args) {
