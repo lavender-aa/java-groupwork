@@ -66,6 +66,55 @@ class Program2 {
         //         OR sets the quit flag
         static void get_valid_input(Data data, String[] args) { // asignee: lavender
 
+            // create input file name (used to open input file or set quit)
+            String in_name;
+
+            // initialize reader to the keyboard
+            data.set_reader(new BufferedReader(new InputStreamReader(System.in)));
+
+            // get first input from either command line or user
+            if(args.length > 0) {
+                in_name = args[0];
+            }
+            else {
+                System.out.print("Enter input file name: ");
+                in_name = get_file_name(data);
+            }
+
+            if(!data.get_quit()) {
+                
+                // set input file
+                data.set_in_file(new File(in_name));
+
+                // keep getting input until input file exists or user quits
+                while(!data.get_in_file().exists() && !data.get_quit()) {
+
+                    // reprompt, get input again, update file
+                    System.out.println("\nInput file " + in_name + " does not exist.");
+                    System.out.print("Enter input file name: ");
+                    in_name = get_file_name(data);
+                    data.set_in_file(new File(in_name));
+                }
+            }
+        }
+
+        static String get_file_name(Data data) {
+            String result = "";
+
+            // read a line from the console;
+            // if it succeeds, check if it's nothing and set quit accordingly
+            // if it fails, inform the user and set quit
+            try {
+                result = data.get_reader().readLine();
+                if(result.equals("")) {
+                    data.set_quit(true);
+                }
+            } catch (IOException e) {
+                System.out.println("Error reading input file name.");
+                data.set_quit(true);
+            }
+
+            return result;
         }
 
         // result: opens a new output file (includes backing up if necessary)
@@ -116,7 +165,9 @@ class Data {
     private File in_file;
     private File out_file;
     private Word[] list;
+    private BufferedReader reader;
     private boolean quit;
+    private int sum;
 
     public Data() {
         in_file = null;
@@ -147,6 +198,14 @@ class Data {
         return list;
     }
 
+    public void set_reader(BufferedReader reader) {
+        this.reader = reader;
+    }
+
+    public BufferedReader get_reader() {
+        return reader;
+    }
+
     // no setter for list since only it's elements will be modified
 
     public boolean get_quit() {
@@ -155,5 +214,13 @@ class Data {
     
     public void set_quit(boolean input) {
         quit = input;
+    }
+
+    public int get_sum() {
+        return sum;
+    }
+
+    public void set_sum(int num) {
+        sum = num;
     }
 }
