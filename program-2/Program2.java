@@ -93,20 +93,65 @@ word class:
 -----------
 
 data:
-    string word
-    int number of occurrences
+    string word DONE
+    int number of occurrences DONE
 
 methods:
-    constructor (string)
-    get number of occurrences
-    get word
+    constructor (string) STARTED
+    get number of occurrences DONE
+    get word DONE
     is equal to another word
     is equal to another word (ignore case)
-    increase number of occurrences
-    index of word (string) in list of words
+    increase number of occurrences DONE
+    index of word (string) in list of words DONE
 
 */
-class Word { // assignee: nicola
+class Word 
+{ // assignee: nicola
+    private String myWord;
+    private int wordCount;
+    private int wordIndex;
+
+    // basic constructor validates if the word already exist
+    // by calling CHANGE THIS NAME NICOLA method
+    public Word(String newWord)
+    {
+        boolean isNewWord = isAnotherWord(newWord);
+            if(isNewWord)
+            {
+                myWord = newWord;
+            }
+    }
+
+    // accessor for wordCount
+    public int getWordCount()
+    {
+        return wordCount;
+    }
+
+    // accessor for word
+    public String getWord()
+    {
+        return word;
+    }
+
+    // increments word counter when word already exists
+    private void incWordCount()
+    {
+        wordCount++;
+    }
+
+    // sets index variable to the index in the external word array
+    private void setIndex(int newIndex)
+    {
+        wordIndex = newIndex;
+    }
+
+    public int getIndex()
+    {
+        return wordIndex;
+    }
+
     
 }
 
