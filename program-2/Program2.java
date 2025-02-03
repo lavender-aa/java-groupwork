@@ -70,7 +70,7 @@ public class Program2 {
             String in_name;
 
             // initialize reader to the keyboard
-            data.set_reader(new BufferedReader(new InputStreamReader(System.in)));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
             // get first input from either command line or user
             if(args.length > 0) {
@@ -78,7 +78,7 @@ public class Program2 {
             }
             else {
                 System.out.print("Enter input file name: ");
-                in_name = get_file_name(data);
+                in_name = get_file_name(data, reader);
             }
 
             if(!data.get_quit()) {
@@ -92,20 +92,27 @@ public class Program2 {
                     // reprompt, get input again, update file
                     System.out.println("\nInput file " + in_name + " does not exist.");
                     System.out.print("Enter input file name: ");
-                    in_name = get_file_name(data);
+                    in_name = get_file_name(data, reader);
                     data.set_in_file(new File(in_name));
                 }
             }
+
+            try {
+                reader.close();
+            } catch (IOException e) {
+                System.out.println("Error closing BufferedReader.");
+                data.set_quit(true);
+            }
         }
 
-        static String get_file_name(Data data) {
+        static String get_file_name(Data data, BufferedReader reader) {
             String result = "";
 
             // read a line from the console;
             // if it succeeds, check if it's nothing and set quit accordingly
             // if it fails, inform the user and set quit
             try {
-                result = data.get_reader().readLine();
+                result = reader.readLine();
                 if(result.equals("")) {
                     data.set_quit(true);
                 }
@@ -202,7 +209,6 @@ class Data {
     private File in_file;
     private File out_file;
     private Word[] list;
-    private BufferedReader reader;
     private boolean quit;
     private int sum;
 
@@ -233,14 +239,6 @@ class Data {
 
     public Word[] get_list() {
         return list;
-    }
-
-    public BufferedReader get_reader() {
-        return reader;
-    }
-
-    public void set_reader(BufferedReader reader) {
-        this.reader = reader;
     }
 
     // (no setter for list since only its elements will be modified)
