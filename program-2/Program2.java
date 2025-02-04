@@ -36,6 +36,7 @@ more detailed steps:
 */
 
 import java.io.*;
+import java.lang;
 
 class Program2 {
         // variables used by class functions
@@ -80,6 +81,46 @@ class Program2 {
         { // asignee: nicola 
             File inFile = data.get_in_file();
             Word[] wordList = data.get_list();
+        }
+
+        // method checks if a string passed to it is a valid number
+        static boolean isValidNumber(String maybeNumber)
+        {
+            boolean isValid = false;
+            if (maybeNumber[0] == '-' && Character.isDigit(maybeNumber[1])) 
+            {
+                isValid = true;
+            }
+            else if (Character.isDigit(maybeNumber[0]))
+            {
+                isValid = true;
+            }
+
+            return isValid;
+        }
+
+        // loops through passed Word array and checks if Word passed is in it
+        // if not adds the string to the next open spot in the array
+        static void checkIfInArray(Word[] wList, Word rightWord, Data data)
+        {
+            boolean isNewWord = true;
+            int count = 0;
+
+            // it's a little weird to use a while loop for this, but
+            // this should make it quit early if it finds a match without 
+            // using break
+            while(isNewWord)
+            {
+                if(count > data.getLastIndex())
+                {
+                    wList[count] = rightWord;
+                }
+                else
+                {
+                    Word thisWord = wList[count++];
+                    isNewWord = thisWord.isEqual(rightWord);
+                }
+            }
         }
 
         // result: prints the accumulated information to the output file
@@ -173,6 +214,8 @@ class Word
     }
 
     // returns if this word is equal to the one passed it
+    // and change isUnique in the passed Word object to false
+    // if it isn't unique and increment the counter
     public boolean isEqual(Word rightSide)
     {
         boolean isRightSame = false;
@@ -195,12 +238,18 @@ class Data {
     private File out_file;
     private Word[] list;
     private boolean quit;
+    private int lastIndex;
+    private int total;
 
     public Data() {
         in_file = null;
         out_file = null;
         list = new Word[100];
+        for (int i = 0; i < 100; i++) 
+            Word[i] = null;
         quit = false;
+        lastIndex = -1;
+        total = 0;
     }
 
     // getters and setters for each piece of data
@@ -234,4 +283,30 @@ class Data {
     public void set_quit(boolean input) {
         quit = input;
     }
+
+    public int getLastIndex()
+    {
+        return lastIndex;
+    }
+
+    public int getTotal()
+    {
+        return total;
+    }
+
+    // so long as the program is running correctly there should
+    // be no reason to alter the index pointer in any other way 
+    // than adding one
+    public void incLastIndex()
+    {
+        lastIndex++;
+    }
+
+    // total will never need to be reset completely 
+    // so we only need to add values to it
+    public void addToTotal(int addedValue)
+    {
+        total += addedValue;
+    }
+
 }
