@@ -100,7 +100,7 @@ class Program2 {
 
         // loops through passed Word array and checks if Word passed is in it
         // if not adds the string to the next open spot in the array
-        static void checkIfInArray(Word[] wList, Word rightWord, Data data)
+        static void findOrAdd(Word[] wList, Word rightWord, Data data)
         {
             boolean isNewWord = true;
             int count = 0;
