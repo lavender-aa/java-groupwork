@@ -1,104 +1,73 @@
-/*
-
-main function:
---------------
-
-input file:
-    - contains integers (r"(-?\d+)") and words (strings; r"([A-Za-z]+['\-\d]*)")
-output file:
-    - contains each unique word and number of occurrences
-    - ordered by first encountered
-    - end of list: total number of unique words, sum of integers
-
-
-notes:
-    - can enter input or input and output files in command line
-    - validate files; reprompt until valid or until no input
-    - use StringTokenizer to parse input file
-    - for each word, either add to count (if exists) or create new Word, add to list
-
-
-more detailed steps:
-    - check inputs from command line
-    - validate files
-        - if any invalid, reprompt
-        - if any empty prompts, quit program
-    - open PrintWriter and FileReader
-    - create StringTokenizer
-    - while a line exists:
-        - while tokens in line:
-            - determine if token is word or int
-                - word: check word list, create word/add occurrence
-                - int: add to sum
-    - print each unique word to output, include number of occurrences
-    - print total number of unique words, sum of integers
-
-*/
-
 import java.io.*;
+//import java.lang.*;
 
-class Program2 {
-        // variables used by class functions
-    
-        public static void main(String[] args) {
 
-            // instantiate data object
-            Data data = new Data();
-    
-            // open input file or quit
-            get_valid_input(data, args);
-    
-            // open output file or quit
-            if(!data.get_quit()) get_valid_output(data, args);
-    
-            // parse input file or quit
-            if(!data.get_quit()) parse_input(data);
-    
-            // print data to output file or quit
-            if(!data.get_quit()) print_info(data);
-            
-            // print appropriate exit message
-            if(data.get_quit()) System.out.println("\nQuitting program.");
-            else System.out.println("\nFinished processing; Output in " + data.get_out_file().getName() + ".");
-        }
+// this is just to test that the functionality of the Word class and methods that use it are working as intended
 
-        // result: opens an input file that exists 
-        //         OR sets the quit flag
-        static void get_valid_input(Data data, String[] args) { // asignee: lavender
-
-        }
-
-        // result: opens a new output file (includes backing up if necessary)
-        //         OR sets the quit flag
-        static void get_valid_output(Data data, String[] args) { // asignee: camron
-
-        }
-
-        // result: accumulates Words and the sum of the integers
-        // OR sets the quit flag (due to possible errors)
-        static void parse_input(Data data) 
-        { // asignee: nicola 
-            File inFile = data.get_in_file();
-            Word[] wordList = data.get_list();
-        }
-
-        // method checks if a string passed to it is a valid number
-        static boolean isValidNumber(String maybeNumber)
-        {
-            boolean isValid = false;
-            if (maybeNumber[0] == '-' && Character.isDigit(maybeNumber[1])) 
-            {
-                isValid = true;
-            }
-            else if (Character.isDigit(maybeNumber[0]))
-            {
-                isValid = true;
-            }
-
-            return isValid;
-        }
-
-        // loops through passed Word array and checks if Word passed is in it
+public class TestWord
+{
+	public static void main(String[] args)
+	{
+		Word word1 = new Word("xyz");
+		Word word2 = new Word("abc");
+		Word word3 = new Word("hij");
+		Word word4 = new Word("kl");
+		Word word5 = new Word("tuv");
+		Word word6 = new Word("w");
+		Word word7 = new Word("xyz");
+		Word word8 = new Word("lmn");
+		Word word9 = new Word("qrs");
+		Word word21 = new Word("xyz");
+		Word word22 = new Word("abc");
+		Word word31 = new Word("xyz");
+		Word word32 = new Word("abc");
+		
+		
+		Data dataIM = new Data();
+		
+		Word[] listIM = dataIM.get_list();
+		
+		checkIfInArray( listIM, word1,  dataIM);
+		checkIfInArray( listIM, word2,  dataIM);
+		checkIfInArray( listIM, word3,  dataIM);
+		checkIfInArray( listIM, word4,  dataIM);
+		checkIfInArray( listIM, word5,  dataIM);
+		checkIfInArray( listIM, word6,  dataIM);
+		checkIfInArray( listIM, word7,  dataIM);
+		checkIfInArray( listIM, word8,  dataIM);
+		checkIfInArray( listIM, word9,  dataIM);
+		checkIfInArray( listIM, word21,  dataIM);
+		checkIfInArray( listIM, word22,  dataIM);
+		checkIfInArray( listIM, word31,  dataIM);
+		checkIfInArray( listIM, word32,  dataIM);
+		
+		for(int i = 0; i <= dataIM.getLastIndex(); i++)
+		{
+			System.out.println(listIM[i].getWord());
+		}
+		System.out.println("First word count is " + word1.getWordCount());
+		System.out.println("Second word count is " + word2.getWordCount());
+		System.out.println("Last index is " + dataIM.getLastIndex());
+		
+		boolean isSecondSame = word1.isEqual(word2);
+		boolean isThirdSame = word1.isEqual(word3);
+		int wordCount1 =  word1.getWordCount();
+		boolean isUnique1 = word1.getIsUnique();
+		boolean isUnique2 =  word2.getIsUnique();
+		boolean isUnique3 = word3.getIsUnique();
+		
+		/*System.out.println("First two words are equal is " + isSecondSame);
+		System.out.println("First and third words are equal is " + isThirdSame);
+		System.out.println("First word count is " + wordCount1);
+		System.out.println("Second word count is " + word2.getWordCount());
+		System.out.println("Third word count is " + word3.getWordCount());
+		System.out.println("First word is unique is " + isUnique1);
+		System.out.println("Second word is unique is " + isUnique2);
+		System.out.println("Third word is unique is " + word3.getIsUnique());
+		*/
+	}
+	
+	// loops through passed Word array and checks if Word passed is in it
         // if not adds the string to the next open spot in the array
         static void checkIfInArray(Word[] wList, Word rightWord, Data data)
         {
@@ -113,6 +82,7 @@ class Program2 {
                 if(count > data.getLastIndex())
                 {
                     wList[count] = rightWord;
+					data.incLastIndex();
 					isNewWord = false;
                 }
                 else
@@ -123,13 +93,8 @@ class Program2 {
                 }
             }
         }
-
-        // result: prints the accumulated information to the output file
-        //         OR sets the quit flag (due to possible errors)
-        static void print_info(Data data) { // asignee: lavender
-
-        }
 }
+
 
 /* 
 
