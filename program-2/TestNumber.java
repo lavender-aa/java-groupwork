@@ -6,12 +6,13 @@ public class TestNumber
 	public static void main(String[] args)
 	{
 		String aNumber = "123";
-		String aNegNumber = "-123";
+		String aNegNumber = "-----123";
 		String aWord = "abcd";
 		
 		System.out.println("The String aNumber is a a number: " + isValidNumber(aNumber));
 		System.out.println("The String aNegNumber is a a number: " + isValidNumber(aNegNumber));
 		System.out.println("The String aWord is a a number: " + isValidNumber(aWord));
+		System.out.println("The value of aNegNumber is: " + aNegNumber);
 	}
 	
 	
@@ -19,8 +20,20 @@ public class TestNumber
         static boolean isValidNumber(String maybeNumber)
         {
             boolean isValid = false;
-			char firstChar;
-			char secondChar;
+            boolean wasNegative = false;
+            
+            if (maybeNumber.charAt(0) == '-') 
+            {
+                while(maybeNumber.charAt(0) == '-')   
+                {
+                    maybeNumber = maybeNumber.substring(1);
+                    wasNegative = true;
+                } 
+            }
+
+            if (wasNegative)
+                maybeNumber = "-" + maybeNumber;
+
             if (maybeNumber.charAt(0) == '-' && Character.isDigit(maybeNumber.charAt(1))) 
             {
                 isValid = true;
@@ -32,5 +45,5 @@ public class TestNumber
 
             return isValid;
         }
-		
+
 }

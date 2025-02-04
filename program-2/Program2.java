@@ -36,6 +36,7 @@ more detailed steps:
 */
 
 import java.io.*;
+import java.util.*;
 
 class Program2 {
         // variables used by class functions
@@ -86,6 +87,20 @@ class Program2 {
         static boolean isValidNumber(String maybeNumber)
         {
             boolean isValid = false;
+            boolean wasNegative = false
+            
+            if (maybeNumber.charAt(0) == '-') 
+            {
+                while(maybeNumber.charAt(0) == '-')   
+                {
+                    maybeNumber = maybeNumber.substring(1);
+                    wasNegative = true;
+                } 
+            }
+
+            if (wasNegative)
+                maybeNumber = "-" + maybeNumber;
+
             if (maybeNumber.charAt(0) == '-' && Character.isDigit(maybeNumber.charAt(1))) 
             {
                 isValid = true;
