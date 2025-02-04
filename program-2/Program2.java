@@ -67,33 +67,33 @@ public class Program2 {
         static void getValidInput(Data data, String[] args) { // asignee: lavender
 
             // create input file name (used to open input file or set quit)
-            String in_name;
+            String inName;
 
             // initialize reader to the keyboard
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
             // get first input from either command line or user
             if(args.length > 0) {
-                in_name = args[0];
+                inName = args[0];
             }
             else {
                 System.out.print("Enter input file name: ");
-                in_name = getFileName(data, reader);
+                inName = getFileName(data, reader);
             }
 
             if(!data.getQuit()) {
                 
                 // set input file
-                data.setInputFile(new File(in_name));
+                data.setInputFile(new File(inName));
 
                 // keep getting input until input file exists or user quits
                 while(!data.getInputFile().exists() && !data.getQuit()) {
 
                     // reprompt, get input again, update file
-                    System.out.println("\nInput file " + in_name + " does not exist.");
+                    System.out.println("\nInput file " + inName + " does not exist.");
                     System.out.print("Enter input file name: ");
-                    in_name = getFileName(data, reader);
-                    data.setInputFile(new File(in_name));
+                    inName = getFileName(data, reader);
+                    data.setInputFile(new File(inName));
                 }
             }
 
@@ -250,15 +250,15 @@ class Word
 // data class: contains all program data 
 // that needs to be modified/read across methods
 class Data {
-    private File in_file;
-    private File out_file;
+    private File inFile;
+    private File outFile;
     private Word[] list;
     private boolean quit;
     private int sum;
 
     public Data() {
-        in_file = null;
-        out_file = null;
+        inFile = null;
+        outFile = null;
         list = new Word[100];
         quit = false;
     }
@@ -266,19 +266,19 @@ class Data {
     // getters and setters for each piece of data
 
     public File getInputFile() {
-        return in_file;
+        return inFile;
     }
     
     public void setInputFile(File input) {
-        in_file = input;
+        inFile = input;
     }
 
     public File getOutputFile() {
-        return out_file;
+        return outFile;
     }
     
     public void setOutputFile(File input) {
-        out_file = input;
+        outFile = input;
     }
 
     public Word[] getList() {
