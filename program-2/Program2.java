@@ -157,10 +157,10 @@ class Word
     private boolean isUnique;
 
     // basic constructor sets word to passed value, and 
-    // intializes other variables to 0 and true for the boolean
+    // intializes other variables to starting values
     public Word(String word)
     {
-        wordCount = 0;
+        wordCount = 1;
         wordIndex = 0;
         isUnique = true;
         this.word = word;
