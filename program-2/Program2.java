@@ -76,8 +76,10 @@ class Program2 {
 
         // result: accumulates Words and the sum of the integers
         // OR sets the quit flag (due to possible errors)
-        static void parse_input(Data data) { // asignee: nicola 
-
+        static void parse_input(Data data) 
+        { // asignee: nicola 
+            File inFile = data.get_in_file();
+            Word[] wordList = data.get_list();
         }
 
         // result: prints the accumulated information to the output file
@@ -97,30 +99,31 @@ data:
     int number of occurrences DONE
 
 methods:
-    constructor (string) STARTED
+    constructor (string) DONE
     get number of occurrences DONE
     get word DONE
-    is equal to another word
-    is equal to another word (ignore case)
+    is equal to another word DONE
+    is equal to another word (ignore case) Does this need to be a separate method? -Nicola
     increase number of occurrences DONE
     index of word (string) in list of words DONE
 
 */
 class Word 
 { // assignee: nicola
-    private String myWord;
+    private String word;
     private int wordCount;
     private int wordIndex;
+    private boolean isUnique;
 
-    // basic constructor validates if the word already exist
-    // by calling CHANGE THIS NAME NICOLA method
-    public Word(String newWord)
+    // basic constructor sets word to passed value, and 
+    // intializes other variables to 0 and true for the boolean
+    public Word(String word)
     {
-        boolean isNewWord = isAnotherWord(newWord);
-            if(isNewWord)
-            {
-                myWord = newWord;
-            }
+        wordCount = 0;
+        wordIndex = 0;
+        isUnique = true;
+        this.word = word;
+        
     }
 
     // accessor for wordCount
@@ -144,15 +147,45 @@ class Word
     // sets index variable to the index in the external word array
     private void setIndex(int newIndex)
     {
-        wordIndex = newIndex;
+        if (isUnique) 
+        {
+            wordIndex = newIndex;            
+        }
     }
 
+    // returns the index this word is stored at
     public int getIndex()
     {
         return wordIndex;
     }
 
-    
+    // set isUnique to false, since it's deafult is true and it
+    // will never become un-unique we only need to make it false
+    public void setIsUnique()
+    {
+        isUnique = false;
+    }
+
+    // get isUnique
+    public boolean getIsUnique()
+    {
+        return isUnique;
+    }
+
+    // returns if this word is equal to the one passed it
+    public boolean isEqual(Word rightSide)
+    {
+        boolean isRightSame = false;
+        String rightString = rightSide.getWord().toUpper();
+        if (this.word.toUpper().isEqual(rightString)) 
+        {
+            incWordCount();
+            isRightSame = true;
+            rightSide.setIsUnique();
+        }
+
+        return isRightSame;
+    }
 }
 
 // data class: contains all program data 
