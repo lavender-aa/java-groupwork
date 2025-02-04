@@ -162,9 +162,8 @@ public class Program2 {
                 int i;
                 for(i = 0; list[i] != null; i++) {
                     Word word = list[i];
-                    // to be uncommented after Word class gets written
-                    // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
-                    writer.println("printing word data...");
+                    // TODO: uncomment, possibly correct Word method calls
+                    // writer.println("\"" + word.getWord() + "\": " + word.getNumOccur() + " occurrences");
                 }
 
                 // label
