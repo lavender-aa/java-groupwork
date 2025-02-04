@@ -86,11 +86,11 @@ class Program2 {
         static boolean isValidNumber(String maybeNumber)
         {
             boolean isValid = false;
-            if (maybeNumber[0] == '-' && Character.isDigit(maybeNumber[1])) 
+            if (maybeNumber.charAt(0) == '-' && Character.isDigit(maybeNumber.charAt(1))) 
             {
                 isValid = true;
             }
-            else if (Character.isDigit(maybeNumber[0]))
+            else if (Character.isDigit(maybeNumber.charAt(0)))
             {
                 isValid = true;
             }
