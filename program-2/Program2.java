@@ -81,6 +81,54 @@ class Program2 {
         { // asignee: nicola 
             File inFile = data.get_in_file();
             Word[] wordList = data.get_list();
+            BufferedReader bufRead = null;
+            String thisLine;
+
+            try
+            {
+                bufRead = new BufferedReader( new FileReader(inFile));
+                while(thisLine = bufRead.readLine() != null)
+                {
+                    getTokens(thisLine);
+                }
+            }
+            catch (IOException error)
+            {
+                error.printStackTrace();
+            }
+        }
+
+        // tokenizes string passed to it and processes tokens
+        static void getTokens(Sting wholeLine)
+        {
+            StringTokenizer inLine = new StringTokenizer(wholeLine, "\t\"\n\r\\ \b\f~`!@#$%^&*()_+=:;?/.,<>[]{}|");
+            String aToken;
+            char firstChar;
+            while(inLine.hasMoreTokens())
+            {
+                aToken = inLine.nextToken();
+                firstChar = aToken.charAt(0);
+                boolean isNegative = false;
+
+                if (firstChar == '\'' || firstChar == '-') 
+                {
+                    while(aToken.charAt(0) == '\'' || aToken.charAt(0) == '-')
+                    {
+                        if (aToken.charAt(0) == '-' && Character.isDigit(aToken.charAt(1))) 
+                            wasNegative = true;
+                        aToken = aToken.substring(1);
+                    }    
+                } 
+                
+                if (Character.isLetter(firstChar)) 
+                {
+                    // do processing for if it is a word
+                }
+                else if (Character.isDigit(firstChar))
+                {
+                    // do processing for if it is a number
+                }
+            }
         }
 
         // method checks if a string passed to it is a valid number
