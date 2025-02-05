@@ -46,54 +46,54 @@ public class Program2 {
             Data data = new Data();
     
             // open input file or quit
-            getValidInput(data, args);
+            get_valid_input(data, args);
     
             // open output file or quit
-            if(!data.getQuit()) getValidOutput(data, args);
+            if(!data.get_quit()) get_valid_output(data, args);
     
             // parse input file or quit
-            if(!data.getQuit()) parseInput(data);
+            if(!data.get_quit()) parse_input(data);
     
             // print data to output file or quit
-            if(!data.getQuit()) printInfo(data);
+            if(!data.get_quit()) print_info(data);
             
             // print appropriate exit message
-            if(data.getQuit()) System.out.println("\nQuitting program.");
-            else System.out.println("\nFinished processing; Output in " + data.getOutputFile().getName() + ".");
+            if(data.get_quit()) System.out.println("\nQuitting program.");
+            else System.out.println("\nFinished processing; Output in " + data.get_out_file().getName() + ".");
         }
 
         // result: opens an input file that exists 
         //         OR sets the quit flag
-        static void getValidInput(Data data, String[] args) { // asignee: lavender
+        static void get_valid_input(Data data, String[] args) { // asignee: lavender
 
             // create input file name (used to open input file or set quit)
-            String inName;
+            String in_name;
 
             // initialize reader to the keyboard
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
             // get first input from either command line or user
             if(args.length > 0) {
-                inName = args[0];
+                in_name = args[0];
             }
             else {
                 System.out.print("Enter input file name: ");
-                inName = getFileName(data, reader);
+                in_name = get_file_name(data, reader);
             }
 
-            if(!data.getQuit()) {
+            if(!data.get_quit()) {
                 
                 // set input file
-                data.setInputFile(new File(inName));
+                data.set_in_file(new File(in_name));
 
                 // keep getting input until input file exists or user quits
-                while(!data.getInputFile().exists() && !data.getQuit()) {
+                while(!data.get_in_file().exists() && !data.get_quit()) {
 
                     // reprompt, get input again, update file
-                    System.out.println("\nInput file " + inName + " does not exist.");
+                    System.out.println("\nInput file " + in_name + " does not exist.");
                     System.out.print("Enter input file name: ");
-                    inName = getFileName(data, reader);
-                    data.setInputFile(new File(inName));
+                    in_name = get_file_name(data, reader);
+                    data.set_in_file(new File(in_name));
                 }
             }
 
@@ -101,11 +101,11 @@ public class Program2 {
                 reader.close();
             } catch (IOException e) {
                 System.out.println("Error closing BufferedReader.");
-                data.setQuit(true);
+                data.set_quit(true);
             }
         }
 
-        static String getFileName(Data data, BufferedReader reader) {
+        static String get_file_name(Data data, BufferedReader reader) {
             String result = "";
 
             // read a line from the console;
@@ -114,11 +114,11 @@ public class Program2 {
             try {
                 result = reader.readLine();
                 if(result.equals("")) {
-                    data.setQuit(true);
+                    data.set_quit(true);
                 }
             } catch (IOException e) {
                 System.out.println("Error reading input file name.");
-                data.setQuit(true);
+                data.set_quit(true);
             }
 
             return result;
@@ -126,34 +126,34 @@ public class Program2 {
 
         // result: opens a new output file (includes backing up if necessary)
         //         OR sets the quit flag
-        static void getValidOutput(Data data, String[] args) { // asignee: camron
+        static void get_valid_output(Data data, String[] args) { // asignee: camron
 
         }
 
         // result: accumulates Words and the sum of the integers
         // OR sets the quit flag (due to possible errors)
-        static void parseInput(Data data) { // asignee: nicola 
+        static void parse_input(Data data) { // asignee: nicola 
 
         }
 
         // result: prints the accumulated information to the output file
         //         OR sets the quit flag (due to possible errors)
-        static void printInfo(Data data) { // asignee: lavender
+        static void print_info(Data data) { // asignee: lavender
 
             PrintWriter writer = null;
 
             // open a writer to the output file
             try {
-                writer = new PrintWriter(data.getOutputFile());
+                writer = new PrintWriter(data.get_out_file());
             } catch (FileNotFoundException e) {
                 System.out.println("Error opening output file for writing.");
-                data.setQuit(true);
+                data.set_quit(true);
             }
 
-            if(!data.getQuit()) {
+            if(!data.get_quit()) {
 
                 // get the list of words and the writer
-                Word[] list = data.getList();
+                Word[] list = data.get_list();
 
                 // label
                 writer.println("Words:\n-----");
@@ -162,8 +162,9 @@ public class Program2 {
                 int i;
                 for(i = 0; list[i] != null; i++) {
                     Word word = list[i];
-                    // TODO: uncomment, possibly correct Word method calls
-                    // writer.println("\"" + word.getWord() + "\": " + word.getNumOccur() + " occurrences");
+                    // to be uncommented after Word class gets written
+                    // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
+                    writer.println("printing word data...");
                 }
 
                 // label
@@ -171,7 +172,7 @@ public class Program2 {
 
                 // print number of unique words, sum of all integers
                 writer.println("Number of unique words: " + i);
-                writer.println("Sum of integers: " + data.getSum());
+                writer.println("Sum of integers: " + data.get_sum());
 
                 // close the printwriter
                 writer.close();
@@ -250,56 +251,56 @@ class Word
 // data class: contains all program data 
 // that needs to be modified/read across methods
 class Data {
-    private File inFile;
-    private File outFile;
+    private File in_file;
+    private File out_file;
     private Word[] list;
     private boolean quit;
     private int sum;
 
     public Data() {
-        inFile = null;
-        outFile = null;
+        in_file = null;
+        out_file = null;
         list = new Word[100];
         quit = false;
     }
 
     // getters and setters for each piece of data
 
-    public File getInputFile() {
-        return inFile;
+    public File get_in_file() {
+        return in_file;
     }
     
-    public void setInputFile(File input) {
-        inFile = input;
+    public void set_in_file(File input) {
+        in_file = input;
     }
 
-    public File getOutputFile() {
-        return outFile;
+    public File get_out_file() {
+        return out_file;
     }
     
-    public void setOutputFile(File input) {
-        outFile = input;
+    public void set_out_file(File input) {
+        out_file = input;
     }
 
-    public Word[] getList() {
+    public Word[] get_list() {
         return list;
     }
 
     // (no setter for list since only its elements will be modified)
 
-    public boolean getQuit() {
+    public boolean get_quit() {
         return quit;
     }
     
-    public void setQuit(boolean input) {
+    public void set_quit(boolean input) {
         quit = input;
     }
 
-    public int getSum() {
+    public int get_sum() {
         return sum;
     }
 
-    public void setSum(int num) {
+    public void set_sum(int num) {
         sum = num;
     }
 }
