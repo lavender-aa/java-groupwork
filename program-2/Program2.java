@@ -156,7 +156,7 @@ import java.util.*;
         }
 
         // tokenizes string passed to it and processes tokens
-        static void getTokens(String wholeLine, Data data)
+        static void getTokens(String wholeLine, Data data) throws IOException
         {
             StringTokenizer inLine = new StringTokenizer(wholeLine, "\t\"\n\r\\ \b\f~`!@#$%^&*()_+=:;?/.,<>[]{}|");
             String aToken;
@@ -169,7 +169,7 @@ import java.util.*;
 
                 if (firstChar == '\'' || firstChar == '-') 
                 {
-                    while(aToken.charAt(0) == '\'' || aToken.charAt(0) == '-')
+                    while(!aToken.isEmpty() && (aToken.charAt(0) == '\'' || aToken.charAt(0) == '-'))
                     {
                         if (aToken.charAt(0) == '-' && Character.isDigit(aToken.charAt(1))) 
                             isNegative = true;
@@ -191,7 +191,7 @@ import java.util.*;
         }
 
         // process the string if it is a number
-        static void processNumber(String number, boolean isNegative, Data data)
+        static void processNumber(String number, boolean isNegative, Data data) throws IOException
         {
             Word[] list = data.get_list();
             StringTokenizer numLine = new StringTokenizer(number, "123456789");
@@ -208,10 +208,11 @@ import java.util.*;
                 number = "-" + number;
 
             if(isValidNumber(number))
-            {
-                
-                    int rValue = Integer.parseInt(number); // this should never execute unless there is at least 1 digit in string
-                    data.addToTotal(rValue);
+            {        
+                StringTokenizer numToken = new StringTokenizer(number, "\'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM");
+                String cleanNumber = numToken.nextToken();
+                int rValue = Integer.parseInt(cleanNumber); // this should never execute unless there is at least 1 digit in string
+                data.addToTotal(rValue);
             }
         }
 
