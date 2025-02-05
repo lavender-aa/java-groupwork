@@ -143,8 +143,9 @@ import java.util.*;
             try
             {
                 bufRead = new BufferedReader( new FileReader(inFile));
-                while(thisLine = bufRead.readLine() != null)
+                while(bufRead.ready())
                 {
+                    thisLine = bufRead.readLine();
                     getTokens(thisLine, data);
                 }
             }
@@ -155,7 +156,7 @@ import java.util.*;
         }
 
         // tokenizes string passed to it and processes tokens
-        static void getTokens(Sting wholeLine, Data data)
+        static void getTokens(String wholeLine, Data data)
         {
             StringTokenizer inLine = new StringTokenizer(wholeLine, "\t\"\n\r\\ \b\f~`!@#$%^&*()_+=:;?/.,<>[]{}|");
             String aToken;
@@ -171,7 +172,7 @@ import java.util.*;
                     while(aToken.charAt(0) == '\'' || aToken.charAt(0) == '-')
                     {
                         if (aToken.charAt(0) == '-' && Character.isDigit(aToken.charAt(1))) 
-                            wasNegative = true;
+                            isNegative = true;
                         aToken = aToken.substring(1);
                     }    
                 } 
@@ -179,11 +180,12 @@ import java.util.*;
                 if (Character.isLetter(firstChar)) 
                 {
                     Word[] wList = data.get_list();
-                    findOrAdd(wList, aToken, data);
+                    Word aWord = new Word(aToken);
+                    findOrAdd(wList, aWord, data);
                 }
                 else if (Character.isDigit(firstChar))
                 {
-                    processNumber(aToken, wasNegative, data);
+                    processNumber(aToken, isNegative, data);
                 }
             }
         }
@@ -196,7 +198,8 @@ import java.util.*;
             if(numLine.hasMoreTokens())
             {
                 String wordToken = numLine.nextToken();
-                findOrAdd(list, wordToken, data);
+                Word backPartOfToken = new Word(wordToken);
+                findOrAdd(list, backPartOfToken, data);
             }
 
             // if it is negative the previous steps should have stripped all leading - or ' 
@@ -206,15 +209,9 @@ import java.util.*;
 
             if(isValidNumber(number))
             {
-                try
-                {
+                
                     int rValue = Integer.parseInt(number); // this should never execute unless there is at least 1 digit in string
                     data.addToTotal(rValue);
-                }
-                catch(IOException error)
-                {
-                    error.printStackTrace();
-                }
             }
         }
 
@@ -222,18 +219,18 @@ import java.util.*;
         static boolean isValidNumber(String maybeNumber)
         {
             boolean isValid = false;
-            boolean wasNegative = false
+            boolean isNegative = false;
             
             if (maybeNumber.charAt(0) == '-') 
             {
                 while(maybeNumber.charAt(0) == '-')   
                 {
                     maybeNumber = maybeNumber.substring(1);
-                    wasNegative = true;
+                    isNegative = true;
                 } 
             }
 
-            if (wasNegative)
+            if (isNegative)
                 maybeNumber = "-" + maybeNumber;
 
             if (maybeNumber.charAt(0) == '-' && Character.isDigit(maybeNumber.charAt(1))) 
@@ -310,7 +307,7 @@ import java.util.*;
 
                 // print number of unique words, sum of all integers
                 writer.println("Number of unique words: " + i);
-                writer.println("Sum of integers: " + data.get_sum());
+                writer.println("Sum of integers: " + data.getTotal());
 
                 // close the printwriter
                 writer.close();
