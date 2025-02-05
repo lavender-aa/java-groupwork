@@ -416,12 +416,8 @@ class Data {
     private File out_file;
     private Word[] list;
     private boolean quit;
-<<<<<<< HEAD
     private int lastIndex;
     private int total;
-=======
-    private int sum;
->>>>>>> main
 
     public Data() {
         in_file = null;
@@ -466,7 +462,6 @@ class Data {
         quit = input;
     }
 
-<<<<<<< HEAD
     public int getLastIndex()
     {
         return lastIndex;
@@ -491,14 +486,4 @@ class Data {
     {
         total += addedValue;
     }
-
-=======
-    public int get_sum() {
-        return sum;
-    }
-
-    public void set_sum(int num) {
-        sum = num;
-    }
->>>>>>> main
 }
