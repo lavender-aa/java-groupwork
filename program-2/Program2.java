@@ -204,8 +204,18 @@ import java.util.*;
             if(isNegative)
                 number = "-" + number;
 
-            int rValue = Integer.parseInt(number); // this should never execute unless there is at least 1 digit in string
-            data.addToTotal(rValue);
+            if(isValidNumber(number))
+            {
+                try
+                {
+                    int rValue = Integer.parseInt(number); // this should never execute unless there is at least 1 digit in string
+                    data.addToTotal(rValue);
+                }
+                catch(IOException error)
+                {
+                    error.printStackTrace();
+                }
+            }
         }
 
         // method checks if a string passed to it is a valid number
