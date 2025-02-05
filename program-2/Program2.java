@@ -89,7 +89,7 @@ class Program2 {
                 bufRead = new BufferedReader( new FileReader(inFile));
                 while(thisLine = bufRead.readLine() != null)
                 {
-                    getTokens(thisLine);
+                    getTokens(thisLine, data);
                 }
             }
             catch (IOException error)
@@ -99,7 +99,7 @@ class Program2 {
         }
 
         // tokenizes string passed to it and processes tokens
-        static void getTokens(Sting wholeLine)
+        static void getTokens(Sting wholeLine, Data data)
         {
             StringTokenizer inLine = new StringTokenizer(wholeLine, "\t\"\n\r\\ \b\f~`!@#$%^&*()_+=:;?/.,<>[]{}|");
             String aToken;
@@ -122,13 +122,34 @@ class Program2 {
                 
                 if (Character.isLetter(firstChar)) 
                 {
-                    // do processing for if it is a word
+                    Word[] wList = data.get_list();
+                    findOrAdd(wList, aToken, data);
                 }
                 else if (Character.isDigit(firstChar))
                 {
-                    // do processing for if it is a number
+                    processNumber(aToken, wasNegative, data);
                 }
             }
+        }
+
+        // process the string if it is a number
+        static void processNumber(String number, boolean isNegative, Data data)
+        {
+            Word[] list = data.get_list();
+            StringTokenizer numLine = new StringTokenizer(number, "123456789");
+            if(numLine.hasMoreTokens())
+            {
+                String wordToken = numLine.nextToken();
+                findOrAdd(list, wordToken, data);
+            }
+
+            // if it is negative the previous steps should have stripped all leading - or ' 
+            // so it needs to be added back to the front
+            if(isNegative)
+                number = "-" + number;
+
+            int rValue = Integer.parseInt(number); // this should never execute unless there is at least 1 digit in string
+            data.addToTotal(rValue);
         }
 
         // method checks if a string passed to it is a valid number
