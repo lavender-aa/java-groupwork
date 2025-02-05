@@ -38,7 +38,7 @@ more detailed steps:
 import java.io.*;
 import java.util.*;
 
-class Program2 {
+ class Program2 {
         // variables used by class functions
     
         public static void main(String[] args) {
@@ -67,6 +67,62 @@ class Program2 {
         //         OR sets the quit flag
         static void get_valid_input(Data data, String[] args) { // asignee: lavender
 
+            // create input file name (used to open input file or set quit)
+            String in_name;
+
+            // initialize reader to the keyboard
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+            // get first input from either command line or user
+            if(args.length > 0) {
+                in_name = args[0];
+            }
+            else {
+                System.out.print("Enter input file name: ");
+                in_name = get_file_name(data, reader);
+            }
+
+            if(!data.get_quit()) {
+                
+                // set input file
+                data.set_in_file(new File(in_name));
+
+                // keep getting input until input file exists or user quits
+                while(!data.get_in_file().exists() && !data.get_quit()) {
+
+                    // reprompt, get input again, update file
+                    System.out.println("\nInput file " + in_name + " does not exist.");
+                    System.out.print("Enter input file name: ");
+                    in_name = get_file_name(data, reader);
+                    data.set_in_file(new File(in_name));
+                }
+            }
+
+            try {
+                reader.close();
+            } catch (IOException e) {
+                System.out.println("Error closing BufferedReader.");
+                data.set_quit(true);
+            }
+        }
+
+        static String get_file_name(Data data, BufferedReader reader) {
+            String result = "";
+
+            // read a line from the console;
+            // if it succeeds, check if it's nothing and set quit accordingly
+            // if it fails, inform the user and set quit
+            try {
+                result = reader.readLine();
+                if(result.equals("")) {
+                    data.set_quit(true);
+                }
+            } catch (IOException e) {
+                System.out.println("Error reading input file name.");
+                data.set_quit(true);
+            }
+
+            return result;
         }
 
         // result: opens a new output file (includes backing up if necessary)
@@ -212,6 +268,43 @@ class Program2 {
         //         OR sets the quit flag (due to possible errors)
         static void print_info(Data data) { // asignee: lavender
 
+            PrintWriter writer = null;
+
+            // open a writer to the output file
+            try {
+                writer = new PrintWriter(data.get_out_file());
+            } catch (FileNotFoundException e) {
+                System.out.println("Error opening output file for writing.");
+                data.set_quit(true);
+            }
+
+            if(!data.get_quit()) {
+
+                // get the list of words and the writer
+                Word[] list = data.get_list();
+
+                // label
+                writer.println("Words:\n-----");
+
+                // for each word: print the word and its number of occurrences
+                int i;
+                for(i = 0; list[i] != null; i++) {
+                    Word word = list[i];
+                    // to be uncommented after Word class gets written
+                    // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
+                    writer.println("printing word data...");
+                }
+
+                // label
+                writer.println("\nData Information:\n-----------------");
+
+                // print number of unique words, sum of all integers
+                writer.println("Number of unique words: " + i);
+                writer.println("Sum of integers: " + data.get_sum());
+
+                // close the printwriter
+                writer.close();
+            }
         }
 }
 
@@ -323,8 +416,12 @@ class Data {
     private File out_file;
     private Word[] list;
     private boolean quit;
+<<<<<<< HEAD
     private int lastIndex;
     private int total;
+=======
+    private int sum;
+>>>>>>> main
 
     public Data() {
         in_file = null;
@@ -359,7 +456,7 @@ class Data {
         return list;
     }
 
-    // no setter for list since only it's elements will be modified
+    // no setter for list since only its elements will be modified
 
     public boolean get_quit() {
         return quit;
@@ -369,6 +466,7 @@ class Data {
         quit = input;
     }
 
+<<<<<<< HEAD
     public int getLastIndex()
     {
         return lastIndex;
@@ -394,4 +492,13 @@ class Data {
         total += addedValue;
     }
 
+=======
+    public int get_sum() {
+        return sum;
+    }
+
+    public void set_sum(int num) {
+        sum = num;
+    }
+>>>>>>> main
 }
