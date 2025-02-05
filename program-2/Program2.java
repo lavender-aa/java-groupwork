@@ -160,11 +160,13 @@ public class Program2 {
 
                 // for each word: print the word and its number of occurrences
                 int i;
-                for(i = 0; list[i] != null; i++) {
+                for(i = 0; i < list.length; i++) {
                     Word word = list[i];
-                    // to be uncommented after Word class gets written
-                    // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
-                    writer.println("printing word data...");
+                    if(word != null) {
+                        // to be uncommented after Word class gets written
+                        // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
+                        writer.println("printing word data...");
+                    }
                 }
 
                 // label
