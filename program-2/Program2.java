@@ -366,25 +366,7 @@ import java.util.*;
     }
 }
 
-/* 
 
-word class:
------------
-
-data:
-    string word DONE
-    int number of occurrences DONE
-
-methods:
-    constructor (string) DONE
-    get number of occurrences DONE
-    get word DONE
-    is equal to another word DONE
-    is equal to another word (ignore case) Does this need to be a separate method? -Nicola
-    increase number of occurrences DONE
-    index of word (string) in list of words DONE
-
-*/
 class Word 
 { // assignee: nicola
     private String word;
