@@ -283,6 +283,8 @@ import java.util.*;
 
             PrintWriter writer = null;
 
+            data.set_out_file(new File("out.txt"));
+
             // open a writer to the output file
             try {
                 writer = new PrintWriter(data.get_out_file());
@@ -310,7 +312,7 @@ import java.util.*;
                 writer.println("\nData Information:\n-----------------");
 
                 // print number of unique words, sum of all integers
-                writer.println("Number of unique words: " + i);
+                writer.println("Number of unique words: " + (i + 1));
                 writer.println("Sum of integers: " + data.getTotal());
 
                 // close the printwriter
