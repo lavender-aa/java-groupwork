@@ -304,9 +304,7 @@ import java.util.*;
                 for(i = 0; i < list.length; i++) {
                     Word word = list[i];
                     if(word != null) {
-                        // to be uncommented after Word class gets written
-                        // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
-                        writer.println("printing word data...");
+                        writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrences");
                     }
                 }
 
