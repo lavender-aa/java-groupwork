@@ -1,43 +1,16 @@
 /*
-
-main function:
---------------
-
-input file:
-    - contains integers (r"(-?\d+)") and words (strings; r"([A-Za-z]+['\-\d]*)")
-output file:
-    - contains each unique word and number of occurrences
-    - ordered by first encountered
-    - end of list: total number of unique words, sum of integers
-
-
-notes:
-    - can enter input or input and output files in command line
-    - validate files; reprompt until valid or until no input
-    - use StringTokenizer to parse input file
-    - for each word, either add to count (if exists) or create new Word, add to list
-
-
-more detailed steps:
-    - check inputs from command line
-    - validate files
-        - if any invalid, reprompt
-        - if any empty prompts, quit program
-    - open PrintWriter and FileReader
-    - create StringTokenizer
-    - while a line exists:
-        - while tokens in line:
-            - determine if token is word or int
-                - word: check word list, create word/add occurrence
-                - int: add to sum
-    - print each unique word to output, include number of occurrences
-    - print total number of unique words, sum of integers
-
+    Class: CMSC 3320 -- Technical Computing Using Java
+    Assignment 2: File Process
+    Authors: Group 6
+        - Camron Mellott (mel98378@pennwest.edu)
+        - Lavender Wilson (wil81891@pennwest.edu)
+        - Nicola Razumic-Rushin (raz73517@pennwest.edu)
 */
 
 import java.io.*;
+import java.util.*;
 
-public class Program2 {
+ class Program2 {
         // variables used by class functions
     
         public static void main(String[] args) {
@@ -204,8 +177,145 @@ public class Program2 {
 
         // result: accumulates Words and the sum of the integers
         // OR sets the quit flag (due to possible errors)
-        static void parse_input(Data data) { // asignee: nicola 
+        static void parse_input(Data data) 
+        { // asignee: nicola 
+            File inFile = data.get_in_file();
+            BufferedReader bufRead = null;
+            String thisLine;
 
+            try
+            {
+                bufRead = new BufferedReader( new FileReader(inFile));
+                while(bufRead.ready())
+                {
+                    thisLine = bufRead.readLine();
+                    getTokens(thisLine, data);
+                }
+            }
+            catch (IOException error)
+            {
+                error.printStackTrace();
+                System.out.println("IOException error.");
+            }
+        }
+
+        // tokenizes string passed to it and processes tokens
+        static void getTokens(String wholeLine, Data data) throws IOException
+        {
+            // this removes all of the punctuation, whitespace and special characters
+            // and allows access to the substrings in between those delimiters
+            StringTokenizer inLine = new StringTokenizer(wholeLine, "\t\"\n\r\\ \b\f~`!@#$%^&*()_+=:;?/.,<>[]{}|");
+            String aToken;
+            char firstChar;
+            while(inLine.hasMoreTokens())
+            {
+                aToken = inLine.nextToken();
+                firstChar = aToken.charAt(0);
+                boolean isNegative = false;
+
+                // this will delete any leading ' or - characters, but also track if there was a - directly before 
+                // the beginning of a number and sets a flag to treat it as negative later
+                if (firstChar == '\'' || firstChar == '-') 
+                {
+                    // both this and the nested if use short circuit evaluation to prevent index out of bounds
+                    // errors when the string is too small
+                    while(!aToken.isEmpty() && (aToken.charAt(0) == '\'' || aToken.charAt(0) == '-'))
+                    {
+                        if ( aToken.length() > 1 && aToken.charAt(0) == '-' && Character.isDigit(aToken.charAt(1))) 
+                            isNegative = true;
+                        aToken = aToken.substring(1);
+                    }    
+                } 
+                
+                if (Character.isLetter(firstChar)) 
+                {
+                    Word[] wList = data.get_list();
+                    Word aWord = new Word(aToken);
+                    findOrAdd(wList, aWord, data);
+                }
+                else if (Character.isDigit(firstChar))
+                {
+                    processNumber(aToken, isNegative, data);
+                }
+            }
+        }
+
+        // process the string if it is a number, possibly breaking a word off the back
+        static void processNumber(String number, boolean isNegative, Data data) throws IOException
+        {
+            Word[] list = data.get_list();
+
+            // this will break any part of the string with mubers at the end into
+            // a new token and then add it as a word
+            StringTokenizer numLine = new StringTokenizer(number, "0123456789");
+            if(numLine.hasMoreTokens())
+            {
+                String wordToken = numLine.nextToken();
+                Word backPartOfToken = new Word(wordToken);
+                findOrAdd(list, backPartOfToken, data);
+            }
+
+            // if it is negative the previous steps should have stripped all leading - or ' 
+            // so it needs to be added back to the front
+            if(isNegative)
+                number = "-" + number;
+
+            if(isValidNumber(number))
+            {        
+                // this removes any charater that is a letter or ' so only -0123456789 should be possible
+                StringTokenizer numToken = new StringTokenizer(number, "\'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM");
+                String cleanNumber = numToken.nextToken();
+                int rValue = Integer.parseInt(cleanNumber); // this should never execute unless there is at least 1 digit in string
+                data.addToTotal(rValue);
+            }
+        }
+
+        // method checks if a string passed to it is a valid number
+        static boolean isValidNumber(String maybeNumber)
+        {
+            boolean isValid = false;
+
+            if (maybeNumber.charAt(0) == '-' && Character.isDigit(maybeNumber.charAt(1))) 
+            {
+                isValid = true;
+            }
+            else if (Character.isDigit(maybeNumber.charAt(0)))
+            {
+                isValid = true;
+            }
+
+            return isValid;
+        }
+
+        // loops through passed Word array and checks if Word passed is in it
+        // if not adds the string to the next open spot in the array
+        static void findOrAdd(Word[] wList, Word rightWord, Data data)
+        {
+            boolean isNewWord = true;
+            int count = 0;
+
+            // it's a little weird to use a while loop for this, but
+            // this should make it quit early if it finds a match without 
+            // using break
+            while(isNewWord)
+            {
+                if(count >= wList.length)
+                {
+                    isNewWord = false;
+                }
+                else if(count > data.getLastIndex())
+                {
+                    wList[count] = rightWord;
+                    data.incLastIndex();
+					isNewWord = false;
+                }
+                else
+                {
+                    Word thisWord = wList[count];
+                    isNewWord = !thisWord.isEqual(rightWord);
+					count++;
+                }
+            }
         }
 
         // result: prints the accumulated information to the output file
@@ -232,19 +342,17 @@ public class Program2 {
 
                 // for each word: print the word and its number of occurrences
                 int i;
-                for(i = 0; list[i] != null; i++) {
+                for(i = 0; i < data.getLastIndex(); i++) {
                     Word word = list[i];
-                    // to be uncommented after Word class gets written
-                    // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
-                    writer.println("printing word data...");
+                    writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrences");
                 }
 
                 // label
                 writer.println("\nData Information:\n-----------------");
 
                 // print number of unique words, sum of all integers
-                writer.println("Number of unique words: " + i);
-                writer.println("Sum of integers: " + data.get_sum());
+                writer.println("Number of unique words: " + (i + 1));
+                writer.println("Sum of integers: " + data.getTotal());
 
                 // close the printwriter
                 writer.close();
@@ -262,30 +370,27 @@ data:
     int number of occurrences DONE
 
 methods:
-    constructor (string) STARTED
+    constructor (string) DONE
     get number of occurrences DONE
     get word DONE
-    is equal to another word
-    is equal to another word (ignore case)
+    is equal to another word DONE
+    is equal to another word (ignore case) Does this need to be a separate method? -Nicola
     increase number of occurrences DONE
     index of word (string) in list of words DONE
 
 */
 class Word 
 { // assignee: nicola
-    private String myWord;
+    private String word;
     private int wordCount;
-    private int wordIndex;
 
-    // basic constructor validates if the word already exist
-    // by calling CHANGE THIS NAME NICOLA method
-    public Word(String newWord)
+    // basic constructor sets word to passed value, and 
+    // intializes count to 1
+    public Word(String word)
     {
-        boolean isNewWord = isAnotherWord(newWord);
-            if(isNewWord)
-            {
-                myWord = newWord;
-            }
+        wordCount = 1;
+        this.word = word;
+        
     }
 
     // accessor for wordCount
@@ -306,18 +411,20 @@ class Word
         wordCount++;
     }
 
-    // sets index variable to the index in the external word array
-    private void setIndex(int newIndex)
+    // returns if this word is equal to the one passed it
+    // and increments the counter
+    public boolean isEqual(Word rightSide)
     {
-        wordIndex = newIndex;
-    }
+        boolean isRightSame = false;
+        String rightString = rightSide.getWord().toUpperCase();
+        if (this.word.toUpperCase().equals(rightString)) 
+        {
+            incWordCount();
+            isRightSame = true;
+        }
 
-    public int getIndex()
-    {
-        return wordIndex;
+        return isRightSame;
     }
-
-    
 }
 
 // data class: contains all program data 
@@ -327,13 +434,18 @@ class Data {
     private File out_file;
     private Word[] list;
     private boolean quit;
-    private int sum;
+    private int lastIndex;
+    private int total;
 
     public Data() {
         in_file = null;
         out_file = null;
         list = new Word[100];
+        for (int i = 0; i < 100; i++) 
+            list[i] = null;
         quit = false;
+        lastIndex = -1;
+        total = 0;
     }
 
     // getters and setters for each piece of data
@@ -358,7 +470,7 @@ class Data {
         return list;
     }
 
-    // (no setter for list since only its elements will be modified)
+    // no setter for list since only its elements will be modified
 
     public boolean get_quit() {
         return quit;
@@ -368,11 +480,28 @@ class Data {
         quit = input;
     }
 
-    public int get_sum() {
-        return sum;
+    public int getLastIndex()
+    {
+        return lastIndex;
     }
 
-    public void set_sum(int num) {
-        sum = num;
+    public int getTotal()
+    {
+        return total;
+    }
+
+    // so long as the program is running correctly there should
+    // be no reason to alter the index pointer in any other way 
+    // than adding one
+    public void incLastIndex()
+    {
+        lastIndex++;
+    }
+
+    // total will never need to be reset completely 
+    // so we only need to add values to it
+    public void addToTotal(int addedValue)
+    {
+        total += addedValue;
     }
 }
