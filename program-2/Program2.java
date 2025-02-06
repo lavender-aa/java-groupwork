@@ -136,7 +136,6 @@ import java.util.*;
         static void parse_input(Data data) 
         { // asignee: nicola 
             File inFile = data.get_in_file();
-            Word[] wordList = data.get_list();
             BufferedReader bufRead = null;
             String thisLine;
 
@@ -152,6 +151,12 @@ import java.util.*;
             catch (IOException error)
             {
                 error.printStackTrace();
+                System.out.println("IOException error.");
+            }
+            catch (FileNotFoundException error)
+            {
+                error.printStackTrace();
+                System.out.println("FileNotFoundException error.");
             }
         }
 
@@ -344,16 +349,12 @@ class Word
 { // assignee: nicola
     private String word;
     private int wordCount;
-    private int wordIndex;
-    private boolean isUnique;
 
     // basic constructor sets word to passed value, and 
-    // intializes other variables to starting values
+    // intializes count to 1
     public Word(String word)
     {
         wordCount = 1;
-        wordIndex = 0;
-        isUnique = true;
         this.word = word;
         
     }
@@ -376,37 +377,8 @@ class Word
         wordCount++;
     }
 
-    // sets index variable to the index in the external word array
-    private void setIndex(int newIndex)
-    {
-        if (isUnique) 
-        {
-            wordIndex = newIndex;            
-        }
-    }
-
-    // returns the index this word is stored at
-    public int getIndex()
-    {
-        return wordIndex;
-    }
-
-    // set isUnique to false, since it's deafult is true and it
-    // will never become un-unique we only need to make it false
-    public void setIsUnique()
-    {
-        isUnique = false;
-    }
-
-    // get isUnique
-    public boolean getIsUnique()
-    {
-        return isUnique;
-    }
-
     // returns if this word is equal to the one passed it
-    // and change isUnique in the passed Word object to false
-    // if it isn't unique and increment the counter
+    // and increment the counter
     public boolean isEqual(Word rightSide)
     {
         boolean isRightSame = false;
@@ -415,7 +387,6 @@ class Word
         {
             incWordCount();
             isRightSame = true;
-            rightSide.setIsUnique();
         }
 
         return isRightSame;
