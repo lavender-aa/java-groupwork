@@ -163,6 +163,8 @@ import java.util.*;
         // tokenizes string passed to it and processes tokens
         static void getTokens(String wholeLine, Data data) throws IOException
         {
+            // this removes all of the punctuation, whitespace and special characters
+            // and allows access to the substrings in between those delimiters
             StringTokenizer inLine = new StringTokenizer(wholeLine, "\t\"\n\r\\ \b\f~`!@#$%^&*()_+=:;?/.,<>[]{}|");
             String aToken;
             char firstChar;
@@ -172,8 +174,12 @@ import java.util.*;
                 firstChar = aToken.charAt(0);
                 boolean isNegative = false;
 
+                // this will delete any leading ' or - characters, but also track if there was a - directly before 
+                // the beginning of a number and sets a flag to treat it as negative later
                 if (firstChar == '\'' || firstChar == '-') 
                 {
+                    // both this and the nested if use short circuit evaluation to prevent index out of bounds
+                    // errors when the string is too small
                     while(!aToken.isEmpty() && (aToken.charAt(0) == '\'' || aToken.charAt(0) == '-'))
                     {
                         if ( aToken.length() > 1 && aToken.charAt(0) == '-' && Character.isDigit(aToken.charAt(1))) 
@@ -195,10 +201,13 @@ import java.util.*;
             }
         }
 
-        // process the string if it is a number
+        // process the string if it is a number, possibly breaking a word off the back
         static void processNumber(String number, boolean isNegative, Data data) throws IOException
         {
             Word[] list = data.get_list();
+
+            // this will break any part of the string with mubers at the end into
+            // a new token and then add it as a word
             StringTokenizer numLine = new StringTokenizer(number, "0123456789");
             if(numLine.hasMoreTokens())
             {
@@ -214,6 +223,7 @@ import java.util.*;
 
             if(isValidNumber(number))
             {        
+                // this removes any charater that is a letter or ' so only -0123456789 should be possible
                 StringTokenizer numToken = new StringTokenizer(number, "\'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM");
                 String cleanNumber = numToken.nextToken();
                 int rValue = Integer.parseInt(cleanNumber); // this should never execute unless there is at least 1 digit in string
@@ -225,19 +235,6 @@ import java.util.*;
         static boolean isValidNumber(String maybeNumber)
         {
             boolean isValid = false;
-            boolean isNegative = false;
-            
-            if (maybeNumber.charAt(0) == '-') 
-            {
-                while(maybeNumber.charAt(0) == '-')   
-                {
-                    maybeNumber = maybeNumber.substring(1);
-                    isNegative = true;
-                } 
-            }
-
-            if (isNegative)
-                maybeNumber = "-" + maybeNumber;
 
             if (maybeNumber.charAt(0) == '-' && Character.isDigit(maybeNumber.charAt(1))) 
             {
@@ -378,7 +375,7 @@ class Word
     }
 
     // returns if this word is equal to the one passed it
-    // and increment the counter
+    // and increments the counter
     public boolean isEqual(Word rightSide)
     {
         boolean isRightSame = false;
