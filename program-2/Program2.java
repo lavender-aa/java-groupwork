@@ -127,7 +127,81 @@ public class Program2 {
         // result: opens a new output file (includes backing up if necessary)
         //         OR sets the quit flag
         static void get_valid_output(Data data, String[] args) { // asignee: camron
+            String out_name;
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
+            // get output file name from command line or prompt user
+            if (args.length > 1) {
+                out_name = args[1];
+            } else {
+                System.out.print("Enter output file name: ");
+                out_name = get_file_name(data, reader);
+            }
+
+            if (!data.get_quit()) {
+                // set output file
+                data.set_out_file(new File(out_name));
+
+                // check if output file already exists
+                while (data.get_out_file().exists() && !data.get_quit()) {
+
+                    System.out.println("\nOutput file " + out_name + " already exists.");
+                    System.out.println("What would you like to do?");
+                    System.out.println("1. Enter a new output file name");
+                    System.out.println("2. Back up the existing output file first");
+                    System.out.println("3. Overwrite the existing output file");
+                    System.out.println("4. Quit the program");
+
+                    try {
+
+                        String choice = reader.readLine().trim();
+
+                        switch (choice) {
+                            case "1":
+                                // prompt for new file name
+                                System.out.print("Enter new output file name: ");
+                                out_name = get_file_name(data, reader);
+                                data.set_out_file(new File(out_name));
+                                break;
+                            case "2":
+                                // backup the existing output file before proceeding
+                                File backup = new File(out_name + ".bak");
+                                if (data.get_out_file().renameTo(backup)) {
+                                    System.out.println("Backup of existing file created as " + backup.getName());
+                                    // proceed to use the original file as output
+                                    System.out.print("Enter new output file name: ");
+                                    out_name = get_file_name(data, reader);
+                                    data.set_out_file(new File(out_name));
+                                } else {
+                                    System.out.println("Failed to create a backup. Proceeding with file overwrite.");
+                                    // fall through to overwrite
+                                }
+                                break;
+                            case "3":
+                                // proceed to overwrite the file
+                                System.out.println("Overwriting the existing output file.");
+                                break;
+                            case "4":
+                                // set quit flag
+                                data.set_quit(true);
+                                break;
+                            default:
+                                System.out.println("Invalid option. Please choose again.");
+                                break;
+                        }
+                    } catch (IOException e) {
+                        System.out.println("Error reading user input.");
+                        data.set_quit(true);
+                    }
+                }
+            }
+
+            try {
+                reader.close();
+            } catch (IOException e) {
+                System.out.println("Error closing BufferedReader.");
+                data.set_quit(true);
+            }
         }
 
         // result: accumulates Words and the sum of the integers
