@@ -283,8 +283,6 @@ import java.util.*;
 
             PrintWriter writer = null;
 
-            data.set_out_file(new File("out.txt"));
-
             // open a writer to the output file
             try {
                 writer = new PrintWriter(data.get_out_file());
