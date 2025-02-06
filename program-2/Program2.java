@@ -96,12 +96,13 @@ public class Program2 {
                     data.set_in_file(new File(in_name));
                 }
             }
-
-            try {
-                reader.close();
-            } catch (IOException e) {
-                System.out.println("Error closing BufferedReader.");
-                data.set_quit(true);
+            if(data.get_quit()){
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    System.out.println("Error closing BufferedReader.");
+                    data.set_quit(true);
+                }
             }
         }
 
@@ -111,16 +112,14 @@ public class Program2 {
             // read a line from the console;
             // if it succeeds, check if it's nothing and set quit accordingly
             // if it fails, inform the user and set quit
-            if (quit == true) {
-                try {
-                    result = reader.readLine();
-                    if(result.equals("")) {
-                        data.set_quit(true);
-                    }
-                } catch (IOException e) {
-                    System.out.println("Error reading input file name.");
+            try {
+                result = reader.readLine();
+                if(result.equals("")) {
                     data.set_quit(true);
                 }
+            } catch (IOException e) {
+                System.out.println("Error reading input file name.");
+                data.set_quit(true);
             }
 
             return result;
