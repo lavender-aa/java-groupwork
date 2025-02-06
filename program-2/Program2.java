@@ -19,67 +19,67 @@ import java.util.*;
         Data data = new Data();
 
         // open input file or quit
-        get_valid_input(data, args);
+        getValidInput(data, args);
 
         // open output file or quit
-        if(!data.get_quit()) get_valid_output(data, args);
+        if(!data.getQuit()) getValidOutput(data, args);
 
         // parse input file or quit
-        if(!data.get_quit()) parse_input(data);
+        if(!data.getQuit()) parseInput(data);
 
         // print data to output file or quit
-        if(!data.get_quit()) print_info(data);
+        if(!data.getQuit()) printInfo(data);
         
         // print appropriate exit message
-        if(data.get_quit()) System.out.println("\nQuitting program.");
-        else System.out.println("\nFinished processing; Output in " + data.get_out_file().getName() + ".");
+        if(data.getQuit()) System.out.println("\nQuitting program.");
+        else System.out.println("\nFinished processing; Output in " + data.getOutFile().getName() + ".");
     }
 
     // result: opens an input file that exists 
     //         OR sets the quit flag
-    static void get_valid_input(Data data, String[] args) { // asignee: lavender
+    static void getValidInput(Data data, String[] args) { // asignee: lavender
 
         // create input file name (used to open input file or set quit)
-        String in_name;
+        String inName;
 
         // initialize reader to the keyboard
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         // get first input from either command line or user
         if(args.length > 0) {
-            in_name = args[0];
+            inName = args[0];
         }
         else {
             System.out.print("Enter input file name: ");
-            in_name = get_file_name(data, reader);
+            inName = getFileName(data, reader);
         }
 
-        if(!data.get_quit()) {
+        if(!data.getQuit()) {
             
             // set input file
-            data.set_in_file(new File(in_name));
+            data.setInFile(new File(inName));
 
             // keep getting input until input file exists or user quits
-            while(!data.get_in_file().exists() && !data.get_quit()) {
+            while(!data.getInFile().exists() && !data.getQuit()) {
 
                 // reprompt, get input again, update file
-                System.out.println("\nInput file " + in_name + " does not exist.");
+                System.out.println("\nInput file " + inName + " does not exist.");
                 System.out.print("Enter input file name: ");
-                in_name = get_file_name(data, reader);
-                data.set_in_file(new File(in_name));
+                inName = getFileName(data, reader);
+                data.setInFile(new File(inName));
             }
         }
-        if(data.get_quit()){
+        if(data.getQuit()){
             try {
                 reader.close();
             } catch (IOException e) {
                 System.out.println("Error closing BufferedReader.");
-                data.set_quit(true);
+                data.setQuit(true);
             }
         }
     }
 
-    static String get_file_name(Data data, BufferedReader reader) {
+    static String getFileName(Data data, BufferedReader reader) {
         String result = "";
 
         // read a line from the console;
@@ -88,11 +88,11 @@ import java.util.*;
         try {
             result = reader.readLine();
             if(result.equals("")) {
-                data.set_quit(true);
+                data.setQuit(true);
             }
         } catch (IOException e) {
             System.out.println("Error reading input file name.");
-            data.set_quit(true);
+            data.setQuit(true);
         }
 
         return result;
@@ -100,30 +100,30 @@ import java.util.*;
 
     // result: opens a new output file (includes backing up if necessary)
     //         OR sets the quit flag
-    static void get_valid_output(Data data, String[] args) { // asignee: camron
-        String out_name;
+    static void getValidOutput(Data data, String[] args) { // asignee: camron
+        String outName;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        boolean exit_loop;
+        boolean exitLoop;
 
         // get output file name from command line or prompt user
         if (args.length > 1) {
-            out_name = args[1];
+            outName = args[1];
         } else {
             System.out.print("Enter output file name: ");
-            out_name = get_file_name(data, reader);
+            outName = getFileName(data, reader);
         }
 
-        if (!data.get_quit()) {
+        if (!data.getQuit()) {
             // initialize loop variable
-            exit_loop = false;
+            exitLoop = false;
 
             // set output file
-            data.set_out_file(new File(out_name));
+            data.setOutFile(new File(outName));
 
             // check if output file already exists
-            while (data.get_out_file().exists() && !data.get_quit() && !exit_loop) {
+            while (data.getOutFile().exists() && !data.getQuit() && !exitLoop) {
 
-                System.out.println("\nOutput file " + out_name + " already exists.");
+                System.out.println("\nOutput file " + outName + " already exists.");
                 System.out.println("What would you like to do?");
                 System.out.println("1. Enter a new output file name");
                 System.out.println("2. Back up the existing file and continue");
@@ -139,29 +139,29 @@ import java.util.*;
                         case "1":
                             // prompt for new file name
                             System.out.print("Enter new output file name: ");
-                            out_name = get_file_name(data, reader);
-                            data.set_out_file(new File(out_name));
+                            outName = getFileName(data, reader);
+                            data.setOutFile(new File(outName));
                             break;
                         case "2":
                             // backup the existing output file before proceeding
-                            File backup = new File(out_name + ".bak");
-                            if (data.get_out_file().renameTo(backup)) {
+                            File backup = new File(outName + ".bak");
+                            if (data.getOutFile().renameTo(backup)) {
                                 System.out.println("Backup of existing file created as " + backup.getName());
                                 // proceed to use the original file as output
                             } else {
                                 System.out.println("Failed to create a backup. Proceeding with file overwrite.");
                                 // fall through to overwrite
-                                exit_loop = true;
+                                exitLoop = true;
                             }
                             break;
                         case "3":
                             // proceed to overwrite the file
                             System.out.println("Overwriting the existing output file.");
-                            exit_loop = true;
+                            exitLoop = true;
                             break;
                         case "4":
                             // set quit flag
-                            data.set_quit(true);
+                            data.setQuit(true);
                             break;
                         default:
                             System.out.println("Invalid option. Please choose again.");
@@ -177,15 +177,15 @@ import java.util.*;
             reader.close();
         } catch (IOException e) {
             System.out.println("Error closing BufferedReader.");
-            data.set_quit(true);
+            data.setQuit(true);
         }
     }
 
     // result: accumulates Words and the sum of the integers
     // OR sets the quit flag (due to possible errors)
-    static void parse_input(Data data) 
+    static void parseInput(Data data) 
     { // asignee: nicola 
-        File inFile = data.get_in_file();
+        File inFile = data.getInFile();
         BufferedReader bufRead = null;
         String thisLine;
 
@@ -235,7 +235,7 @@ import java.util.*;
             
             if (Character.isLetter(firstChar)) 
             {
-                Word[] wList = data.get_list();
+                Word[] wList = data.getList();
                 Word aWord = new Word(aToken);
                 findOrAdd(wList, aWord, data);
             }
@@ -249,7 +249,7 @@ import java.util.*;
     // process the string if it is a number, possibly breaking a word off the back
     static void processNumber(String number, boolean isNegative, Data data) throws IOException
     {
-        Word[] list = data.get_list();
+        Word[] list = data.getList();
 
         // this will break any part of the string with mubers at the end into
         // a new token and then add it as a word
@@ -326,22 +326,22 @@ import java.util.*;
 
     // result: prints the accumulated information to the output file
     //         OR sets the quit flag (due to possible errors)
-    static void print_info(Data data) { // asignee: lavender
+    static void printInfo(Data data) { // asignee: lavender
 
         PrintWriter writer = null;
 
         // open a writer to the output file
         try {
-            writer = new PrintWriter(data.get_out_file());
+            writer = new PrintWriter(data.getOutFile());
         } catch (FileNotFoundException e) {
             System.out.println("Error opening output file for writing.");
-            data.set_quit(true);
+            data.setQuit(true);
         }
 
-        if(!data.get_quit()) {
+        if(!data.getQuit()) {
 
             // get the list of words and the writer
-            Word[] list = data.get_list();
+            Word[] list = data.getList();
 
             // label
             writer.println("Words:\n-----");
@@ -418,16 +418,16 @@ class Word
 // data class: contains all program data 
 // that needs to be modified/read across methods
 class Data {
-    private File in_file;
-    private File out_file;
+    private File inFile;
+    private File outFile;
     private Word[] list;
     private boolean quit;
     private int lastIndex;
     private int total;
 
     public Data() {
-        in_file = null;
-        out_file = null;
+        inFile = null;
+        outFile = null;
         list = new Word[100];
         for (int i = 0; i < 100; i++) 
             list[i] = null;
@@ -438,33 +438,33 @@ class Data {
 
     // getters and setters for each piece of data
 
-    public File get_in_file() {
-        return in_file;
+    public File getInFile() {
+        return inFile;
     }
     
-    public void set_in_file(File input) {
-        in_file = input;
+    public void setInFile(File input) {
+        inFile = input;
     }
 
-    public File get_out_file() {
-        return out_file;
+    public File getOutFile() {
+        return outFile;
     }
     
-    public void set_out_file(File input) {
-        out_file = input;
+    public void setOutFile(File input) {
+        outFile = input;
     }
 
-    public Word[] get_list() {
+    public Word[] getList() {
         return list;
     }
 
     // no setter for list since only its elements will be modified
 
-    public boolean get_quit() {
+    public boolean getQuit() {
         return quit;
     }
     
-    public void set_quit(boolean input) {
+    public void setQuit(boolean input) {
         quit = input;
     }
 
