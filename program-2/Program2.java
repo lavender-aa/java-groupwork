@@ -153,11 +153,6 @@ import java.util.*;
                 error.printStackTrace();
                 System.out.println("IOException error.");
             }
-            catch (FileNotFoundException error)
-            {
-                error.printStackTrace();
-                System.out.println("FileNotFoundException error.");
-            }
         }
 
         // tokenizes string passed to it and processes tokens
