@@ -111,14 +111,16 @@ public class Program2 {
             // read a line from the console;
             // if it succeeds, check if it's nothing and set quit accordingly
             // if it fails, inform the user and set quit
-            try {
-                result = reader.readLine();
-                if(result.equals("")) {
+            if (quit == true) {
+                try {
+                    result = reader.readLine();
+                    if(result.equals("")) {
+                        data.set_quit(true);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Error reading input file name.");
                     data.set_quit(true);
                 }
-            } catch (IOException e) {
-                System.out.println("Error reading input file name.");
-                data.set_quit(true);
             }
 
             return result;
@@ -169,9 +171,6 @@ public class Program2 {
                                 if (data.get_out_file().renameTo(backup)) {
                                     System.out.println("Backup of existing file created as " + backup.getName());
                                     // proceed to use the original file as output
-                                    System.out.print("Enter new output file name: ");
-                                    out_name = get_file_name(data, reader);
-                                    data.set_out_file(new File(out_name));
                                 } else {
                                     System.out.println("Failed to create a backup. Proceeding with file overwrite.");
                                     // fall through to overwrite
