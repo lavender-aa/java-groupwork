@@ -263,7 +263,7 @@ import java.util.*;
             // using break
             while(isNewWord)
             {
-                if(count >= 100)
+                if(count >= wList.length())
                 {
                     isNewWord = false;
                 }
