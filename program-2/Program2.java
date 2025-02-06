@@ -171,7 +171,7 @@ import java.util.*;
                 {
                     while(!aToken.isEmpty() && (aToken.charAt(0) == '\'' || aToken.charAt(0) == '-'))
                     {
-                        if (aToken.charAt(0) == '-' && Character.isDigit(aToken.charAt(1))) 
+                        if ( aToken.length() > 1 && aToken.charAt(0) == '-' && Character.isDigit(aToken.charAt(1))) 
                             isNegative = true;
                         aToken = aToken.substring(1);
                     }    
