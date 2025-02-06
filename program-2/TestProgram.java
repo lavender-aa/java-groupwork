@@ -38,10 +38,10 @@ more detailed steps:
 import java.io.*;
 import java.util.*;
 
- class Program2 {
+ class TestProgram {
         // variables used by class functions
     
-        public static void main(String[] args) {
+        public static void main(String[] args) throws IOException {
 
             // instantiate data object
             Data data = new Data();
@@ -60,7 +60,7 @@ import java.util.*;
             
             // print appropriate exit message
             if(data.get_quit()) System.out.println("\nQuitting program.");
-            else System.out.println("\nFinished processing; Output in " + data.get_out_file().getName() + ".");
+            else System.out.println("\nFinished processing; Output in " + /*data.get_out_file().getName() +*/ ".");
         }
 
         // result: opens an input file that exists 
@@ -275,17 +275,17 @@ import java.util.*;
 
         // result: prints the accumulated information to the output file
         //         OR sets the quit flag (due to possible errors)
-        static void print_info(Data data) { // asignee: lavender
+        static void print_info(Data data) throws IOException { // asignee: lavender
 
             PrintWriter writer = null;
-
+            writer = new PrintWriter(new File("out_file.txt"));
             // open a writer to the output file
-            try {
+            /*try {
                 writer = new PrintWriter(data.get_out_file());
             } catch (FileNotFoundException e) {
                 System.out.println("Error opening output file for writing.");
                 data.set_quit(true);
-            }
+            }*/
 
             if(!data.get_quit()) {
 
@@ -300,7 +300,7 @@ import java.util.*;
                 for(i = 0; list[i] != null; i++) {
                     Word word = list[i];
                     // to be uncommented after Word class gets written
-                    // writer.println("\"" + word.get_word() + "\": " + word.get_num_occur() + " occurrences");
+                    writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrences");
                     writer.println("printing word data...");
                 }
 
