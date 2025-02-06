@@ -103,6 +103,7 @@ import java.util.*;
     static void get_valid_output(Data data, String[] args) { // asignee: camron
         String out_name;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        boolean exit_loop;
 
         // get output file name from command line or prompt user
         if (args.length > 1) {
@@ -113,18 +114,22 @@ import java.util.*;
         }
 
         if (!data.get_quit()) {
+            // initialize loop variable
+            exit_loop = false;
+
             // set output file
             data.set_out_file(new File(out_name));
 
             // check if output file already exists
-            while (data.get_out_file().exists() && !data.get_quit()) {
+            while (data.get_out_file().exists() && !data.get_quit() && !exit_loop) {
 
                 System.out.println("\nOutput file " + out_name + " already exists.");
                 System.out.println("What would you like to do?");
                 System.out.println("1. Enter a new output file name");
-                System.out.println("2. Back up the existing output file first");
+                System.out.println("2. Back up the existing file and continue");
                 System.out.println("3. Overwrite the existing output file");
                 System.out.println("4. Quit the program");
+                System.out.print("\nEnter a choice: ");
 
                 try {
 
@@ -146,11 +151,13 @@ import java.util.*;
                             } else {
                                 System.out.println("Failed to create a backup. Proceeding with file overwrite.");
                                 // fall through to overwrite
+                                exit_loop = true;
                             }
                             break;
                         case "3":
                             // proceed to overwrite the file
                             System.out.println("Overwriting the existing output file.");
+                            exit_loop = true;
                             break;
                         case "4":
                             // set quit flag
@@ -162,7 +169,6 @@ import java.util.*;
                     }
                 } catch (IOException e) {
                     System.out.println("Error reading user input.");
-                    data.set_quit(true);
                 }
             }
         }
@@ -342,9 +348,9 @@ import java.util.*;
 
             // for each word: print the word and its number of occurrences
             int i;
-            for(i = 0; i < data.getLastIndex(); i++) {
-                Word word = list[i];
-                writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrences");
+            for(i = -1; i < data.getLastIndex(); i++) {
+                Word word = list[i+1];
+                writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrence(s)");
             }
 
             // label
