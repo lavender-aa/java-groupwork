@@ -301,11 +301,9 @@ import java.util.*;
 
                 // for each word: print the word and its number of occurrences
                 int i;
-                for(i = 0; i < list.length; i++) {
+                for(i = 0; i < data.getLastIndex(); i++) {
                     Word word = list[i];
-                    if(word != null) {
-                        writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrences");
-                    }
+                    writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrences");
                 }
 
                 // label
