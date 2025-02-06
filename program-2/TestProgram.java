@@ -257,18 +257,21 @@ import java.util.*;
             // this should make it quit early if it finds a match without 
             // using break
             while(isNewWord)
-            {
-                if(count > data.getLastIndex())
+            { 
+                if(count < 100)
                 {
-                    wList[count] = rightWord;
-                    data.incLastIndex();
-					isNewWord = false;
-                }
-                else
-                {
-                    Word thisWord = wList[count];
-                    isNewWord = !thisWord.isEqual(rightWord);
-					count++;
+                    if(count > data.getLastIndex())
+                    {
+                        wList[count] = rightWord;
+                        data.incLastIndex();
+                        isNewWord = false;
+                    }
+                    else
+                    {
+                        Word thisWord = wList[count];
+                        isNewWord = !thisWord.isEqual(rightWord);
+                        count++;
+                    }
                 }
             }
         }
@@ -297,7 +300,7 @@ import java.util.*;
 
                 // for each word: print the word and its number of occurrences
                 int i;
-                for(i = 0; list[i] != null; i++) {
+                for(i = 0; i <= data.getLastIndex(); i++) {
                     Word word = list[i];
                     // to be uncommented after Word class gets written
                     writer.println("\"" + word.getWord() + "\": " + word.getWordCount() + " occurrences");

@@ -258,7 +258,11 @@ import java.util.*;
             // using break
             while(isNewWord)
             {
-                if(count > data.getLastIndex())
+                if(count >= 100)
+                {
+                    isNewWord = false;
+                }
+                else if(count > data.getLastIndex())
                 {
                     wList[count] = rightWord;
                     data.incLastIndex();
