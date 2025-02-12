@@ -16,6 +16,10 @@ implements WindowListener, ActionListener {
         new Main();
     }
 
+    Main() {
+        
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
