@@ -2,8 +2,19 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/*
+ * things to do (general):
+ *      - window layout (main constructor) -- 1 person
+ *      - window events -- 1 person (easy? most are empty)
+ *      - button functions (actionPerformed, all program control) -- split among 2 people
+ */
+
 public class Main extends Frame
 implements WindowListener, ActionListener {
+
+    public static void main(String[] args) {
+        new Main();
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
