@@ -168,7 +168,29 @@ implements WindowListener, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        // TODO Auto-generated method stub
+        Object source = e.getSource();
+
+        if(source == list) handleList();
+        else if(source == targetButton) handleTarget();
+        else if(source == fileTextField) handleTextField();
+        else if(source == okButton) handleOkButton();
+        else messageLabel.setText("Unknown source detected.");
+    }
+
+    void handleList() {
+        messageLabel.setText("list action");
+    }
+
+    void handleTarget() {
+        messageLabel.setText("target action");
+    }
+
+    void handleTextField() {
+        messageLabel.setText("text field action");
+    }
+
+    void handleOkButton() {
+        messageLabel.setText("ok action");
     }
 
     @Override
