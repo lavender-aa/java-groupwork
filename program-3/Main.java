@@ -69,11 +69,8 @@ implements WindowListener, ActionListener {
         list.addActionListener(this); // only sends events on double click
 
         // set up list
-        String dir = ""; // set to user directory
-        if(args.length > 0) {
-            dir = args[0];
-        }
-        drawList(list, dir);
+        File dir = getValidDir(args);
+        drawList(dir);
 
         // add source label
         c.gridx = 0;
@@ -134,28 +131,39 @@ implements WindowListener, ActionListener {
         this.addWindowListener(this);
     }
 
-    void drawList(List list, String directory) {
+    File getValidDir(String[] args) {
+        File argDir;
+        File dir = new File(System.getProperty("user.dir"));
+
+        // command line directory is valid if it:
+        //      - exists
+        //      - isn't empty
+        // otherwise, default to the directory the program is executed in
+        if(args.length > 0) {
+            argDir = new File(args[0]);
+            if(argDir.exists() && argDir.list().length > 0 ) {
+                dir = argDir;
+            }
+        }
+
+        return dir;
+    }
+
+    void drawList(File dir) {
 
         // add parent folder
         list.add("..");
 
-        // debug: add items manually
-        for(int i = 1; i < 100; i++) {
-            list.add("item " + (i + 1));
-        }
-
-        File dir = new File(directory);
-        
-        // if dir is valid (exist and not empty), select that dir
-        // otherwise, select the default dir
-        if(dir.isDirectory()) {
-
-        }
-        else {
-            dir = null;
-        }
-
         // add dir contents to list
+        String[] contents = dir.list();
+        for(int i = 0; i < contents.length; i++) {
+            File dirTest = new File(dir.getName() + "/" + contents[i]);
+            String toAdd = dirTest.getName();
+            if(dirTest.isDirectory() && dirTest.list().length > 0) {
+                toAdd += "+";
+            }
+            list.add(toAdd);
+        }
     }
 
     @Override
