@@ -15,7 +15,8 @@ implements WindowListener, ActionListener {
     // elements in window
     private List list;
     private Label sourceLabel;
-    private Label targetLabel;
+    private Label sourcePathLabel;
+    private Label targetPathLabel;
     private Label fileNameLabel;
     private Label messageLabel;
     private TextField fileTextField;
@@ -28,11 +29,12 @@ implements WindowListener, ActionListener {
 
     Main() {
         // init screen elements
-        list = new List(40);
-        sourceLabel = new Label("Source: C:/aoeusntahoeu/abcdefg/example_file.txt");
-        targetLabel = new Label("C:/some_dir/file.txt");
+        list = new List(100);
+        sourceLabel = new Label("Source: ");
+        sourcePathLabel = new Label("c:/source");
+        targetPathLabel = new Label("c:/target");
         fileNameLabel = new Label("File Name: ");
-        messageLabel = new Label("This is at the bottom of the screen."); // TODO: remove text
+        messageLabel = new Label("messages go here");
         fileTextField = new TextField();
         targetButton = new Button("Target");
         okButton = new Button("Ok");
@@ -43,9 +45,9 @@ implements WindowListener, ActionListener {
 
         // initalize weights, width/height
         // int rowHeight[] = {10,1,1,1,1};
-        // int colWidth[] = {1,20,3};
-        double rowWeight[] = {100,1,1,1,1};
-        double colWeight[] = {1,20,5};
+        // int colWidth[] = {1,10,3};
+        double rowWeight[] = {2};
+        double colWeight[] = {1,10,2};
 
         // set weights, width/height
         // displ.rowHeights = rowHeight;
@@ -59,18 +61,12 @@ implements WindowListener, ActionListener {
 
         // set constraints
         c.anchor = GridBagConstraints.WEST;
-        c.weightx = 1;
-        c.weighty = 1;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        c.fill = GridBagConstraints.NONE;
 
         // add list
-        c.gridwidth = 3;
-        c.gridheight = 1;
-        c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
         c.gridy = 0;
+        c.gridwidth = 3;
+        c.fill = GridBagConstraints.HORIZONTAL;
         list.setSize(300,800);
         displ.setConstraints(list, c);
         this.add(list);
@@ -85,68 +81,54 @@ implements WindowListener, ActionListener {
         }
 
         // add source label
-        // c.gridwidth = 1;
-        // c.gridheight = 1;
-        // c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 1;
+        c.gridwidth = 1;
         c.fill = GridBagConstraints.NONE;
         displ.setConstraints(sourceLabel, c);
         this.add(sourceLabel);
 
+        // add source path label
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        displ.setConstraints(sourcePathLabel, c);
+        this.add(sourcePathLabel);
+
         // add target button
-        // c.gridwidth = 1;
-        // c.gridheight = 1;
-        // c.fill = GridBagConstraints.NONE;
         c.gridx = 0;
         c.gridy = 2;
+        c.fill = GridBagConstraints.NONE;
         displ.setConstraints(targetButton, c);
         this.add(targetButton);
         targetButton.addActionListener(this);
 
-        // add target label
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        // c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridy = 2;
-        c.gridx = 1;
-        displ.setConstraints(targetLabel, c);
-        this.add(targetLabel);
-
         // add file name label
-        // c.gridwidth = 1;
-        // c.gridheight = 1;
-        // c.fill = GridBagConstraints.NONE;
-        c.gridx = 0;
         c.gridy = 3;
         displ.setConstraints(fileNameLabel, c);
         this.add(fileNameLabel);
 
+        // add target path label
+        c.gridy = 2;
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        displ.setConstraints(targetPathLabel, c);
+        this.add(targetPathLabel);
+
         // add text field
-        c.gridwidth = 1;
-        // c.gridheight = 1;
-        // c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 1;
         c.gridy = 3;
-        c.fill = GridBagConstraints.HORIZONTAL;
         displ.setConstraints(fileTextField, c);
         this.add(fileTextField);
         fileTextField.addActionListener(this);
 
         // add ok button
-        c.gridwidth = 1;
-        // c.gridheight = 1;
-        c.fill = GridBagConstraints.NONE;
         c.gridx = 2;
-        c.gridy = 3;
         displ.setConstraints(okButton, c);
         this.add(okButton);
         okButton.addActionListener(this);
 
         // add message label
         c.gridwidth = 3;
-        // c.gridheight = 1;
-        // c.fill = GridBagConstraints.HORIZONTAL;
         c.gridx = 0;
         c.gridy = 4;
         displ.setConstraints(messageLabel, c);
