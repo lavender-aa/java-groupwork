@@ -24,10 +24,10 @@ implements WindowListener, ActionListener {
     private Button okButton;
 
     public static void main(String[] args) {
-        new Main();
+        new Main(args[0]);
     }
 
-    Main() {
+    Main(String dir) {
         // init screen elements
         list = new List(100);
         sourceLabel = new Label("Source: ");
@@ -44,14 +44,10 @@ implements WindowListener, ActionListener {
         GridBagLayout displ = new GridBagLayout();
 
         // initalize weights, width/height
-        // int rowHeight[] = {10,1,1,1,1};
-        // int colWidth[] = {1,10,3};
         double rowWeight[] = {2};
         double colWeight[] = {1,10,2};
 
         // set weights, width/height
-        // displ.rowHeights = rowHeight;
-        // displ.columnWidths = colWidth;
         displ.rowWeights = rowWeight;
         displ.columnWeights = colWeight;
 
@@ -72,13 +68,8 @@ implements WindowListener, ActionListener {
         this.add(list);
         list.addActionListener(this); // only sends events on double click
 
-        // init list
-        list.removeAll();
-        list.add(".."); // parent folder
-        list.add("example_file_1.txt");
-        for(int i = 2; i < 40; i++) {
-            list.add("list item number " + (i + 1));
-        }
+        // set up list
+        initList(list, dir);
 
         // add source label
         c.gridx = 0;
