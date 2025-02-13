@@ -157,9 +157,9 @@ implements WindowListener, ActionListener {
         // add dir contents to list
         String[] contents = dir.list();
         for(int i = 0; i < contents.length; i++) {
-            File dirTest = new File(dir.getName() + "/" + contents[i]);
+            File dirTest = new File(dir.getPath() + "/" + contents[i]);
             String toAdd = dirTest.getName();
-            if(dirTest.isDirectory() && dirTest.list().length > 0) {
+            if(dirTest.isDirectory()) {
                 toAdd += "+";
             }
             list.add(toAdd);
