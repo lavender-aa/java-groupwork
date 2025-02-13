@@ -22,6 +22,7 @@ implements WindowListener, ActionListener {
     private TextField fileTextField;
     private Button targetButton;
     private Button okButton;
+    private boolean sourceSelected;
 
     public static void main(String[] args) {
         new Main(args);
@@ -38,6 +39,7 @@ implements WindowListener, ActionListener {
         fileTextField = new TextField();
         targetButton = new Button("Target");
         okButton = new Button("Ok");
+        sourceSelected = false;
 
         // set up grid bag layout
         GridBagConstraints c = new GridBagConstraints();
@@ -90,6 +92,7 @@ implements WindowListener, ActionListener {
         c.gridx = 0;
         c.gridy = 2;
         c.fill = GridBagConstraints.NONE;
+        targetButton.setEnabled(false);
         displ.setConstraints(targetButton, c);
         this.add(targetButton);
         targetButton.addActionListener(this);
@@ -151,6 +154,12 @@ implements WindowListener, ActionListener {
 
     void drawList(File dir) {
 
+        // clear list
+        list.removeAll();
+
+        // update title bar
+        this.setTitle(dir.getAbsolutePath());
+
         // add parent folder
         list.add("..");
 
@@ -168,8 +177,14 @@ implements WindowListener, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+
+        // clear any messages
+        messageLabel.setText("");
+
+        // get the action of the source
         Object source = e.getSource();
 
+        // handle accordingly
         if(source == list) handleList();
         else if(source == targetButton) handleTarget();
         else if(source == fileTextField) handleTextField();
@@ -178,7 +193,42 @@ implements WindowListener, ActionListener {
     }
 
     void handleList() {
-        messageLabel.setText("list action");
+        String item = list.getSelectedItem();
+
+        // if clicked on parent folder: draw parent to screen
+        // otherwise: handle item selected
+        if(item.equals("..") && !this.getTitle().equals("/")) {
+            String dirPath = this.getTitle();
+            File parent = new File(dirPath.substring(0,dirPath.lastIndexOf("/") + 1));
+            drawList(parent);
+        }
+        else {
+            // file of item selected
+            if(item.contains("+")) item = item.substring(0,item.length() - 1);
+            File file = new File(this.getTitle() + "/" + item);
+
+            // full directory: draw to screen
+            if(file.isDirectory() && file.list().length > 0) {
+                drawList(file);
+            }
+
+            // empty directory: print message
+            else if(file.isDirectory()) {
+                messageLabel.setText("Cannot display empty directory.");
+            }
+
+            // file: update source or target and text field
+            else {
+                fileTextField.setText(file.getAbsolutePath());
+                if(!sourceSelected) {
+                    sourcePathLabel.setText(file.getAbsolutePath());
+                    targetButton.setEnabled(true);
+                }
+                else {
+                    targetPathLabel.setText(file.getAbsolutePath());
+                }
+            }
+        }
     }
 
     void handleTarget() {
