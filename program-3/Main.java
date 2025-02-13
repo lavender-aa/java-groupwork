@@ -32,10 +32,10 @@ implements WindowListener, ActionListener {
         // init screen elements
         list = new List(100);
         sourceLabel = new Label("Source: ");
-        sourcePathLabel = new Label("c:/source");
-        targetPathLabel = new Label("c:/target");
+        sourcePathLabel = new Label("[Select a file]");
+        targetPathLabel = new Label("");
         fileNameLabel = new Label("File Name: ");
-        messageLabel = new Label("messages go here");
+        messageLabel = new Label("");
         fileTextField = new TextField();
         targetButton = new Button("Target");
         okButton = new Button("Ok");
@@ -47,7 +47,7 @@ implements WindowListener, ActionListener {
 
         // initalize weights, width/height
         double rowWeight[] = {2};
-        double colWeight[] = {1,10,2};
+        double colWeight[] = {1,50,4};
 
         // set weights, width/height
         displ.rowWeights = rowWeight;
@@ -118,6 +118,7 @@ implements WindowListener, ActionListener {
 
         // add ok button
         c.gridx = 2;
+        okButton.setEnabled(false);
         displ.setConstraints(okButton, c);
         this.add(okButton);
         okButton.addActionListener(this);
@@ -214,33 +215,67 @@ implements WindowListener, ActionListener {
 
             // empty directory: print message
             else if(file.isDirectory()) {
-                messageLabel.setText("Cannot display empty directory.");
+                messageLabel.setText("Error: Cannot display empty directory.");
             }
 
             // file: update source or target and text field
             else {
-                fileTextField.setText(file.getAbsolutePath());
+                fileTextField.setText(file.getName());
                 if(!sourceSelected) {
                     sourcePathLabel.setText(file.getAbsolutePath());
                     targetButton.setEnabled(true);
                 }
+                else if(sourcePathLabel.getText().equals(file.getAbsolutePath())) {
+                    messageLabel.setText("Error: Target cannot be the same file as the source.");
+                }
                 else {
                     targetPathLabel.setText(file.getAbsolutePath());
+                    okButton.setEnabled(true);
                 }
             }
         }
     }
 
     void handleTarget() {
-        messageLabel.setText("target action");
+        sourceSelected = true;
+        targetPathLabel.setText("[Select a file]");
     }
 
     void handleTextField() {
-        messageLabel.setText("text field action");
+        File test = new File(this.getTitle() + "/" + fileTextField.getText());
+        String path = test.getAbsolutePath();
+        if(test.exists() && test.isFile()) {
+            if(!sourceSelected) {
+                sourcePathLabel.setText(path);
+                targetButton.setEnabled(true);
+            }
+            else if(path.equals(sourcePathLabel.getText())) {
+                messageLabel.setText("Error: Target cannot be the same file as the source.");
+            }
+            else {
+                targetPathLabel.setText(test.getAbsolutePath());
+                okButton.setEnabled(true);
+            }
+        }
+        else if(!test.exists()){
+            messageLabel.setText("Error: File doesn't exist.");
+        }
+        else if(!test.isFile()) {
+            messageLabel.setText("Error: Input is a directory.");
+        }
     }
 
     void handleOkButton() {
-        messageLabel.setText("ok action");
+        // copy file
+
+        // reset screen elements
+        messageLabel.setText("copy success");
+        sourcePathLabel.setText("[Select a file]");
+        targetPathLabel.setText("");
+        targetButton.setEnabled(false);
+        fileTextField.setText("");
+        sourceSelected = false;
+        okButton.setEnabled(false);
     }
 
     @Override
