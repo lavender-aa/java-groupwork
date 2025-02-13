@@ -159,7 +159,7 @@ implements WindowListener, ActionListener {
         list.removeAll();
 
         // update title bar
-        this.setTitle(dir.getAbsolutePath());
+        if(!this.getTitle().equals("/")) this.setTitle(dir.getAbsolutePath());
 
         // add parent folder
         list.add("..");
