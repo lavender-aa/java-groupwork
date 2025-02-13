@@ -24,10 +24,10 @@ implements WindowListener, ActionListener {
     private Button okButton;
 
     public static void main(String[] args) {
-        new Main(args[0]);
+        new Main(args);
     }
 
-    Main(String dir) {
+    Main(String[] args) {
         // init screen elements
         list = new List(100);
         sourceLabel = new Label("Source: ");
@@ -69,7 +69,11 @@ implements WindowListener, ActionListener {
         list.addActionListener(this); // only sends events on double click
 
         // set up list
-        initList(list, dir);
+        String dir = ""; // set to user directory
+        if(args.length > 0) {
+            dir = args[0];
+        }
+        drawList(list, dir);
 
         // add source label
         c.gridx = 0;
@@ -128,6 +132,30 @@ implements WindowListener, ActionListener {
         // set visible, window listener
         this.setVisible(true);
         this.addWindowListener(this);
+    }
+
+    void drawList(List list, String directory) {
+
+        // add parent folder
+        list.add("..");
+
+        // debug: add items manually
+        for(int i = 1; i < 100; i++) {
+            list.add("item " + (i + 1));
+        }
+
+        File dir = new File(directory);
+        
+        // if dir is valid (exist and not empty), select that dir
+        // otherwise, select the default dir
+        if(dir.isDirectory()) {
+
+        }
+        else {
+            dir = null;
+        }
+
+        // add dir contents to list
     }
 
     @Override
