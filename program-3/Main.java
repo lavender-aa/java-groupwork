@@ -38,7 +38,7 @@ implements WindowListener, ActionListener {
         messageLabel = new Label("");
         fileTextField = new TextField();
         targetButton = new Button("Target");
-        okButton = new Button("Ok");
+        okButton = new Button("Copy");
         sourceSelected = false;
 
         // set up grid bag layout
@@ -247,36 +247,39 @@ implements WindowListener, ActionListener {
         // use the current directory, unless the prompt
         // starts with a slash (presumably is a valid path)
         
-        try {
-            if(fileTextField.getText().charAt(0) == '/') {
-                test = new File(fileTextField.getText());
+        // determine if input is local or global path, set accordingly
+        if(fileTextField.getText().isEmpty()) return;
+        if(fileTextField.getText().charAt(0) == '/') {
+            test = new File(fileTextField.getText());
+        }
+        else {
+            test = new File(this.getTitle() + "/" + fileTextField.getText());
+        }
+
+        // check if data is good, act accordingly
+        // print specific error messages for bad data
+        String path = test.getAbsolutePath();
+        if(test.exists() && test.isFile()) {
+            if(!sourceSelected) {
+                sourcePathLabel.setText(path);
+                targetButton.setEnabled(true);
+            }
+            else if(path.equals(sourcePathLabel.getText())) {
+                messageLabel.setText("Error: Target cannot be the same file as the source.");
             }
             else {
-                test = new File(this.getTitle() + "/" + fileTextField.getText());
+                targetPathLabel.setText(test.getAbsolutePath());
+                targetButton.setEnabled(false);
+                okButton.setEnabled(true);
             }
-            String path = test.getAbsolutePath();
-            if(test.exists() && test.isFile()) {
-                if(!sourceSelected) {
-                    sourcePathLabel.setText(path);
-                    targetButton.setEnabled(true);
-                }
-                else if(path.equals(sourcePathLabel.getText())) {
-                    messageLabel.setText("Error: Target cannot be the same file as the source.");
-                }
-                else {
-                    targetPathLabel.setText(test.getAbsolutePath());
-                    okButton.setEnabled(true);
-                }
-            }
-            else if(!test.exists()){
-                messageLabel.setText("Error: File doesn't exist.");
-            }
-            else if(!test.isFile()) {
-                messageLabel.setText("Error: Input is a directory.");
-            }
-        } catch (IndexOutOfBoundsException e) {
-            messageLabel.setText("Error: File cannot have empty name.");
         }
+        else if(!test.exists()){
+            messageLabel.setText("Error: File doesn't exist.");
+        }
+        else if(!test.isFile()) {
+            messageLabel.setText("Error: Input is a directory.");
+        }
+
     }
 
     void handleOkButton() {
