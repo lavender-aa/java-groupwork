@@ -159,7 +159,7 @@ implements WindowListener, ActionListener {
         list.removeAll();
 
         // update title bar
-        if(!this.getTitle().equals("/")) this.setTitle(dir.getAbsolutePath());
+        this.setTitle(dir.getAbsolutePath());
 
         // add parent folder
         list.add("..");
@@ -239,34 +239,75 @@ implements WindowListener, ActionListener {
     void handleTarget() {
         sourceSelected = true;
         targetPathLabel.setText("[Select a file]");
+        targetButton.setEnabled(false);
     }
 
     void handleTextField() {
-        File test = new File(this.getTitle() + "/" + fileTextField.getText());
-        String path = test.getAbsolutePath();
-        if(test.exists() && test.isFile()) {
-            if(!sourceSelected) {
-                sourcePathLabel.setText(path);
-                targetButton.setEnabled(true);
-            }
-            else if(path.equals(sourcePathLabel.getText())) {
-                messageLabel.setText("Error: Target cannot be the same file as the source.");
+        File test;
+        // use the current directory, unless the prompt
+        // starts with a slash (presumably is a valid path)
+        
+        try {
+            if(fileTextField.getText().charAt(0) == '/') {
+                test = new File(fileTextField.getText());
             }
             else {
-                targetPathLabel.setText(test.getAbsolutePath());
-                okButton.setEnabled(true);
+                test = new File(this.getTitle() + "/" + fileTextField.getText());
             }
-        }
-        else if(!test.exists()){
-            messageLabel.setText("Error: File doesn't exist.");
-        }
-        else if(!test.isFile()) {
-            messageLabel.setText("Error: Input is a directory.");
+            String path = test.getAbsolutePath();
+            if(test.exists() && test.isFile()) {
+                if(!sourceSelected) {
+                    sourcePathLabel.setText(path);
+                    targetButton.setEnabled(true);
+                }
+                else if(path.equals(sourcePathLabel.getText())) {
+                    messageLabel.setText("Error: Target cannot be the same file as the source.");
+                }
+                else {
+                    targetPathLabel.setText(test.getAbsolutePath());
+                    okButton.setEnabled(true);
+                }
+            }
+            else if(!test.exists()){
+                messageLabel.setText("Error: File doesn't exist.");
+            }
+            else if(!test.isFile()) {
+                messageLabel.setText("Error: Input is a directory.");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            messageLabel.setText("Error: File cannot have empty name.");
         }
     }
 
     void handleOkButton() {
-        // copy file
+        // copy source into target
+        File source = new File(sourcePathLabel.getText());
+        File target = new File(targetPathLabel.getText());
+
+        // open files for reading and writing
+        BufferedReader reader = null;
+        FileWriter writer = null;
+        try{
+            reader = new BufferedReader(new FileReader(source));
+            writer = new FileWriter(target);
+        } catch (FileNotFoundException e) {
+            messageLabel.setText("Error: Source or target file not found.");
+        } catch (IOException e) {
+            messageLabel.setText("Error: Cannot open target file");
+        }
+
+        // copy files
+        try {
+            String line = reader.readLine();
+            while(line != null) {
+                writer.write(line + "\n");
+                line = reader.readLine();
+            }
+            writer.close();
+            reader.close();
+        } catch (IOException e) {
+            messageLabel.setText("Error: Input file closed before copy finished.");
+        }
 
         // reset screen elements
         messageLabel.setText("copy success");
