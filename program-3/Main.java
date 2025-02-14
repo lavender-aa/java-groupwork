@@ -163,7 +163,6 @@ implements WindowListener, ActionListener {
     // this method:
     //      - updates the list with the contents of the passed directory
     //      - updates the title bar with the path of the passed directory
-    //      - 
     void updateList(File directory) {
 
     }
