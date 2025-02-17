@@ -1,7 +1,6 @@
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 
 /*
  * things to do (general):
@@ -11,7 +10,7 @@ import java.util.ArrayList;
  */
 
 public class Main extends Frame
-implements WindowListener, ActionListener, ItemSelectable {
+implements WindowListener, ActionListener, ItemSelectable, ItemListener {
 
     private List list;
     private Label sourceLabel;
@@ -31,7 +30,7 @@ implements WindowListener, ActionListener, ItemSelectable {
     Main(String[] args) {
         
         // screen elements
-        list = new List(1, false);
+        list = new List(0, false);
         sourceLabel = new Label("Source: ");
         sourcePathLabel = new Label("[Select a file]");
         targetPathLabel = new Label("");
@@ -74,7 +73,7 @@ implements WindowListener, ActionListener, ItemSelectable {
         // set up list
         File dir = getValidDir(args);
         updateList(dir); 
-        list.addItemListener(ItemListener listner);
+        list.addItemListener(this);
 
 
         // add source label
@@ -164,33 +163,38 @@ implements WindowListener, ActionListener, ItemSelectable {
     own subdirectories and then adds a plus to them when adding them to the list.
      */
     void updateList(File directory) {
-        ArrayList<File> fileList = directory.listFiles();
+        File[] fileList = directory.listFiles();
         String currentPath = directory.getPath();
+        File[] rootList = directory.listRoots();
         list.removeAll();
-        if (!file.isRoot())
+
+        if (rootList.length >= 1)
             list.add("..");
-        for (File file: fileList) {
 
-            if(file.isDirectory() && !file.listFiles().isEmpty()){
-                boolean hasSubdirectories;
-                ArrayList<File> subList = file.listFiles();
+        if (fileList.length != 0) {
+            for (File file: fileList) {
 
-                for (File f: subList) {
-                    if (f.isDirectory()) 
-                        hasSubdirectories = true;
+                if(file.isDirectory()){
+                    boolean hasSubdirectories = false;
+                    File[] subList = file.listFiles();
+
+                    for (File f: subList) {
+                        if (f.isDirectory()) 
+                            hasSubdirectories = true;
+                    }
+
+                    if (hasSubdirectories) {
+                        String item = file.getName() + " +";
+                        list.add(item);
+                    }
+
                 }
-
-                if (hasSubdirectories) {
-                    String item = file.getName() + " +";
-                    list.add(item);
-                }
-
+                else  
+                    list.add(file.getName());
             }
-            else  
-                list.add(file.getName());
         }
 
-        this.setTitle(currentPath);
+        //Main.setTitle(currentPath);
     }
 
     /* Overriden method from ItemSelcetable Interface.
@@ -200,14 +204,14 @@ implements WindowListener, ActionListener, ItemSelectable {
     @Override
     public void itemStateChanged(ItemEvent event)
     {
-        if (event.getStateChange() == ItemEvent.selected){
-            Object source = event.getItemSelectable();
-            File selectedFile = new File(source);
+        if (event.getStateChange() == ItemEvent.SELECTED){
+            String selectedFileName = list.getSelectedItem();
+            File selectedFile = new File(selectedFileName);
             if (!selectedFile.isDirectory())
-                fileNameLabel.setText(source);
+                messageLabel.setText(selectedFileName);
         }
-        if (event.getStateChange() == ItemEvent.deselected){
-            fileNameLabel.setText("");
+        if (event.getStateChange() == ItemEvent.DESELECTED){
+            messageLabel.setText("");
         }
     }
 
@@ -218,7 +222,8 @@ implements WindowListener, ActionListener, ItemSelectable {
     public void listAction(){
         String item = list.getSelectedItem();
         File selectedFile = new File(item);
-
+        if (item.equals("..")) 
+            updateList(selectedFile.getParentFile());
         if (selectedFile.isDirectory())
             updateList(selectedFile);
         else
@@ -232,11 +237,10 @@ implements WindowListener, ActionListener, ItemSelectable {
     //      - ok button action
     @Override
     public void actionPerformed(ActionEvent e) {
-        // TODO Auto-generated method stub
-        if (e.source == list)
+        if (e.getSource().equals(list))
             listAction();
-
-        throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+        else
+            throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 
     @Override
@@ -279,6 +283,24 @@ implements WindowListener, ActionListener, ItemSelectable {
     public void windowOpened(WindowEvent e) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'windowOpened'");
+    }
+
+    @Override
+    public void removeItemListener(ItemListener l) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented methd 'removeItemSelected'");
+    }
+    
+    @Override
+    public void addItemListener(ItemListener l) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented methd 'addItemListener'");
+    }
+
+@Override
+    public Object[] getSelectedObjects() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented methd 'getSelectedObjects'");
     }
     
 }
