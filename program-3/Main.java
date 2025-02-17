@@ -233,6 +233,9 @@ implements WindowListener, ActionListener, ItemSelectable {
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
+        if (e.source == list)
+            listAction();
+
         throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 
