@@ -31,7 +31,7 @@ implements WindowListener, ActionListener, ItemSelectable {
     Main(String[] args) {
         
         // screen elements
-        list = new List(1);
+        list = new List(1, false);
         sourceLabel = new Label("Source: ");
         sourcePathLabel = new Label("[Select a file]");
         targetPathLabel = new Label("");
@@ -73,7 +73,7 @@ implements WindowListener, ActionListener, ItemSelectable {
 
         // set up list
         File dir = getValidDir(args);
-        updateList(dir, list); 
+        updateList(dir); 
         list.addItemListener(ItemListener listner);
 
 
@@ -156,19 +156,35 @@ implements WindowListener, ActionListener, ItemSelectable {
         return dir;
     }
 
-    // this method:
-    //      - updates the list with the contents of the passed directory
-    //      - updates the title bar with the path of the passed directory
-    void updateList(File directory, List list) {
+    /* 
+          - updates the list with the contents of the passed directory
+          - updates the title bar with the path of the passed directory
+          This method loops through the current directory to find all subdirectories
+    and files. It will also loop through any subdirectories to see if they have their
+    own subdirectories and then adds a plus to them when adding them to the list.
+     */
+    void updateList(File directory) {
         ArrayList<File> fileList = directory.listFiles();
         String currentPath = directory.getPath();
         list.removeAll();
         if (!file.isRoot())
             list.add("..");
-        for (File file : fileList) {
+        for (File file: fileList) {
+
             if(file.isDirectory() && !file.listFiles().isEmpty()){
-                String item = file.getName() + " +";
-                list.add(item);
+                boolean hasSubdirectories;
+                ArrayList<File> subList = file.listFiles();
+
+                for (File f: subList) {
+                    if (f.isDirectory()) 
+                        hasSubdirectories = true;
+                }
+
+                if (hasSubdirectories) {
+                    String item = file.getName() + " +";
+                    list.add(item);
+                }
+
             }
             else  
                 list.add(file.getName());
@@ -177,16 +193,36 @@ implements WindowListener, ActionListener, ItemSelectable {
         this.setTitle(currentPath);
     }
 
+    /* Overriden method from ItemSelcetable Interface.
+        It is set to display the name of a selected file in the
+        fileNameLabel label
+    */
     @Override
     public void itemStateChanged(ItemEvent event)
     {
         if (event.getStateChange() == ItemEvent.selected){
             Object source = event.getItemSelectable();
-            fileNameLabel.setText(source);
+            File selectedFile = new File(source);
+            if (!selectedFile.isDirectory())
+                fileNameLabel.setText(source);
         }
         if (event.getStateChange() == ItemEvent.deselected){
             fileNameLabel.setText("");
         }
+    }
+
+    /*
+        This is the action taken when a directory is double clicked 
+        or a file is double clicked.
+    */
+    public void listAction(){
+        String item = list.getSelectedItem();
+        File selectedFile = new File(item);
+
+        if (selectedFile.isDirectory())
+            updateList(selectedFile);
+        else
+            fileTextField.setText(selectedFile.getName());
     }
 
     // separate out each action into their own function:
