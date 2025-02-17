@@ -1,6 +1,7 @@
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 /*
  * things to do (general):
@@ -10,9 +11,8 @@ import java.awt.event.*;
  */
 
 public class Main extends Frame
-implements WindowListener, ActionListener {
+implements WindowListener, ActionListener, ItemSelectable {
 
-    // screen elements
     private List list;
     private Label sourceLabel;
     private Label sourcePathLabel;
@@ -29,8 +29,9 @@ implements WindowListener, ActionListener {
     }
 
     Main(String[] args) {
-        // init screen elements
-        list = new List(100);
+        
+        // screen elements
+        list = new List(1);
         sourceLabel = new Label("Source: ");
         sourcePathLabel = new Label("[Select a file]");
         targetPathLabel = new Label("");
@@ -72,14 +73,9 @@ implements WindowListener, ActionListener {
 
         // set up list
         File dir = getValidDir(args);
-        // updateList(dir); TODO: uncomment, delete below (after implementation)
-        list.add("..");
-        list.add("example_empty_dir");
-        list.add("example_file.txt");
-        list.add("example_nonempty_dir+");
-        for(int i = 4; i < 100; i++) {
-            list.add("list element " + (i + 1));
-        }
+        updateList(dir, list); 
+        list.addItemListener(ItemListener listner);
+
 
         // add source label
         c.gridx = 0;
@@ -163,8 +159,34 @@ implements WindowListener, ActionListener {
     // this method:
     //      - updates the list with the contents of the passed directory
     //      - updates the title bar with the path of the passed directory
-    void updateList(File directory) {
+    void updateList(File directory, List list) {
+        ArrayList<File> fileList = directory.listFiles();
+        String currentPath = directory.getPath();
+        list.removeAll();
+        if (!file.isRoot())
+            list.add("..");
+        for (File file : fileList) {
+            if(file.isDirectory() && !file.listFiles().isEmpty()){
+                String item = file.getName() + " +";
+                list.add(item);
+            }
+            else  
+                list.add(file.getName());
+        }
 
+        this.setTitle(currentPath);
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent event)
+    {
+        if (event.getStateChange() == ItemEvent.selected){
+            Object source = event.getItemSelectable();
+            fileNameLabel.setText(source);
+        }
+        if (event.getStateChange() == ItemEvent.deselected){
+            fileNameLabel.setText("");
+        }
     }
 
     // separate out each action into their own function:
