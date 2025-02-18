@@ -12,7 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Main extends Frame
-implements WindowListener, ActionListener {
+implements WindowListener, ActionListener, ItemSelectable, ItemListener {
 
     // elements in window
     private List list;
@@ -32,8 +32,9 @@ implements WindowListener, ActionListener {
     }
 
     Main(String[] args) {
-        // init screen elements
-        list = new List(100);
+        
+        // screen elements
+        list = new List(0, false);
         sourceLabel = new Label("Source: ");
         sourcePathLabel = new Label("[Select a file]");
         targetPathLabel = new Label("");
