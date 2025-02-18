@@ -1,13 +1,15 @@
+/*
+ * Program 3: GUI File Copy
+ * Course: CMSC 3320 -- Technical Computing Using Java
+ * Authors: Group 6
+ *      - Lavender Wilson (wil81891@pennwest.edu)
+ *      - Camron Mellott (mel98378@pennwest.edu)
+ *      - Nicola Razumic-Rushin (raz73517@pennwest.edu)
+ */
+
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
-
-/*
- * things to do (general):
- *      - window layout (main constructor) -- 1 person
- *      - window events -- 1 person (easy? most are empty)
- *      - button functions (actionPerformed, all program control) -- split among 2 people
- */
 
 public class Main extends Frame
 implements WindowListener, ActionListener {
