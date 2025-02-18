@@ -174,8 +174,147 @@ implements WindowListener, ActionListener {
     //      - ok button action
     @Override
     public void actionPerformed(ActionEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+        // Determine which source triggered the action
+        Object source = e.getSource();
+        
+        // Handle list item selection (directory/file)
+        if (source == list) {
+            String selectedItem = list.getSelectedItem();
+            
+            // If ".." is selected, go to parent directory (if not already at root)
+            if ("..".equals(selectedItem)) {
+                File parentDir = new File(sourcePathLabel.getText()).getParentFile();
+                if (parentDir != null) {
+                    updateList(parentDir);
+                }
+            }
+            // Otherwise, handle file or directory selection
+            else {
+                File selectedFile = new File(sourcePathLabel.getText(), selectedItem);
+                
+                // If it is a file, update source path label
+                if (selectedFile.isFile()) {
+                    sourcePathLabel.setText(selectedFile.getAbsolutePath());
+                    sourceSelected = true;  // Mark that source is selected
+                }
+                // If it's a directory, update the list with the contents of the directory
+                else if (selectedFile.isDirectory()) {
+                    updateList(selectedFile);
+                }
+            }
+        }
+        
+        // Handle Target button click
+        if (source == targetButton) {
+            // Enable the OK button once a target path is selected
+            if (sourceSelected) {
+                targetPathLabel.setText(sourcePathLabel.getText());
+                okButton.setEnabled(true);
+                fileTextField.setEnabled(true);  // Enable the target file name text field
+            } else {
+                messageLabel.setText("Source file not specified.");
+            }
+        }
+
+        // Handle OK button click
+        if (source == okButton) {
+            String sourcePath = sourcePathLabel.getText();
+            String targetPath = targetPathLabel.getText();
+            String targetFileName = fileTextField.getText().trim();
+
+            // Validate if the source and target paths are set
+            if (sourcePath.isEmpty()) {
+                messageLabel.setText("Source file not specified.");
+            } else if (targetFileName.isEmpty()) {
+                messageLabel.setText("Target file not specified.");
+            } else {
+                // Perform file copy using FileReader and PrintWriter
+                try {
+                    // Open the source and target files
+                    File sourceFile = new File(sourcePath);
+                    File targetFile = new File(targetPath, targetFileName);
+
+                    // Use BufferedReader to read the source file
+                    BufferedReader reader = new BufferedReader(new FileReader(sourceFile));
+                    PrintWriter writer = new PrintWriter(new FileWriter(targetFile));
+
+                    // Read from source file and write to target file
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        writer.println(line);
+                    }
+
+                    reader.close();
+                    writer.close();
+
+                    // Success message
+                    messageLabel.setText("File Copied");
+
+                    // Reset the UI after copying
+                    resetUI();
+
+                } catch (IOException ex) {
+                    messageLabel.setText("An IO Error occurred, terminating.");
+                    ex.printStackTrace();
+                }
+            }
+        }
+        
+        // Handle text field (target file name) action (when the user presses Enter)
+        if (source == fileTextField) {
+            // Directly call the OK button action logic when Enter is pressed in the TextField
+            String sourcePath = sourcePathLabel.getText();
+            String targetPath = targetPathLabel.getText();
+            String targetFileName = fileTextField.getText().trim();
+
+            // Validate if the source and target paths are set
+            if (sourcePath.isEmpty()) {
+                messageLabel.setText("Source file not specified.");
+            } else if (targetFileName.isEmpty()) {
+                messageLabel.setText("Target file not specified.");
+            } else {
+                // Perform file copy using FileReader and PrintWriter
+                try {
+                    // Open the source and target files
+                    File sourceFile = new File(sourcePath);
+                    File targetFile = new File(targetPath, targetFileName);
+
+                    // Use BufferedReader to read the source file
+                    BufferedReader reader = new BufferedReader(new FileReader(sourceFile));
+                    PrintWriter writer = new PrintWriter(new FileWriter(targetFile));
+
+                    // Read from source file and write to target file
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        writer.println(line);
+                    }
+
+                    reader.close();
+                    writer.close();
+
+                    // Success message
+                    messageLabel.setText("File Copied");
+
+                    // Reset the UI after copying
+                    resetUI();
+
+                } catch (IOException ex) {
+                    messageLabel.setText("An IO Error occurred, terminating.");
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    // Reset the UI after the copy operation
+    void resetUI() {
+        sourcePathLabel.setText("[Select a file]");
+        targetPathLabel.setText("");
+        fileTextField.setText("");
+        messageLabel.setText("");
+        okButton.setEnabled(false);
+        fileTextField.setEnabled(false);
+        sourceSelected = false;
     }
 
     @Override
