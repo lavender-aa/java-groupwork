@@ -26,7 +26,6 @@ implements WindowListener, ActionListener {
 
     public static void main(String[] args) {
         new Main(args);
-        new Main(args);
     }
 
     Main(String[] args) {
