@@ -193,8 +193,8 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
                     list.add(file.getName());
             }
         }
-
-        //Main.setTitle(currentPath);
+        File parent = new File(directory.getParent());
+        this.setTitle(parent.getAbsolutePath());
     }
 
     /* Overriden method from ItemSelcetable Interface.
@@ -208,7 +208,7 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
             String selectedFileName = list.getSelectedItem();
             File selectedFile = new File(selectedFileName);
             if (!selectedFile.isDirectory())
-                messageLabel.setText(selectedFileName);
+                messageLabel.setText(selectedFile.getAbsolutePath());
         }
         if (event.getStateChange() == ItemEvent.DESELECTED){
             messageLabel.setText("");
@@ -224,7 +224,7 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
         File selectedFile = new File(item);
         File[] roots = selectedFile.listRoots();
         if (roots.length > 0 && item.equals("..")){
-            File parentFile = new File(selectedFile.getParent());
+            File parentFile = selectedFile.getParentFile();
             updateList(parentFile);
         }
          
