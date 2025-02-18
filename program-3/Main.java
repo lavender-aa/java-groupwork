@@ -1,17 +1,20 @@
+/*
+ * Program 3: GUI File Copy
+ * Course: CMSC 3320 -- Technical Computing Using Java
+ * Authors: Group 6
+ *      - Lavender Wilson (wil81891@pennwest.edu)
+ *      - Camron Mellott (mel98378@pennwest.edu)
+ *      - Nicola Razumic-Rushin (raz73517@pennwest.edu)
+ */
+
 import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/*
- * things to do (general):
- *      - window layout (main constructor) -- 1 person
- *      - window events -- 1 person (easy? most are empty)
- *      - button functions (actionPerformed, all program control) -- split among 2 people
- */
-
 public class Main extends Frame
-implements WindowListener, ActionListener, ItemSelectable, ItemListener {
+implements WindowListener, ActionListener{
 
+    // elements in window
     private List list;
     private Label sourceLabel;
     private Label sourcePathLabel;
@@ -22,6 +25,7 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
     private Button targetButton;
     private Button okButton;
     private boolean sourceSelected;
+    private String separator;
 
     public static void main(String[] args) {
         new Main(args);
@@ -30,7 +34,7 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
     Main(String[] args) {
         
         // screen elements
-        list = new List(0, false);
+        list = new List(100);
         sourceLabel = new Label("Source: ");
         sourcePathLabel = new Label("[Select a file]");
         targetPathLabel = new Label("");
@@ -38,8 +42,9 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
         messageLabel = new Label("");
         fileTextField = new TextField();
         targetButton = new Button("Target");
-        okButton = new Button("Copy");
+        okButton = new Button("OK");
         sourceSelected = false;
+        separator = System.getProperty("file.separator");
 
         // set up grid bag layout
         GridBagConstraints c = new GridBagConstraints();
@@ -72,9 +77,7 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
 
         // set up list
         File dir = getValidDir(args);
-        updateList(dir); 
-        list.addItemListener(this);
-
+        drawList(dir);
 
         // add source label
         c.gridx = 0;
@@ -155,156 +158,201 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
         return dir;
     }
 
-    /* 
-          - updates the list with the contents of the passed directory
-          - updates the title bar with the path of the passed directory
-          This method loops through the current directory to find all subdirectories
-    and files. It will also loop through any subdirectories to see if they have their
-    own subdirectories and then adds a plus to them when adding them to the list.
-     */
-    void updateList(File directory) {
-        File[] fileList = directory.listFiles();
-        String currentPath = directory.getPath();
-        File[] rootList = directory.listRoots();
+    void drawList(File dir) {
+
+        // clear list
         list.removeAll();
 
-        if (rootList.length >= 1)
+        // update title bar
+        this.setTitle(dir.getAbsolutePath());
+
+        // add parent folder (if not root folder)
+        if(this.getTitle().indexOf(separator) != this.getTitle().length() - 1) {
             list.add("..");
+        }
 
-        if (fileList.length != 0) {
-            for (File file: fileList) {
-
-                if(file.isDirectory()){
-                    boolean hasSubdirectories = false;
-                    File[] subList = file.listFiles();
-
-                    for (File f: subList) {
-                        if (f.isDirectory()) 
-                            hasSubdirectories = true;
-                    }
-
-                    if (hasSubdirectories) {
-                        String item = file.getName() + " +";
-                        list.add(item);
-                    }
-
-                }
-                else  
-                    list.add(file.getName());
+        // add dir contents to list
+        String[] contents = dir.list();
+        for(int i = 0; i < contents.length; i++) {
+            File dirTest = new File(dir.getPath() + separator + contents[i]);
+            String toAdd = dirTest.getName();
+            if(dirTest.isDirectory()) {
+                toAdd += "+";
             }
-        }
-        File parent = new File(directory.getParent());
-        this.setTitle(parent.getAbsolutePath());
-    }
-
-    /* Overriden method from ItemSelcetable Interface.
-        It is set to display the name of a selected file in the
-        fileNameLabel label
-    */
-    @Override
-    public void itemStateChanged(ItemEvent event)
-    {
-        if (event.getStateChange() == ItemEvent.SELECTED){
-            String selectedFileName = list.getSelectedItem();
-            File selectedFile = new File(selectedFileName);
-            if (!selectedFile.isDirectory())
-                messageLabel.setText(selectedFile.getAbsolutePath());
-        }
-        if (event.getStateChange() == ItemEvent.DESELECTED){
-            messageLabel.setText("");
+            list.add(toAdd);
         }
     }
 
-    /*
-        This is the action taken when a directory is double clicked 
-        or a file is double clicked.
-    */
-    public void listAction(){
-        String item = list.getSelectedItem();
-        File selectedFile = new File(item);
-        File[] roots = selectedFile.listRoots();
-        if (roots.length > 0 && item.equals("..")){
-            File parentFile = selectedFile.getParentFile();
-            updateList(parentFile);
-        }
-         
-        if (selectedFile.isDirectory())
-            updateList(selectedFile);
-        else
-            fileTextField.setText(selectedFile.getName());
-    }
-
-    // separate out each action into their own function:
-    //      - list action
-    //      - target button action
-    //      - text field action
-    //      - ok button action
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(list))
-            listAction();
-        else
-            throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+
+        // clear any messages
+        messageLabel.setText("");
+
+        // get the action of the source
+        Object source = e.getSource();
+
+        // handle accordingly
+        if(source == list) handleList();
+        else if(source == targetButton) handleTarget();
+        else if(source == fileTextField) handleTextField();
+        else if(source == okButton) handleOkButton();
+        else messageLabel.setText("Unknown source detected.");
+    }
+
+    void handleList() {
+        String item = list.getSelectedItem();
+
+        // if clicked on parent folder: draw parent to screen
+        // otherwise: handle item selected
+        if(item.equals("..")) {
+            String dirPath = this.getTitle();
+            File parent = new File(dirPath.substring(0,dirPath.lastIndexOf(separator) + 1));
+            drawList(parent);
+        }
+        else {
+            // file of item selected
+            if(item.contains("+")) item = item.substring(0,item.length() - 1);
+            File file = new File(this.getTitle() + separator + item);
+
+            // full directory: draw to screen
+            if(file.isDirectory() && file.list().length > 0) {
+                drawList(file);
+            }
+
+            // empty directory: print message
+            else if(file.isDirectory()) {
+                messageLabel.setText("Error: Cannot display empty directory.");
+            }
+
+            // file: update source or target and text field
+            else {
+                fileTextField.setText(file.getName());
+                if(!sourceSelected) {
+                    sourcePathLabel.setText(file.getAbsolutePath());
+                    targetButton.setEnabled(true);
+                }
+                else if(sourcePathLabel.getText().equals(file.getAbsolutePath())) {
+                    messageLabel.setText("Error: Target cannot be the same file as the source.");
+                }
+                else {
+                    targetPathLabel.setText(file.getAbsolutePath());
+                    okButton.setEnabled(true);
+                }
+            }
+        }
+    }
+
+    void handleTarget() {
+        sourceSelected = true;
+        targetPathLabel.setText("[Select a file]");
+        targetButton.setEnabled(false);
+    }
+
+    void handleTextField() {
+        File test;
+        // use the current directory, unless the prompt
+        // starts with a slash (presumably is a valid path)
+        
+        // determine if input is local or global path, set accordingly
+        if(fileTextField.getText().isEmpty()) return;
+        if(fileTextField.getText().charAt(0) == '/') {
+            test = new File(fileTextField.getText());
+        }
+        else {
+            test = new File(this.getTitle() + separator + fileTextField.getText());
+        }
+
+        // check if data is good, act accordingly
+        // print specific error messages for bad data
+        String path = test.getAbsolutePath();
+        if(test.exists() && test.isFile()) {
+            if(!sourceSelected) {
+                sourcePathLabel.setText(path);
+                targetButton.setEnabled(true);
+            }
+            else if(path.equals(sourcePathLabel.getText())) {
+                messageLabel.setText("Error: Target cannot be the same file as the source.");
+            }
+            else {
+                targetPathLabel.setText(test.getAbsolutePath());
+                targetButton.setEnabled(false);
+                okButton.setEnabled(true);
+            }
+        }
+        else if(!test.exists()){
+            messageLabel.setText("Error: File doesn't exist.");
+        }
+        else if(!test.isFile()) {
+            messageLabel.setText("Error: Input is a directory.");
+        }
+
+    }
+
+    void handleOkButton() {
+        // copy source into target
+        File source = new File(sourcePathLabel.getText());
+        File target = new File(targetPathLabel.getText());
+
+        // open files for reading and writing
+        BufferedReader reader = null;
+        FileWriter writer = null;
+        try{
+            reader = new BufferedReader(new FileReader(source));
+            writer = new FileWriter(target);
+        } catch (FileNotFoundException e) {
+            messageLabel.setText("Error: Source or target file not found.");
+        } catch (IOException e) {
+            messageLabel.setText("Error: Cannot open target file");
+        }
+
+        // copy files
+        try {
+            String line = reader.readLine();
+            while(line != null) {
+                writer.write(line + "\n");
+                line = reader.readLine();
+            }
+            writer.close();
+            reader.close();
+        } catch (IOException e) {
+            messageLabel.setText("Error: Input file closed before copy finished.");
+        }
+
+        // reset screen elements
+        messageLabel.setText("copy success");
+        sourcePathLabel.setText("[Select a file]");
+        targetPathLabel.setText("");
+        targetButton.setEnabled(false);
+        fileTextField.setText("");
+        sourceSelected = false;
+        okButton.setEnabled(false);
     }
 
     @Override
-    public void windowActivated(WindowEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'windowActivated'");
-    }
+    public void windowActivated(WindowEvent e) {}
 
     @Override
-    public void windowClosed(WindowEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'windowClosed'");
-    }
+    public void windowClosed(WindowEvent e) {}
 
     @Override
     public void windowClosing(WindowEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'windowClosing'");
+        // remove listeners, dispose 
+        this.removeWindowListener(this);
+        list.removeActionListener(this);
+        this.dispose();
     }
 
     @Override
-    public void windowDeactivated(WindowEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'windowDeactivated'");
-    }
+    public void windowDeactivated(WindowEvent e) {}
 
     @Override
-    public void windowDeiconified(WindowEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'windowDeiconified'");
-    }
+    public void windowDeiconified(WindowEvent e) {}
 
     @Override
-    public void windowIconified(WindowEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'windowIconified'");
-    }
+    public void windowIconified(WindowEvent e) {}
 
     @Override
-    public void windowOpened(WindowEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'windowOpened'");
-    }
-
-    @Override
-    public void removeItemListener(ItemListener l) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented methd 'removeItemSelected'");
-    }
-    
-    @Override
-    public void addItemListener(ItemListener l) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented methd 'addItemListener'");
-    }
-
-@Override
-    public Object[] getSelectedObjects() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented methd 'getSelectedObjects'");
-    }
+    public void windowOpened(WindowEvent e) {}
     
 }
