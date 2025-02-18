@@ -25,6 +25,7 @@ implements WindowListener, ActionListener {
     private Button targetButton;
     private Button okButton;
     private boolean sourceSelected;
+    private String separator;
 
     public static void main(String[] args) {
         new Main(args);
@@ -42,6 +43,7 @@ implements WindowListener, ActionListener {
         targetButton = new Button("Target");
         okButton = new Button("OK");
         sourceSelected = false;
+        separator = System.getProperty("file.separator");
 
         // set up grid bag layout
         GridBagConstraints c = new GridBagConstraints();
@@ -164,14 +166,14 @@ implements WindowListener, ActionListener {
         this.setTitle(dir.getAbsolutePath());
 
         // add parent folder (if not root folder)
-        if(this.getTitle().indexOf("/") != this.getTitle().length() - 1) {
+        if(this.getTitle().indexOf(separator) != this.getTitle().length() - 1) {
             list.add("..");
         }
 
         // add dir contents to list
         String[] contents = dir.list();
         for(int i = 0; i < contents.length; i++) {
-            File dirTest = new File(dir.getPath() + "/" + contents[i]);
+            File dirTest = new File(dir.getPath() + separator + contents[i]);
             String toAdd = dirTest.getName();
             if(dirTest.isDirectory()) {
                 toAdd += "+";
@@ -204,13 +206,13 @@ implements WindowListener, ActionListener {
         // otherwise: handle item selected
         if(item.equals("..")) {
             String dirPath = this.getTitle();
-            File parent = new File(dirPath.substring(0,dirPath.lastIndexOf("/") + 1));
+            File parent = new File(dirPath.substring(0,dirPath.lastIndexOf(separator) + 1));
             drawList(parent);
         }
         else {
             // file of item selected
             if(item.contains("+")) item = item.substring(0,item.length() - 1);
-            File file = new File(this.getTitle() + "/" + item);
+            File file = new File(this.getTitle() + separator + item);
 
             // full directory: draw to screen
             if(file.isDirectory() && file.list().length > 0) {
@@ -257,7 +259,7 @@ implements WindowListener, ActionListener {
             test = new File(fileTextField.getText());
         }
         else {
-            test = new File(this.getTitle() + "/" + fileTextField.getText());
+            test = new File(this.getTitle() + separator + fileTextField.getText());
         }
 
         // check if data is good, act accordingly
