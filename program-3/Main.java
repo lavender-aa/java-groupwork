@@ -34,7 +34,7 @@ implements WindowListener, ActionListener{
     Main(String[] args) {
         
         // screen elements
-        list = new List(0, false);
+        list = new List(100);
         sourceLabel = new Label("Source: ");
         sourcePathLabel = new Label("[Select a file]");
         targetPathLabel = new Label("");
