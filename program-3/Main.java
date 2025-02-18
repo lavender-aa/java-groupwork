@@ -40,7 +40,7 @@ implements WindowListener, ActionListener {
         messageLabel = new Label("");
         fileTextField = new TextField();
         targetButton = new Button("Target");
-        okButton = new Button("Copy");
+        okButton = new Button("OK");
         sourceSelected = false;
 
         // set up grid bag layout
