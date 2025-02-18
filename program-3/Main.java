@@ -222,8 +222,12 @@ implements WindowListener, ActionListener, ItemSelectable, ItemListener {
     public void listAction(){
         String item = list.getSelectedItem();
         File selectedFile = new File(item);
-        if (item.equals("..")) 
-            updateList(selectedFile.getParentFile());
+        File[] roots = selectedFile.listRoots();
+        if (roots.length > 0 && item.equals("..")){
+            File parentFile = new File(selectedFile.getParent());
+            updateList(parentFile);
+        }
+         
         if (selectedFile.isDirectory())
             updateList(selectedFile);
         else
