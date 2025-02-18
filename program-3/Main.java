@@ -161,8 +161,10 @@ implements WindowListener, ActionListener {
         // update title bar
         this.setTitle(dir.getAbsolutePath());
 
-        // add parent folder
-        list.add("..");
+        // add parent folder (if not root folder)
+        if(this.getTitle().indexOf("/") != this.getTitle().length() - 1) {
+            list.add("..");
+        }
 
         // add dir contents to list
         String[] contents = dir.list();
@@ -198,7 +200,7 @@ implements WindowListener, ActionListener {
 
         // if clicked on parent folder: draw parent to screen
         // otherwise: handle item selected
-        if(item.equals("..") && !this.getTitle().equals("/")) {
+        if(item.equals("..")) {
             String dirPath = this.getTitle();
             File parent = new File(dirPath.substring(0,dirPath.lastIndexOf("/") + 1));
             drawList(parent);
