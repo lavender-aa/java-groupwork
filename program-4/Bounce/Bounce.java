@@ -21,8 +21,8 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     // constants
     private final int WIDTH = 640;  // initial frame width
     private final int HEIGHT = 400; // initial frame height
-    private final int BTNH = 20; // button height
-    private final int BTNHS = 5; // button height spacing
+    private final int BUTTONHEIGHT = 20; // button height
+    private final int BUTTONHEIGHTSPACING = 5; // button height spacing
     private final int MAXOBJSIZE = 100;
     private final int MINOBJSIZE = 10;
     private final int DEFAULTOBJSIZE = 21;
@@ -30,7 +30,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private final int SCROLLVISIBLE = 10;
     private final int SCROLLUNIT = 1; // unit step size
     private final int SCROLLBLOCK = 10; // block step size
-    private final int SCROLLBARHEIGHT = BTNH;
+    private final int SCROLLBARHEIGHT = BUTTONHEIGHT;
 
     // primitives + strings
     private int winWidth = WIDTH;
@@ -225,7 +225,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         screenWidth = winWidth - insets.left - insets.right;
 
         // set screen height (vertical insets, space at bottom for two rows of buttons)
-        screenHeight = winHeight - insets.top - insets.bottom - (2 * (BTNH + BTNHS));
+        screenHeight = winHeight - insets.top - insets.bottom - (2 * (BUTTONHEIGHT + BUTTONHEIGHTSPACING));
         
         // set frame size
         setSize(winWidth, winHeight);
@@ -316,40 +316,40 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         // set button positions
         start.setLocation(
             screenCenter - 2*(buttonWidth+buttonSpacing) - buttonWidth/2,
-            screenHeight + BTNHS + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + insets.top
         );
         shape.setLocation(
             screenCenter - buttonWidth - buttonSpacing - buttonWidth/2,
-            screenHeight + BTNHS + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + insets.top
         );
         tail.setLocation(
             screenCenter - buttonWidth/2,
-            screenHeight + BTNHS + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + insets.top
         );
         clear.setLocation(
             screenCenter + buttonSpacing + buttonWidth/2,
-            screenHeight + BTNHS + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + insets.top
         );
         quit.setLocation(
             screenCenter + buttonWidth + 2*buttonSpacing + buttonWidth/2,
-            screenHeight + BTNHS + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + insets.top
         );
 
         // set button sizes
-        start.setSize(buttonWidth, BTNH);
-        shape.setSize(buttonWidth, BTNH);
-        tail.setSize(buttonWidth, BTNH);
-        clear.setSize(buttonWidth, BTNH);
-        quit.setSize(buttonWidth, BTNH);
+        start.setSize(buttonWidth, BUTTONHEIGHT);
+        shape.setSize(buttonWidth, BUTTONHEIGHT);
+        tail.setSize(buttonWidth, BUTTONHEIGHT);
+        clear.setSize(buttonWidth, BUTTONHEIGHT);
+        quit.setSize(buttonWidth, BUTTONHEIGHT);
 
         // set scrollbar positions
         speedScrollbar.setLocation(
             insets.left + buttonSpacing,
-            screenHeight + BTNHS + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + insets.top
         );
         sizeScrollbar.setLocation(
             winWidth - scrollWidth - insets.right - buttonSpacing,
-            screenHeight + BTNHS + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + insets.top
         );
 
         // set scrollbar sizes
@@ -359,15 +359,15 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         // set label positions
         speedLabel.setLocation(
             insets.left + buttonSpacing,
-            screenHeight + BTNHS + BTNH + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + BUTTONHEIGHT + insets.top
         );
         sizeLabel.setLocation(
             winWidth - scrollWidth - insets.right,
-            screenHeight + BTNHS + BTNH + insets.top
+            screenHeight + BUTTONHEIGHTSPACING + BUTTONHEIGHT + insets.top
         );
 
         // set label sizes
-        speedLabel.setSize(scrollWidth, BTNH);
+        speedLabel.setSize(scrollWidth, BUTTONHEIGHT);
         sizeLabel.setSize(scrollWidth, SCROLLBARHEIGHT);
 
         // set object bounds
