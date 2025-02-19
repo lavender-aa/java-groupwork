@@ -235,6 +235,9 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         buttonWidth = screenWidth / 11; // 11 units
         buttonSpacing = buttonWidth / 4;
 
+        // determine scroll bar width
+        scrollWidth = 2 * buttonWidth;
+
         // set the background color
         setBackground(Color.lightGray);
     }
@@ -427,12 +430,14 @@ class Objc extends Canvas {
         clear = true;
     }
 
+    @Override
     public void paint(Graphics g) {
         g.setColor(Color.red);
         g.drawRect(0, 0, screenWidth-1, screenHeight-1);
         update(g);
     }
 
+    @Override
     public void update(Graphics g) {
         if(clear) {
             super.paint(g);
