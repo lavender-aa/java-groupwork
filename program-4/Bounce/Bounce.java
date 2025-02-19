@@ -7,13 +7,13 @@
  *      - Nicola Razumic-Rushin (raz73517@pennwest.edu)
  */
 
-// package Bounce;
+package Bounce;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 
 public class Bounce extends Frame
-implements WindowListener, ComponentListener, ActionListener {
+implements WindowListener, ComponentListener, ActionListener, AdjustmentListener {
     
     // serial UID
     private static final long serialVersionUID = 10L;
@@ -23,6 +23,14 @@ implements WindowListener, ComponentListener, ActionListener {
     private final int HEIGHT = 400; // initial frame height
     private final int BTNH = 20; // button height
     private final int BTNHS = 5; // button height spacing
+    private final int MAXOBJSIZE = 100;
+    private final int MINOBJSIZE = 10;
+    private final int DEFAULTOBJSIZE = 21;
+    private final int DEFAULTOBJSPEED = 50;
+    private final int SCROLLVISIBLE = 10;
+    private final int SCROLLUNIT = 1; // unit step size
+    private final int SCROLLBLOCK = 10; // block step size
+    private final int SCROLLBARHEIGHT = BTNH;
 
     // primitives + strings
     private int winWidth = WIDTH;
@@ -34,10 +42,19 @@ implements WindowListener, ComponentListener, ActionListener {
     private int screenCenter = WIDTH / 2;
     private int buttonWidth = 50;
     private int buttonSpacing = buttonWidth / 4;
+    private int objectSize = DEFAULTOBJSIZE;
+    private int speedScrollMin = 1;
+    private int speedScrollMax = 100 + SCROLLVISIBLE;
+    private int speedScrollValue = DEFAULTOBJSPEED;
+    private int scrollWidth;
     
     // objects
     private Insets insets;
     Button start, shape, clear, tail, quit;
+    private Objc object;
+    private Label speedLabel = new Label("Speed", Label.CENTER);
+    private Label sizeLabel = new Label("Size", Label.CENTER);
+    Scrollbar speedScrollbar, sizeScrollbar;
 
 
 
@@ -76,14 +93,18 @@ implements WindowListener, ComponentListener, ActionListener {
     void handleShapeButton() {
         if(shape.getLabel().equals("Circle")) {
             shape.setLabel("Square");
+            object.rectangle(false);
         }
         else {
             shape.setLabel("Circle");
+            object.rectangle(true);
         }
+        object.repaint();
     }
 
     void handleClearButton() {
-
+        object.clear();
+        object.repaint();
     }
 
     void handleTailButton() {
@@ -91,7 +112,7 @@ implements WindowListener, ComponentListener, ActionListener {
     }
 
     void handleQuitButton() {
-
+        stop();
     }
 
 
@@ -109,7 +130,8 @@ implements WindowListener, ComponentListener, ActionListener {
         winWidth = getWidth();
         winHeight= getHeight();
         calculateScreenSizes();
-        setButtonPositions();
+        object.resize(screenWidth, screenHeight);
+        setElementPositions();
     }
 
     @Override
@@ -137,6 +159,8 @@ implements WindowListener, ComponentListener, ActionListener {
         clear.removeActionListener(this);
         tail.removeActionListener(this);
         quit.removeActionListener(this);
+        speedScrollbar.removeAdjustmentListener(this);
+        sizeScrollbar.removeAdjustmentListener(this);
         this.removeComponentListener(this);
         this.removeWindowListener(this);
 
@@ -160,6 +184,25 @@ implements WindowListener, ComponentListener, ActionListener {
 
 
 
+    // adjustment events
+    @Override
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+        int TS;
+        Scrollbar sb = (Scrollbar) e.getSource();
+        if(sb == speedScrollbar) {
+
+        }
+        else if(sb == sizeScrollbar) {
+            TS = e.getValue();
+            TS = (TS/2)*2 + 1; // force TS to be odd for center position
+            object.update(TS);
+        }
+        object.repaint();
+    }
+
+
+
+
     // constructor
     public Bounce() {
         setLayout(null);
@@ -171,7 +214,8 @@ implements WindowListener, ComponentListener, ActionListener {
         catch(Exception e) {
             e.printStackTrace();
         }
-        setButtonPositions();
+        setElementPositions();
+        startAnimation();
     }
 
     void calculateScreenSizes() {
@@ -218,6 +262,41 @@ implements WindowListener, ComponentListener, ActionListener {
         tail.addActionListener(this);
         quit.addActionListener(this);
 
+        // create speed scroll bar
+        speedScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
+        speedScrollbar.setMaximum(speedScrollMax);
+        speedScrollbar.setMinimum(speedScrollMin);
+        speedScrollbar.setUnitIncrement(SCROLLUNIT);
+        speedScrollbar.setBlockIncrement(SCROLLBLOCK);
+        speedScrollbar.setValue(speedScrollValue);
+        speedScrollbar.setVisibleAmount(SCROLLVISIBLE);
+        speedScrollbar.setBackground(Color.gray);
+
+        // create size scroll bar
+        sizeScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
+        sizeScrollbar.setMaximum(MAXOBJSIZE);
+        sizeScrollbar.setMinimum(MINOBJSIZE);
+        sizeScrollbar.setUnitIncrement(SCROLLUNIT);
+        sizeScrollbar.setBlockIncrement(SCROLLBLOCK);
+        sizeScrollbar.setValue(objectSize);
+        sizeScrollbar.setVisibleAmount(SCROLLVISIBLE);
+        sizeScrollbar.setBackground(Color.gray);
+
+        // create object (???????)
+        object = new Objc(objectSize, screenWidth, screenHeight);
+        object.setBackground(Color.white);
+
+        // add scrollbars, labels, object to frame
+        add(speedScrollbar);
+        add(sizeScrollbar);
+        add(speedLabel);
+        add(sizeLabel);
+        add(object);
+
+        // add listeners to scrollbars
+        speedScrollbar.addAdjustmentListener(this);
+        sizeScrollbar.addAdjustmentListener(this);
+
         // add listeners to the frame
         this.addComponentListener(this);
         this.addWindowListener(this);
@@ -229,7 +308,7 @@ implements WindowListener, ComponentListener, ActionListener {
         validate();
     }
 
-    void setButtonPositions() {
+    void setElementPositions() {
 
         // set button positions
         start.setLocation(
@@ -259,10 +338,119 @@ implements WindowListener, ComponentListener, ActionListener {
         tail.setSize(buttonWidth, BTNH);
         clear.setSize(buttonWidth, BTNH);
         quit.setSize(buttonWidth, BTNH);
+
+        // set scrollbar positions
+        speedScrollbar.setLocation(
+            insets.left + buttonSpacing,
+            screenHeight + BTNHS + insets.top
+        );
+        sizeScrollbar.setLocation(
+            winWidth - scrollWidth - insets.right - buttonSpacing,
+            screenHeight + BTNHS + insets.top
+        );
+
+        // set scrollbar sizes
+        speedScrollbar.setSize(scrollWidth, SCROLLBARHEIGHT);
+        sizeScrollbar.setSize(scrollWidth, SCROLLBARHEIGHT);
+
+        // set label positions
+        speedLabel.setLocation(
+            insets.left + buttonSpacing,
+            screenHeight + BTNHS + BTNH + insets.top
+        );
+        sizeLabel.setLocation(
+            winWidth - scrollWidth - insets.right,
+            screenHeight + BTNHS + BTNH + insets.top
+        );
+
+        // set label sizes
+        speedLabel.setSize(scrollWidth, BTNH);
+        sizeLabel.setSize(scrollWidth, SCROLLBARHEIGHT);
+
+        // set object bounds
+        object.setBounds(insets.left, insets.top, screenWidth, screenHeight);
+
     }
+
+    void startAnimation() {
+
+    }
+
+
+
 
     // main function
     public static void main(String[] args) {
         new Bounce();
+    }
+}
+
+
+// objc class
+class Objc extends Canvas {
+    
+    // data
+    private static final long serialVersionUID = 11L;
+    private int screenWidth;
+    private int screenHeight;
+    private int objectSize;
+    private int x, y;
+    private boolean rect;
+    private boolean clear;
+
+    public Objc(int size, int w, int h) {
+        screenWidth = w;
+        screenHeight = h;
+        objectSize = size;
+        rect = true;
+        clear = false;
+        y = screenHeight/2;
+        x = screenWidth/2;
+    }
+
+    public void rectangle(boolean r) {
+        rect = r;
+    }
+
+    public void update(int size) {
+        objectSize = size;
+    }
+
+    public void resize(int w, int h) {
+        screenWidth = w;
+        screenHeight = h;
+        y = screenHeight / 2;
+        x = screenWidth / 2;
+    }
+
+    public void clear() {
+        clear = true;
+    }
+
+    public void paint(Graphics g) {
+        g.setColor(Color.red);
+        g.drawRect(0, 0, screenWidth-1, screenHeight-1);
+        update(g);
+    }
+
+    public void update(Graphics g) {
+        if(clear) {
+            super.paint(g);
+            clear = false;
+            g.setColor(Color.red);
+            g.drawRect(0, 0, screenWidth-1, screenHeight-1);
+        }
+        if(rect) {
+            g.setColor(Color.lightGray);
+            g.fillRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize, objectSize);
+            g.setColor(Color.black);
+            g.drawRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+        }
+        else {
+            g.setColor(Color.lightGray);
+            g.fillOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+            g.setColor(Color.black);
+            g.drawOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+        }
     }
 }
