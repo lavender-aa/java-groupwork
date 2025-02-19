@@ -21,9 +21,9 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     // constants
     private final int WIDTH = 640;  // initial frame width
     private final int HEIGHT = 400; // initial frame height
-    private final int BUTTONHEIGHT = 20; // button height
+    private final int BUTTONHEIGHT = 30; // button height
     private final int BUTTONHEIGHTSPACING = 5; // button height spacing
-    private final int MAXOBJECTSIZE = 100;
+    private final int MAXOBJECTSIZE = 500;
     private final int MINOBJECTSIZE = 10;
     private final int DEFAULTOBJECTSIZE = 21;
     private final int DEFAULTOBJECTSPEED = 50;
@@ -196,6 +196,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             TS = e.getValue();
             TS = (TS/2)*2 + 1; // force TS to be odd for center position
             object.updateSize(TS);
+            sizeScrollbar.setValue(object.getObjSize());
         }
         object.repaint();
     }
@@ -362,7 +363,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             screenHeight + BUTTONHEIGHTSPACING + BUTTONHEIGHT + insets.top
         );
         sizeLabel.setLocation(
-            winWidth - scrollWidth - insets.right,
+            winWidth - scrollWidth - insets.right - buttonSpacing,
             screenHeight + BUTTONHEIGHTSPACING + BUTTONHEIGHT + insets.top
         );
 
@@ -415,8 +416,20 @@ class Objc extends Canvas {
         rect = r;
     }
 
+    public int getObjSize() {
+        return objectSize;
+    }
+
     public void updateSize(int size) {
-        objectSize = size;
+        if(size > screenHeight) {
+            objectSize = screenHeight;
+        }
+        else if(size > screenWidth) {
+            objectSize = screenWidth;
+        }
+        else {
+            objectSize = size;
+        }
     }
 
     public void resize(int w, int h) {
