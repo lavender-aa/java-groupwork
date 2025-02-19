@@ -23,10 +23,10 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private final int HEIGHT = 400; // initial frame height
     private final int BUTTONHEIGHT = 20; // button height
     private final int BUTTONHEIGHTSPACING = 5; // button height spacing
-    private final int MAXOBJSIZE = 100;
-    private final int MINOBJSIZE = 10;
-    private final int DEFAULTOBJSIZE = 21;
-    private final int DEFAULTOBJSPEED = 50;
+    private final int MAXOBJECTSIZE = 100;
+    private final int MINOBJECTSIZE = 10;
+    private final int DEFAULTOBJECTSIZE = 21;
+    private final int DEFAULTOBJECTSPEED = 50;
     private final int SCROLLVISIBLE = 10;
     private final int SCROLLUNIT = 1; // unit step size
     private final int SCROLLBLOCK = 10; // block step size
@@ -42,10 +42,10 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private int screenCenter = WIDTH / 2;
     private int buttonWidth = 50;
     private int buttonSpacing = buttonWidth / 4;
-    private int objectSize = DEFAULTOBJSIZE;
+    private int objectSize = DEFAULTOBJECTSIZE;
     private int speedScrollMin = 1;
     private int speedScrollMax = 100 + SCROLLVISIBLE;
-    private int speedScrollValue = DEFAULTOBJSPEED;
+    private int speedScrollValue = DEFAULTOBJECTSPEED;
     private int scrollWidth;
     
     // objects
@@ -277,8 +277,8 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
         // create size scroll bar
         sizeScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
-        sizeScrollbar.setMaximum(MAXOBJSIZE);
-        sizeScrollbar.setMinimum(MINOBJSIZE);
+        sizeScrollbar.setMaximum(MAXOBJECTSIZE);
+        sizeScrollbar.setMinimum(MINOBJECTSIZE);
         sizeScrollbar.setUnitIncrement(SCROLLUNIT);
         sizeScrollbar.setBlockIncrement(SCROLLBLOCK);
         sizeScrollbar.setValue(objectSize);
