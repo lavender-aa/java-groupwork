@@ -195,7 +195,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         else if(sb == sizeScrollbar) {
             TS = e.getValue();
             TS = (TS/2)*2 + 1; // force TS to be odd for center position
-            object.update(TS);
+            object.updateSize(TS);
         }
         object.repaint();
     }
@@ -412,7 +412,7 @@ class Objc extends Canvas {
         rect = r;
     }
 
-    public void update(int size) {
+    public void updateSize(int size) {
         objectSize = size;
     }
 
