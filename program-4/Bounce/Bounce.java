@@ -92,12 +92,13 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     void handleStartButton() {
         if(start.getLabel().equals("Pause")) {
             start.setLabel("Run");
-            paused = false;
+            paused = true;
+            thread.interrupt();
         }
         else {
             start.setLabel("Pause");
-            paused = true;
-            thread.interrupt();
+            paused = false;
+            start();
         }
     }
 
@@ -124,12 +125,12 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     void handleTailButton() {
         if(tail.getLabel().equals("Tail")) {
             tail.setLabel("No Tail");
-            object.setTail(false);
+            object.setTail(true);
             
         }
         else if(tail.getLabel().equals("No Tail")) {
             tail.setLabel("Tail");
-            object.setTail(true);
+            object.setTail(false);
         }
     }
 
@@ -320,7 +321,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeScrollbar.setVisibleAmount(SCROLLVISIBLE);
         sizeScrollbar.setBackground(Color.gray);
 
-        // create object (???????)
+        // create object
         object = new Objc(objectSize, screenWidth, screenHeight);
         object.setBackground(Color.white);
 
@@ -427,18 +428,13 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         while(run) {
             try {
                 Thread.sleep(1);
-            } catch (Exception e) {
-                System.out.println("Thread trying to run while interrupted.");
-                e.printStackTrace();
-            }
+            } catch (InterruptedException e) {}
             if(!paused) {
                 started = true;
                 try {
-                    Thread.sleep(delay);
-                } catch (InterruptedException e) {
-                    System.out.println("Thread trying to run while interrupted.");
-                    e.printStackTrace();
-                }
+                    // debug: set delay manually (.5s)
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {}
                 object.updateSize(objectSize);
                 object.repaint();
             }
@@ -477,34 +473,16 @@ class Objc extends Canvas {
         clear = false;
         y = screenHeight/2;
         x = screenWidth/2;
+        xdir = 1;
+        ydir = 1;
     }
 
     public void setTail(boolean val) {
         tail = val;
     }
 
-    public boolean getTail() {
-        return tail;
-    }
-
     public void rectangle(boolean r) {
         rect = r;
-    }
-
-    public void setX(int val) {
-        x = val;
-    }
-
-    public int getXval() {
-        return x;
-    }
-
-    public void setY(int val) {
-        y = val;
-    }
-
-    public int getYval() {
-        return y;
     }
 
     public int getObjSize() {
