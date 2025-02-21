@@ -54,9 +54,6 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private boolean started; // control animation
     private int scrollSpeed;
     private int delay; // current time delay (?)
-    private int xdir; // x direction of travel
-    private int ydir; // y direction of travel
-    private boolean drawTails;
     
     // objects
     private Insets insets;
@@ -281,8 +278,6 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         paused = true;
         run = true;
         delay = (int) ((MAXOBJECTSPEED/scrollSpeed) * DELAY);
-        xdir = 1;
-        ydir = 1;
         
         // create buttons
         start = new Button("Run");
