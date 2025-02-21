@@ -26,13 +26,11 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private final int MAXOBJECTSIZE = 500;
     private final int MINOBJECTSIZE = 10;
     private final int DEFAULTOBJECTSIZE = 21;
-    private final int DEFAULTOBJECTSPEED = 50;
-    private final double MAXOBJECTSPEED = 1.0;
     private final int SCROLLVISIBLE = 10;
     private final int SCROLLUNIT = 1; // unit step size
     private final int SCROLLBLOCK = 10; // block step size
     private final int SCROLLBARHEIGHT = BUTTONHEIGHT;
-    private final double DELAY = 10; // delay between steps
+    private final double DELAY = 10; // smallest delay between steps
 
     // primitives + strings
     private int winWidth = WIDTH;
@@ -47,11 +45,10 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private int objectSize = DEFAULTOBJECTSIZE;
     private int speedScrollMin = 1;
     private int speedScrollMax = 100 + SCROLLVISIBLE;
-    private int speedScrollValue = DEFAULTOBJECTSPEED;
     private int scrollWidth;
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
-    private boolean started; // control animation
+    private static boolean started; // control animation
     private int scrollSpeed;
     private int delay; // current time delay (?)
     
@@ -219,7 +216,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         Scrollbar sb = (Scrollbar) e.getSource();
         if(sb == speedScrollbar) {
             newSpeed = sb.getValue();
-            delay = (int) ((MAXOBJECTSPEED/newSpeed) * DELAY);
+            delay = (int) ((1/newSpeed) * DELAY);
             thread.interrupt();
         }
         else if(sb == sizeScrollbar) {
@@ -278,7 +275,8 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         // initialize program variables
         paused = true;
         run = true;
-        delay = (int) ((MAXOBJECTSPEED/scrollSpeed) * DELAY);
+        scrollSpeed = 10;
+        delay = (int) ((1/scrollSpeed) * DELAY);
         
         // create buttons
         start = new Button("Run");
@@ -307,7 +305,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         speedScrollbar.setMinimum(speedScrollMin);
         speedScrollbar.setUnitIncrement(SCROLLUNIT);
         speedScrollbar.setBlockIncrement(SCROLLBLOCK);
-        speedScrollbar.setValue(speedScrollValue);
+        speedScrollbar.setValue(scrollSpeed);
         speedScrollbar.setVisibleAmount(SCROLLVISIBLE);
         speedScrollbar.setBackground(Color.gray);
 
@@ -432,20 +430,37 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             if(!paused) {
                 started = true;
                 try {
-                    // debug: set delay manually (.5s)
-                    Thread.sleep(500);
+                    Thread.sleep(delay);
                 } catch (InterruptedException e) {}
                 object.updateSize(objectSize);
                 object.repaint();
             }
         }
+        started = false;
     }
 
+    void checkObjectResize() {
+        int x = object.getX();
+        int y = object.getY();
+        int half = (object.getObjSize() - 1)/2;
 
+        // right bound check
+        if(x + half >= screenWidth) {
+            object.setX(screenWidth - half);
+        }
 
-
+        // bottom bound check
+        if(y + half >= screenHeight) {
+            object.setY(screenHeight - half);
+        }
+    }
+    
+    
+    
+    
     // main function
     public static void main(String[] args) {
+        started = false;
         new Bounce();
     }
 }
@@ -459,6 +474,8 @@ class Objc extends Canvas {
     private int screenWidth;
     private int screenHeight;
     private int objectSize;
+    private int oldsize;
+    private int oldx, oldy;
     private int x, y;
     private int xdir, ydir;
     private boolean rect;
@@ -481,6 +498,14 @@ class Objc extends Canvas {
         tail = val;
     }
 
+    public void setX(int val) {
+        x = val;
+    }
+
+    public void setY(int val) {
+        y = val;
+    }
+
     public void rectangle(boolean r) {
         rect = r;
     }
@@ -490,11 +515,13 @@ class Objc extends Canvas {
     }
 
     public void updateSize(int size) {
-        if(size > screenHeight) {
-            objectSize = screenHeight;
+        int half = size/2;
+        oldsize = objectSize;
+        if(y + half > screenHeight) {
+            objectSize = screenHeight - y;
         }
-        else if(size > screenWidth) {
-            objectSize = screenWidth;
+        else if(x + half > screenWidth) {
+            objectSize = screenWidth - x;
         }
         else {
             objectSize = size;
@@ -522,30 +549,35 @@ class Objc extends Canvas {
     @Override
     public void update(Graphics g) {
         if(!tail) {
-            if(clear) {
-                super.paint(g);
-                clear = false;
-                g.setColor(Color.red);
-                g.drawRect(0, 0, screenWidth-1, screenHeight-1);
-            }
+            g.setColor(getBackground());
             if(rect) {
-                g.setColor(Color.lightGray);
-                g.fillRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize, objectSize);
-                g.setColor(Color.black);
-                g.drawRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+                g.fillRect(oldx-(objectSize-1)/2, oldy-(objectSize-1)/2, objectSize, objectSize);
             }
             else {
-                g.setColor(Color.lightGray);
-                g.fillOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
-                g.setColor(Color.black);
-                g.drawOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+                g.fillOval(oldx-(objectSize-1)/2-1, oldy-(objectSize-1)/2-1, objectSize+2, objectSize+2);
             }
         }
+        if(clear) {
+            super.paint(g);
+            clear = false;
+            g.setColor(Color.red);
+            g.drawRect(0, 0, screenWidth-1, screenHeight-1);
+        }
+        if(rect) {
+            g.setColor(Color.lightGray);
+            g.fillRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize, objectSize);
+            g.setColor(Color.black);
+            g.drawRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+        }
+        else {
+            g.setColor(Color.lightGray);
+            g.fillOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+            g.setColor(Color.black);
+            g.drawOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+        }
         updateDirections();
-        move();
-    }
-
-    void move() {
+        oldx = x;
+        oldy = y;
         x += xdir;
         y += ydir;
     }
