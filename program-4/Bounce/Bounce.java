@@ -15,6 +15,11 @@ import java.io.*;
 public class Bounce extends Frame
 implements WindowListener, ComponentListener, ActionListener, AdjustmentListener, Runnable {
     
+    // debug TODO: remove
+    void print(String s) {
+        System.out.println(s);
+    }
+    
     // serial UID
     private static final long serialVersionUID = 10L;
 
@@ -26,11 +31,14 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private final int MAXOBJECTSIZE = 500;
     private final int MINOBJECTSIZE = 10;
     private final int DEFAULTOBJECTSIZE = 21;
-    private final int SCROLLVISIBLE = 10;
-    private final int SCROLLUNIT = 1; // unit step size
-    private final int SCROLLBLOCK = 10; // block step size
+    private final int SPEEDSCROLLVISIBLE = 50;
+    private final int SIZESCROLLVISIBLE = 25;
+    private final int SPEEDSCROLLMIN = 1;
+    private final int SPEEDSCROLLMAX = 300;
+    private final int SCROLLUNIT = 10; // unit step size
+    private final int SCROLLBLOCK = 50; // block step size
     private final int SCROLLBARHEIGHT = BUTTONHEIGHT;
-    private final double DELAY = 10; // smallest delay between steps
+    private final double SECONDS_TO_MILLIS = 1000;
 
     // primitives + strings
     private int winWidth = WIDTH;
@@ -43,14 +51,12 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private int buttonWidth = 50;
     private int buttonSpacing = buttonWidth / 4;
     private int objectSize = DEFAULTOBJECTSIZE;
-    private int speedScrollMin = 1;
-    private int speedScrollMax = 100 + SCROLLVISIBLE;
     private int scrollWidth;
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
     private static boolean started; // control animation
     private int scrollSpeed;
-    private int delay; // current time delay (?)
+    private int delay; // current time delay
     
     // objects
     private Insets insets;
@@ -111,12 +117,12 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             shape.setLabel("Circle");
             object.rectangle(true);
         }
-        object.repaint();
+        object.paint(object.getGraphics());
     }
 
     void handleClearButton() {
         object.clear();
-        object.repaint();
+        object.paint(object.getGraphics());
     }
 
     void handleTailButton() {
@@ -211,21 +217,20 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     // adjustment events
     @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
-        int newSize;
-        int newSpeed;
         Scrollbar sb = (Scrollbar) e.getSource();
         if(sb == speedScrollbar) {
-            newSpeed = sb.getValue();
-            delay = (int) ((1/newSpeed) * DELAY);
+            delay = (int) ((1.0/sb.getValue()) * SECONDS_TO_MILLIS);
             thread.interrupt();
         }
         else if(sb == sizeScrollbar) {
-            newSize = sb.getValue();
+            int newSize = sb.getValue();
             newSize = (newSize/2)*2 + 1; // force the size to be odd for center position
             object.updateSize(newSize);
-            sizeScrollbar.setValue(object.getObjSize());
+            if(object.getObjSize() != newSize) {
+                sb.setValue(object.getObjSize());
+            }
+            object.paint(getGraphics());
         }
-        object.repaint();
     }
 
 
@@ -275,8 +280,8 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         // initialize program variables
         paused = true;
         run = true;
-        scrollSpeed = 10;
-        delay = (int) ((1/scrollSpeed) * DELAY);
+        scrollSpeed = 50;
+        delay = (int) ((1.0/scrollSpeed) * SECONDS_TO_MILLIS);
         
         // create buttons
         start = new Button("Run");
@@ -301,12 +306,12 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
         // create speed scroll bar
         speedScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
-        speedScrollbar.setMaximum(speedScrollMax);
-        speedScrollbar.setMinimum(speedScrollMin);
+        speedScrollbar.setMaximum(SPEEDSCROLLMAX);
+        speedScrollbar.setMinimum(SPEEDSCROLLMIN);
         speedScrollbar.setUnitIncrement(SCROLLUNIT);
         speedScrollbar.setBlockIncrement(SCROLLBLOCK);
         speedScrollbar.setValue(scrollSpeed);
-        speedScrollbar.setVisibleAmount(SCROLLVISIBLE);
+        speedScrollbar.setVisibleAmount(SPEEDSCROLLVISIBLE);
         speedScrollbar.setBackground(Color.gray);
 
         // create size scroll bar
@@ -316,7 +321,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeScrollbar.setUnitIncrement(SCROLLUNIT);
         sizeScrollbar.setBlockIncrement(SCROLLBLOCK);
         sizeScrollbar.setValue(objectSize);
-        sizeScrollbar.setVisibleAmount(SCROLLVISIBLE);
+        sizeScrollbar.setVisibleAmount(SIZESCROLLVISIBLE);
         sizeScrollbar.setBackground(Color.gray);
 
         // create object
@@ -432,32 +437,15 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
                 try {
                     Thread.sleep(delay);
                 } catch (InterruptedException e) {}
-                object.updateSize(objectSize);
-                object.repaint();
+                object.paint(object.getGraphics());
             }
         }
         started = false;
     }
+    
+    
+    
 
-    void checkObjectResize() {
-        int x = object.getX();
-        int y = object.getY();
-        int half = (object.getObjSize() - 1)/2;
-
-        // right bound check
-        if(x + half >= screenWidth) {
-            object.setX(screenWidth - half);
-        }
-
-        // bottom bound check
-        if(y + half >= screenHeight) {
-            object.setY(screenHeight - half);
-        }
-    }
-    
-    
-    
-    
     // main function
     public static void main(String[] args) {
         started = false;
@@ -468,6 +456,11 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
 // objc class
 class Objc extends Canvas {
+
+    // debug TODO: delete
+    void print(String s) {
+        System.out.println(s);
+    }
     
     // data
     private static final long serialVersionUID = 11L;
@@ -488,10 +481,11 @@ class Objc extends Canvas {
         objectSize = size;
         rect = true;
         clear = false;
+        tail = true;
         y = screenHeight/2;
         x = screenWidth/2;
-        xdir = 1;
-        ydir = 1;
+        xdir = 2;
+        ydir = 2;
     }
 
     public void setTail(boolean val) {
@@ -517,15 +511,21 @@ class Objc extends Canvas {
     public void updateSize(int size) {
         int half = size/2;
         oldsize = objectSize;
-        if(y + half > screenHeight) {
-            objectSize = screenHeight - y;
+        int xpos = x - (objectSize-1)/2;
+        int ypos = y - (objectSize-1)/2;
+
+        if(ypos + half >= screenHeight - screenHeight/4) {
+            objectSize = screenHeight - screenHeight/4 - ypos;
         }
-        else if(x + half > screenWidth) {
-            objectSize = screenWidth - x;
+        else if(xpos + half >= screenWidth - screenWidth/4) {
+            objectSize = screenWidth - screenWidth/4 - xpos;
         }
         else {
             objectSize = size;
         }
+        paint(this.getGraphics());
+        // debug
+        print("object size: " + objectSize);
     }
 
     public void resize(int w, int h) {
@@ -544,36 +544,44 @@ class Objc extends Canvas {
         g.setColor(Color.red);
         g.drawRect(0, 0, screenWidth-1, screenHeight-1);
         update(g);
+        Toolkit.getDefaultToolkit().sync(); // debug: for linux
     }
 
     @Override
     public void update(Graphics g) {
         if(!tail) {
             g.setColor(getBackground());
+            int oldxpos = oldx - (objectSize-1)/2;
+            int oldypos = oldy - (objectSize-1)/2;
             if(rect) {
-                g.fillRect(oldx-(objectSize-1)/2, oldy-(objectSize-1)/2, objectSize, objectSize);
+                g.fillRect(oldxpos, oldypos, objectSize, objectSize);
             }
             else {
-                g.fillOval(oldx-(objectSize-1)/2-1, oldy-(objectSize-1)/2-1, objectSize+2, objectSize+2);
+                g.fillOval(oldxpos, oldypos, objectSize, objectSize);
             }
         }
+
+        int xpos = x - (objectSize-1)/2;
+        int ypos = y - (objectSize-1)/2;
+
         if(clear) {
             super.paint(g);
-            clear = false;
             g.setColor(Color.red);
             g.drawRect(0, 0, screenWidth-1, screenHeight-1);
+            clear = false;
         }
+
         if(rect) {
             g.setColor(Color.lightGray);
-            g.fillRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize, objectSize);
+            g.fillRect(xpos, ypos, objectSize, objectSize);
             g.setColor(Color.black);
-            g.drawRect(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+            g.drawRect(xpos, ypos, objectSize-1, objectSize-1);
         }
         else {
             g.setColor(Color.lightGray);
-            g.fillOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+            g.fillOval(xpos, ypos, objectSize-1, objectSize-1);
             g.setColor(Color.black);
-            g.drawOval(x-(objectSize-1)/2, y-(objectSize-1)/2, objectSize-1, objectSize-1);
+            g.drawOval(xpos, ypos, objectSize-1, objectSize-1);
         }
         updateDirections();
         oldx = x;
@@ -586,22 +594,22 @@ class Objc extends Canvas {
 
         // right bound check
         if(x + objectSize/2 >= screenWidth) {
-            xdir = -1;
+            xdir = -2;
         }
                 
         // left bound check
-        if(x + objectSize/2 <= 0) {
-            xdir = 1;
+        if(x - objectSize/2 <= 0) {
+            xdir = 2;
         }
 
         // top bound check
-        if(x + objectSize/2 >= screenHeight) {
-            ydir = -1;
+        if(y - objectSize/2 <= 0) {
+            ydir = 2;
         }
 
         // bottom bound check
-        if(x + objectSize/2 <= 0) {
-            ydir = 1;
+        if(y + objectSize/2 >= screenHeight) {
+            ydir = -2;
         }
     }
 }
