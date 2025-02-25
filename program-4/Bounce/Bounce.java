@@ -67,6 +67,13 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     Scrollbar speedScrollbar, sizeScrollbar;
     private Thread thread;
 
+
+
+    // main
+    public static void main(String[] args) {
+        new Bounce();
+    }
+
     // constructor
     public Bounce() {
         setLayout(null);
