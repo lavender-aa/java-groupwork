@@ -537,19 +537,15 @@ class Objc extends Canvas {
             // limit object size based on collisions with edges
             if(xpos + half >= screenWidth) {
                 objectSize = (screenWidth - xpos) * 2;
-                print("hit right"); // debug
             }
             else if(xpos - half <= 0) {
                 objectSize = xpos * 2;
-                print("hit left"); // debug
             }
             else if(ypos + half >= screenHeight) {
                 objectSize = (screenHeight - ypos) * 2;
-                print("hit bottom"); // debug
             }
             else if(ypos - half <= 0) {
                 objectSize = ypos * 2;
-                print("hit top"); // debug
             }
             else { // no collisions, good
                 x -= size - objectSize;
@@ -557,8 +553,6 @@ class Objc extends Canvas {
                 objectSize = size;
             }
         }
-
-        print("x, y: " + xpos + ", " + ypos); // debug
         this.paint(this.getGraphics());
     }
 
