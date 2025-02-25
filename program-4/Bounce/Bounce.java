@@ -469,7 +469,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 // objc class
 class Objc extends Canvas {
 
-    // debug TODO: delete
+    // debug TODO: remove
     void print(String s) {
         System.out.println(s);
     }
