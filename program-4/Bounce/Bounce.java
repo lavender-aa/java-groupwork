@@ -101,7 +101,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         else {
             start.setLabel("Pause");
             paused = false;
-            start();
+            startThread();
         }
     }
 
