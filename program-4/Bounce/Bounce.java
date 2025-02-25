@@ -252,7 +252,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             e.printStackTrace();
         }
         setElementPositions();
-        start();
+        startThread();
     }
 
     void calculateScreenSizes() {
@@ -431,7 +431,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     // thread related
 
-    void start() {
+    void startThread() {
         if(thread == null) {
             thread = new Thread(this);
             thread.start();
