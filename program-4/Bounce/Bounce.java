@@ -28,7 +28,6 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private final int HEIGHT = 400; // initial frame height
     private final int BUTTONHEIGHT = 30; // button height
     private final int BUTTONHEIGHTSPACING = 5; // button height spacing
-    private final int MAXOBJECTSIZE = 500;
     private final int MINOBJECTSIZE = 10;
     private final int DEFAULTOBJECTSIZE = 21;
     private final int SPEEDSCROLLVISIBLE = 50;
@@ -50,6 +49,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private int screenCenter = WIDTH / 2;
     private int buttonWidth = 50;
     private int buttonSpacing = buttonWidth / 4;
+    private int maxObjectSize = 500;
     private int objectSize = DEFAULTOBJECTSIZE;
     private int scrollWidth;
     private boolean run; // control program loop
@@ -105,6 +105,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         }
     }
 
+    // TODO: fix bug; shape button continues path
     void handleShapeButton() {
         if(!started) {
             object.clear();
@@ -120,6 +121,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         object.paint(object.getGraphics());
     }
 
+    // TODO: fix bug; clear button continues path once
     void handleClearButton() {
         object.clear();
         object.paint(object.getGraphics());
@@ -156,7 +158,8 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         winWidth = getWidth();
         winHeight= getHeight();
         calculateScreenSizes();
-        object.resize(screenWidth, screenHeight);
+        sizeScrollbar.setMaximum(maxObjectSize);
+        object.resize(screenWidth, screenHeight, maxObjectSize);
         setElementPositions();
     }
 
@@ -220,9 +223,10 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         Scrollbar sb = (Scrollbar) e.getSource();
         if(sb == speedScrollbar) {
             delay = (int) ((1.0/sb.getValue()) * SECONDS_TO_MILLIS);
-            thread.interrupt();
         }
         else if(sb == sizeScrollbar) {
+            paused = true;
+            start.setLabel("Run");
             int newSize = sb.getValue();
             newSize = (newSize/2)*2 + 1; // force the size to be odd for center position
             object.updateSize(newSize);
@@ -271,6 +275,14 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         // determine scroll bar width
         scrollWidth = 2 * buttonWidth;
 
+        // recalculate max object size for screen
+        if(screenWidth >= screenHeight) { // limited by height
+            maxObjectSize = screenHeight - screenHeight/4;
+        }
+        else { // limited by width
+            maxObjectSize = screenWidth - screenWidth/4;
+        }
+
         // set the background color
         setBackground(Color.lightGray);
     }
@@ -316,7 +328,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
         // create size scroll bar
         sizeScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
-        sizeScrollbar.setMaximum(MAXOBJECTSIZE);
+        sizeScrollbar.setMaximum(maxObjectSize);
         sizeScrollbar.setMinimum(MINOBJECTSIZE);
         sizeScrollbar.setUnitIncrement(SCROLLUNIT);
         sizeScrollbar.setBlockIncrement(SCROLLBLOCK);
@@ -325,7 +337,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeScrollbar.setBackground(Color.gray);
 
         // create object
-        object = new Objc(objectSize, screenWidth, screenHeight);
+        object = new Objc(objectSize, maxObjectSize, screenWidth, screenHeight);
         object.setBackground(Color.white);
 
         // add scrollbars, labels, object to frame
@@ -467,7 +479,7 @@ class Objc extends Canvas {
     private int screenWidth;
     private int screenHeight;
     private int objectSize;
-    private int oldsize;
+    private int maxObjectSize;
     private int oldx, oldy;
     private int x, y;
     private int xdir, ydir;
@@ -475,10 +487,11 @@ class Objc extends Canvas {
     private boolean clear;
     private boolean tail;
 
-    public Objc(int size, int w, int h) {
+    public Objc(int size, int max, int w, int h) {
         screenWidth = w;
         screenHeight = h;
         objectSize = size;
+        maxObjectSize = max;
         rect = true;
         clear = false;
         tail = true;
@@ -509,30 +522,59 @@ class Objc extends Canvas {
     }
 
     public void updateSize(int size) {
+
+        // get half of the object size, set old size,
+        // get origin of object
         int half = size/2;
-        oldsize = objectSize;
         int xpos = x - (objectSize-1)/2;
         int ypos = y - (objectSize-1)/2;
 
-        if(ypos + half >= screenHeight - screenHeight/4) {
-            objectSize = screenHeight - screenHeight/4 - ypos;
+        // limit object to maximum size
+        if(size >= maxObjectSize) {
+            objectSize = maxObjectSize;
         }
-        else if(xpos + half >= screenWidth - screenWidth/4) {
-            objectSize = screenWidth - screenWidth/4 - xpos;
+        else { 
+            // limit object size based on collisions with edges
+            if(xpos + half >= screenWidth) {
+                objectSize = (screenWidth - xpos) * 2;
+                print("hit right"); // debug
+            }
+            else if(xpos - half <= 0) {
+                objectSize = xpos * 2;
+                print("hit left"); // debug
+            }
+            else if(ypos + half >= screenHeight) {
+                objectSize = (screenHeight - ypos) * 2;
+                print("hit bottom"); // debug
+            }
+            else if(ypos - half <= 0) {
+                objectSize = ypos * 2;
+                print("hit top"); // debug
+            }
+            else { // no collisions, good
+                x -= size - objectSize;
+                y -= size - objectSize;
+                objectSize = size;
+            }
         }
-        else {
-            objectSize = size;
-        }
-        paint(this.getGraphics());
-        // debug
-        print("object size: " + objectSize);
+
+        print("x, y: " + xpos + ", " + ypos); // debug
+        this.paint(this.getGraphics());
     }
 
-    public void resize(int w, int h) {
+    public void resize(int w, int h, int max) {
         screenWidth = w;
         screenHeight = h;
-        y = screenHeight / 2;
-        x = screenWidth / 2;
+        if(x + objectSize >= screenWidth) {
+            x = screenWidth - objectSize;
+        }
+        if(y + objectSize >= screenHeight) {
+            y = screenHeight - objectSize;
+        }
+        maxObjectSize = max;
+        if(objectSize > maxObjectSize) {
+            objectSize = maxObjectSize;
+        }
     }
 
     public void clear() {
@@ -544,12 +586,14 @@ class Objc extends Canvas {
         g.setColor(Color.red);
         g.drawRect(0, 0, screenWidth-1, screenHeight-1);
         update(g);
-        Toolkit.getDefaultToolkit().sync(); // debug: for linux
+        Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
     }
 
     @Override
     public void update(Graphics g) {
         if(!tail) {
+            // TODO: fix bug; when tails are off, previous tails are overwritten
+            // TODO: fix bug; circle no tail looks buggy
             g.setColor(getBackground());
             int oldxpos = oldx - (objectSize-1)/2;
             int oldypos = oldy - (objectSize-1)/2;
@@ -568,7 +612,6 @@ class Objc extends Canvas {
             super.paint(g);
             g.setColor(Color.red);
             g.drawRect(0, 0, screenWidth-1, screenHeight-1);
-            clear = false;
         }
 
         if(rect) {
@@ -583,11 +626,15 @@ class Objc extends Canvas {
             g.setColor(Color.black);
             g.drawOval(xpos, ypos, objectSize-1, objectSize-1);
         }
-        updateDirections();
-        oldx = x;
-        oldy = y;
-        x += xdir;
-        y += ydir;
+        
+        if(!clear) {
+            updateDirections();
+            oldx = x;
+            oldy = y;
+            x += xdir;
+            y += ydir;
+        }
+        clear = false;
     }
 
     void updateDirections() {
