@@ -233,7 +233,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             if(object.getObjSize() != newSize) {
                 sb.setValue(object.getObjSize());
             }
-            object.paint(getGraphics());
+            object.paint(object.getGraphics());
         }
     }
 
