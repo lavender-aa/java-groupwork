@@ -272,10 +272,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void componentResized(ComponentEvent e) {}
 
     @Override
-    public void componentShown(ComponentEvent e) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'componentShown'");
-    }
+    public void componentShown(ComponentEvent e) {}
 
     @Override
     public void windowActivated(WindowEvent e) {}
