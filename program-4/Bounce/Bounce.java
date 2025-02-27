@@ -61,7 +61,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     // objects
     private Insets insets;
     Button start, shape, clear, tail, quit;
-    // private Objc object; TODO: uncomment when object class written
+    private Objc object; //TODO: uncomment when object class written
     private Label speedLabel = new Label("Speed", Label.CENTER);
     private Label sizeLabel = new Label("Size", Label.CENTER);
     Scrollbar speedScrollbar, sizeScrollbar;
@@ -171,8 +171,8 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeScrollbar.setBackground(Color.gray);
 
         // create object TODO: uncomment when object class written
-        // object = new Objc(objectSize, maxObjectSize, screenWidth, screenHeight);
-        // object.setBackground(Color.white);
+        object = new Objc(objectSize, maxObjectSize, screenWidth, screenHeight);
+        object.setBackground(Color.white);
 
         // add scrollbars, labels, object to frame
         add(speedScrollbar);
@@ -260,6 +260,41 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     }
 
+    public void startAction(){
+        
+    }
+
+    public void shapeAction(){
+        static boolean isCircle = false;
+        isCircle = !isCircle;
+        if(isCircle){
+            object.shape(oval);
+        }
+        else {
+            object.shape(rectangle);
+        }
+    }
+
+    public void tailAction(){
+        
+    }
+
+    public void clearAction(){
+        
+    }
+
+    public void quitAction(){
+        
+    }
+
+    public void speedAction(){
+        
+    }
+
+    public void sizeAction(){
+        
+    }
+
     @Override
     public void run() {}
 
@@ -267,7 +302,9 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void adjustmentValueChanged(AdjustmentEvent e) {}
 
     @Override
-    public void actionPerformed(ActionEvent e) {}
+    public void actionPerformed(ActionEvent e) {
+
+    }
 
     @Override
     public void componentHidden(ComponentEvent e) {}
