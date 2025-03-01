@@ -623,7 +623,6 @@ class Objc extends Canvas {
             g.drawRect(xpos, ypos, objectSize-1, objectSize-1);
         }
         else {
-            // TODO: bug; circle no tail leaves pixels
             if(!tail) {
                 g.setColor(getBackground());
                 if(rectToCirc && paused) {
