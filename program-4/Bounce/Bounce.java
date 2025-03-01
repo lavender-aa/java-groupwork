@@ -15,11 +15,6 @@ import java.io.*;
 public class Bounce extends Frame
 implements WindowListener, ComponentListener, ActionListener, AdjustmentListener, Runnable {
     
-    // debug TODO: remove
-    void print(String s) {
-        System.out.println(s);
-    }
-    
     // serial UID
     private static final long serialVersionUID = 10L;
 
@@ -96,16 +91,17 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         if(start.getLabel().equals("Pause")) {
             start.setLabel("Run");
             paused = true;
+            object.setPaused(true);
             thread.interrupt();
         }
         else {
             start.setLabel("Pause");
             paused = false;
+            object.setPaused(false);
             startThread();
         }
     }
 
-    // TODO: fix bug; shape button continues path
     void handleShapeButton() {
         if(!started) {
             object.clear();
@@ -113,6 +109,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         if(shape.getLabel().equals("Circle")) {
             shape.setLabel("Square");
             object.rectangle(false);
+            object.setRectToCirc();
         }
         else {
             shape.setLabel("Circle");
@@ -121,7 +118,6 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         object.paint(object.getGraphics());
     }
 
-    // TODO: fix bug; clear button continues path once
     void handleClearButton() {
         object.clear();
         object.paint(object.getGraphics());
@@ -226,6 +222,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         }
         else if(sb == sizeScrollbar) {
             paused = true;
+            object.setPaused(true);
             start.setLabel("Run");
             int newSize = sb.getValue();
             newSize = (newSize/2)*2 + 1; // force the size to be odd for center position
@@ -469,11 +466,6 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 // objc class
 class Objc extends Canvas {
 
-    // debug TODO: remove
-    void print(String s) {
-        System.out.println(s);
-    }
-    
     // data
     private static final long serialVersionUID = 11L;
     private int screenWidth;
@@ -486,6 +478,8 @@ class Objc extends Canvas {
     private boolean rect;
     private boolean clear;
     private boolean tail;
+    private boolean paused;
+    private boolean rectToCirc;
 
     public Objc(int size, int max, int w, int h) {
         screenWidth = w;
@@ -499,6 +493,8 @@ class Objc extends Canvas {
         x = screenWidth/2;
         xdir = 2;
         ydir = 2;
+        paused = true;
+        rectToCirc = false;
     }
 
     public void setTail(boolean val) {
@@ -521,13 +517,19 @@ class Objc extends Canvas {
         return objectSize;
     }
 
+    public void setPaused(boolean val) {
+        paused = val;
+    }
+
+    public void setRectToCirc() {
+        rectToCirc = true;
+    }
+
     public void updateSize(int size) {
 
         // get half of the object size, set old size,
         // get origin of object
         int half = size/2;
-        int xpos = x - (objectSize-1)/2;
-        int ypos = y - (objectSize-1)/2;
 
         // limit object to maximum size
         if(size >= maxObjectSize) {
@@ -535,21 +537,19 @@ class Objc extends Canvas {
         }
         else { 
             // limit object size based on collisions with edges
-            if(xpos + half >= screenWidth) {
-                objectSize = (screenWidth - xpos) * 2;
+            if(x + half >= screenWidth) {
+                objectSize = (screenWidth - x) * 2;
             }
-            else if(xpos - half <= 0) {
-                objectSize = xpos * 2;
+            else if(x - half <= 0) {
+                objectSize = x * 2;
             }
-            else if(ypos + half >= screenHeight) {
-                objectSize = (screenHeight - ypos) * 2;
+            else if(y + half >= screenHeight) {
+                objectSize = (screenHeight - y) * 2;
             }
-            else if(ypos - half <= 0) {
-                objectSize = ypos * 2;
+            else if(y - half <= 0) {
+                objectSize = y * 2;
             }
             else { // no collisions, good
-                x -= size - objectSize;
-                y -= size - objectSize;
                 objectSize = size;
             }
         }
@@ -585,22 +585,26 @@ class Objc extends Canvas {
 
     @Override
     public void update(Graphics g) {
-        if(!tail) {
-            // TODO: fix bug; when tails are off, previous tails are overwritten
-            // TODO: fix bug; circle no tail looks buggy
-            g.setColor(getBackground());
-            int oldxpos = oldx - (objectSize-1)/2;
-            int oldypos = oldy - (objectSize-1)/2;
-            if(rect) {
-                g.fillRect(oldxpos, oldypos, objectSize, objectSize);
-            }
-            else {
-                g.fillOval(oldxpos, oldypos, objectSize, objectSize);
-            }
+
+        // get new position
+        if(!clear && !paused) {
+            updateDirections();
+            oldx = x;
+            oldy = y;
+            x += xdir;
+            y += ydir;
         }
 
+        // offset x and y so that the object is drawn at 
         int xpos = x - (objectSize-1)/2;
         int ypos = y - (objectSize-1)/2;
+
+        // calculate old positions
+        // circles need to be 2 pixels larger to cover artifacts
+        int oldxposCirc = oldx - (objectSize+1)/2;
+        int oldyposCirc = oldy - (objectSize+1)/2;
+        int oldxposRect = oldx - (objectSize-1)/2;
+        int oldyposRect = oldy - (objectSize-1)/2;
 
         if(clear) {
             super.paint(g);
@@ -609,26 +613,37 @@ class Objc extends Canvas {
         }
 
         if(rect) {
+            if(!tail) {
+                g.setColor(getBackground());
+                g.fillRect(oldxposRect, oldyposRect, objectSize, objectSize);
+            }
             g.setColor(Color.lightGray);
             g.fillRect(xpos, ypos, objectSize, objectSize);
             g.setColor(Color.black);
             g.drawRect(xpos, ypos, objectSize-1, objectSize-1);
         }
         else {
+            // TODO: bug; circle no tail leaves pixels
+            if(!tail) {
+                g.setColor(getBackground());
+                if(rectToCirc && paused) {
+                    g.fillRect(xpos, ypos, objectSize, objectSize);
+                }
+                else if(rectToCirc) {
+                    g.fillRect(oldxposRect, oldyposRect, objectSize, objectSize);
+                }
+                else {
+                    g.fillOval(oldxposCirc, oldyposCirc, objectSize+2, objectSize+2);
+                }
+            }
             g.setColor(Color.lightGray);
-            g.fillOval(xpos, ypos, objectSize-1, objectSize-1);
+            g.fillOval(xpos, ypos, objectSize, objectSize);
             g.setColor(Color.black);
             g.drawOval(xpos, ypos, objectSize-1, objectSize-1);
         }
         
-        if(!clear) {
-            updateDirections();
-            oldx = x;
-            oldy = y;
-            x += xdir;
-            y += ydir;
-        }
         clear = false;
+        rectToCirc = false;
     }
 
     void updateDirections() {
