@@ -261,7 +261,12 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     }
 
     public void startAction(){
-        
+        if(start.getText().equals("Start")){
+            start.setText("Stop");
+        }
+        if(start.getText().equals("Stop")) {
+            start.setText("Start");
+        }
     }
 
     public void shapeAction(){
@@ -271,12 +276,16 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         }
         if(shape.getText().equals("Square")) {
             //object.shape(rectangle);
-            shape.setText("Cirlce");
+            shape.setText("Circle");
         }
     }
 
     public void tailAction(){
-        
+        if(tail.getText().equals("Tail")){
+            tail.setText("No Tail");
+        }
+        if(tail.getText().equals("No Tail")) {
+            tail.setText("Tail");
     }
 
     public void clearAction(){
