@@ -11,6 +11,7 @@ package Bounce;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.ArrayList;
 
 public class Bounce extends Frame
 implements WindowListener, ComponentListener, ActionListener, AdjustmentListener, Runnable {
@@ -61,12 +62,11 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     // objects
     private Insets insets;
     Button start, shape, clear, tail, quit;
-    // private Objc object; TODO: uncomment when object class written
+    private AnimatedObject animatedObject;
     private Label speedLabel = new Label("Speed", Label.CENTER);
     private Label sizeLabel = new Label("Size", Label.CENTER);
     Scrollbar speedScrollbar, sizeScrollbar;
     private Thread thread;
-
 
 
     // main
@@ -170,16 +170,16 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeScrollbar.setVisibleAmount(SIZESCROLLVISIBLE);
         sizeScrollbar.setBackground(Color.gray);
 
-        // create object TODO: uncomment when object class written
-        // object = new Objc(objectSize, maxObjectSize, screenWidth, screenHeight);
-        // object.setBackground(Color.white);
+        // create object
+        animatedObject = new AnimatedObject(objectSize, maxObjectSize, screenWidth, screenHeight);
+        animatedObject.setBackground(Color.white);
 
         // add scrollbars, labels, object to frame
         add(speedScrollbar);
         add(sizeScrollbar);
         add(speedLabel);
         add(sizeLabel);
-        // add(object); TODO: uncomment when object class written
+        add(animatedObject);
 
         // add listeners to scrollbars
         speedScrollbar.addAdjustmentListener(this);
@@ -256,18 +256,52 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeLabel.setSize(scrollWidth, SCROLLBARHEIGHT);
 
         // set object bounds
-        // object.setBounds(insets.left, insets.top, screenWidth, screenHeight); TODO: uncomment when object class written
+        animatedObject.setBounds(insets.left, insets.top, screenWidth, screenHeight);
 
     }
 
     @Override
-    public void run() {}
+    public void run() {
+        while (run) {
+            if (!paused) {
+                animatedObject.update();
+            }
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
-    public void adjustmentValueChanged(AdjustmentEvent e) {}
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+        if (e.getSource() == speedScrollbar) {
+            scrollSpeed = speedScrollbar.getValue();
+            delay = (int) ((1.0 / scrollSpeed) * SECONDS_TO_MILLIS);
+        } else if (e.getSource() == sizeScrollbar) {
+            objectSize = sizeScrollbar.getValue();
+            animatedObject.setSize(objectSize);
+        }
+    }
 
     @Override
-    public void actionPerformed(ActionEvent e) {}
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == start) {
+            paused = !paused;
+            start.setLabel(paused ? "Run" : "Pause");
+        } else if (e.getSource() == shape) {
+            animatedObject.setShape(!animatedObject.isCircle());
+            shape.setLabel(animatedObject.isCircle() ? "Square" : "Circle");
+        } else if (e.getSource() == clear) {
+            animatedObject.clearTail();
+        } else if (e.getSource() == tail) {
+            animatedObject.setTail(!animatedObject.hasTail());
+            tail.setLabel(animatedObject.hasTail() ? "No Tail" : "Tail");
+        } else if (e.getSource() == quit) {
+            System.exit(0);
+        }
+    }
 
     @Override
     public void componentHidden(ComponentEvent e) {}
@@ -276,7 +310,10 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void componentMoved(ComponentEvent e) {}
 
     @Override
-    public void componentResized(ComponentEvent e) {}
+    public void componentResized(ComponentEvent e) {
+        calculateScreenSizes();
+        animatedObject.setBounds(insets.left, insets.top, screenWidth, screenHeight);
+    }
 
     @Override
     public void componentShown(ComponentEvent e) {}
@@ -301,4 +338,96 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     @Override
     public void windowOpened(WindowEvent e) {}
+
+    public class animatedObject extends canvas {
+
+        // Variables to store object properties
+        private int x, y;
+        private int dx, dy;
+        private int size;
+        private boolean isCircle;
+        private boolean hasTail;
+        private ArrayList<Point> tailPoints;
+
+        private int maxSize, screenWidth, screenHeight;
+
+        public AnimatedObject (int size, int maxSize, int screenWidth, int screenHeight) {
+            this.size = size;
+            this.maxSize = maxSize;
+            this.screenWidth = screenWidth;
+            this.screenHeight = screenHeight;
+            this.x = screenWidth / 2; // Initial x position
+            this.y = screenHeight / 2; // Initial y position
+            this.dx = 2; // Initial horizontal speed
+            this.dy = 2; // Initial vertical speed
+            this.isCircle = false; // default shape is a square
+            this.hasTail = true; // default has tail
+            this.tailPoints = new ArrayList<>(); // Initialize tail points
+        }
+
+        // Update method to move the object
+        public void update() {
+
+            // Move object diagonally
+            x += dx;
+            y += dy;
+
+            // Check for collisions with the boundaries
+            if ((x <= 0) || (x >= screenWidth - size)) {
+                dx = -dx;
+            }
+            if ((y <= 0) || (y >= screenHeight - size)) {
+                dy = -dy;
+            }
+
+            // If tail is enabled, add current position to the tail list
+            if (hasTail) {
+                tailPoints.add(new Point(x, y));
+            }
+
+            // Redraw the object
+            repaint();
+        }
+
+        // Paint method to draw the object
+        @Override
+        public void paint(Graphics g) {
+
+            // If tail is enabled, draw previous positions
+            if (hasTail) {
+                g.setColor(Color.lightGray);
+                for (Point p : tailPoints) {
+                    g.fillOval(p.x, p.y, size, size);
+                }
+            }
+
+            // Draw the current object (Circle or Square)
+            if (isCircle) {
+                g.setColor(Color.blue); // Set color for circle
+                g.fillOval(x, y, size, size); // Draw Circle
+            } else {
+                g.setColor(Color.red); // Set color for square
+                g.fillRect(x, y, size, size); // Draw Square
+            }
+        }
+
+        // Getter and Setter methods for object properties
+        public void setSize(int newSize) {
+            this.size = Math.min(newSize, maxSize); // Ensure that the size does not exceed maxSize
+        }
+
+        public void setShape(boolean isCircle) {
+            this.isCircle = isCircle; // Toggle between circle and square
+        }
+
+        public void setTail(boolean hasTail) {
+            this.hasTail = hasTail; // Toggle tail between on and off
+        }
+
+        // Method to change the speed
+        public void setSpeed(int speed) {
+            this.dx = speed;
+            this.dy = speed;
+        }
+    }
 }
