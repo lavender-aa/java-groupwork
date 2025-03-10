@@ -14,7 +14,7 @@ import java.io.*;
 
 public class Bounce extends Frame
 implements WindowListener, ComponentListener, ActionListener, AdjustmentListener, Runnable {
-    
+
     // serial UID
     private static final long serialVersionUID = 10L;
 
@@ -61,8 +61,6 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     private Label sizeLabel = new Label("Size", Label.CENTER);
     Scrollbar speedScrollbar, sizeScrollbar;
     private Thread thread;
-
-
 
 
     // actions
