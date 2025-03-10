@@ -265,13 +265,13 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     }
 
     public void shapeAction(){
-        static boolean isCircle = false;
-        isCircle = !isCircle;
-        if(isCircle){
-            object.shape(oval);
+        if(shape.getText().equals("Circle")){
+            //object.shape(oval);
+            shape.setText("Square");
         }
-        else {
-            object.shape(rectangle);
+        if(shape.getText().equals("Square")) {
+            //object.shape(rectangle);
+            shape.setText("Cirlce");
         }
     }
 
@@ -303,7 +303,29 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
 
+        if (source == start) {
+            startAction();
+        }
+        if (source == shape) {
+            shapeAction();
+        }
+        if (source == clear) {
+            clearAction();
+        }
+        if (source == tail) {
+            tailAction();
+        }
+        if (source == quit) {
+            quitAction();
+        }
+        if (source == size) {
+            sizeAction();
+        }
+        if (source == speed) {
+            speedAction();
+        }
     }
 
     @Override
