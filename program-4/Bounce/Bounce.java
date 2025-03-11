@@ -260,6 +260,21 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     }
 
+    public void stop()
+    {
+        start.removeActionListener();
+        shape.removeActionListener();
+        clear.removeActionListener();
+        tail.removeActionListener();
+        quit.removeActionListener();
+        speedScrollbar.removeAdjustmentListener();
+        sizeScrollbar.removeAdjustmentListener();
+        this.removeComponentListener(this);
+        this.removeWindowListener(this);
+        dispose();
+        SYstem.exti(0); 
+    }
+
     public void startAction(){
         if(start.getText().equals("Start")){
             start.setText("Stop");
@@ -293,7 +308,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     }
 
     public void quitAction(){
-        
+        stop();
     }
 
     public void speedAction(){
@@ -308,7 +323,16 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void run() {}
 
     @Override
-    public void adjustmentValueChanged(AdjustmentEvent e) {}
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+        Object source = e.getSource();
+
+        if (source == size) {
+            sizeAction();
+        }
+        if (source == speed) {
+            speedAction();
+        }
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -328,12 +352,6 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         }
         if (source == quit) {
             quitAction();
-        }
-        if (source == size) {
-            sizeAction();
-        }
-        if (source == speed) {
-            speedAction();
         }
     }
 
@@ -356,7 +374,9 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void windowClosed(WindowEvent e) {}
 
     @Override
-    public void windowClosing(WindowEvent e) {}
+    public void windowClosing(WindowEvent e) {
+        stop();
+    }
 
     @Override
     public void windowDeactivated(WindowEvent e) {}
