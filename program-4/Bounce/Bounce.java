@@ -86,6 +86,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             e.printStackTrace();
         }
         setElementPositions();
+        started = false;
         startThread(); //TODO: uncomment when startThread() written
     }
 
@@ -262,11 +263,18 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     public void startThread()
     {
+        if(thread == null)
+        {
+            thread = new Thread(this);
+            thread.start();
+            started = true;
+        }
         object.repaint();
     }
 
     public void stop()
     {
+        thread.interrupt();
         start.removeActionListener();
         shape.removeActionListener();
         clear.removeActionListener();
@@ -277,15 +285,19 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         this.removeComponentListener(this);
         this.removeWindowListener(this);
         dispose();
-        SYstem.exti(0); 
+        System.exit(0); 
     }
 
     public void startAction(){
         if(start.getLabel().equals("Start")){
             start.setLabel("Stop");
+            thread.start();
+            paused = false;
         }
         if(start.getLabel().equals("Stop")) {
             start.setLabel("Start");
+            thread.interrupt();
+            paused = true;
         }
     }
 
@@ -298,15 +310,20 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             shape.setLabel("Circle");
             object.rectangle(true);
         }
+        if(!started){
+            object.clear();
+        }
         object.repaint();
     }
 
     public void tailAction(){
         if(tail.getLabel().equals("Tail")){
             tail.setLabel("No Tail");
+            object.setTail(true);
         }
         if(tail.getLabel().equals("No Tail")) {
             tail.setLabel("Tail");
+            object.setTail(false);
     }
 
     public void clearAction(){
@@ -417,6 +434,7 @@ class Objc extends Canvas
     private int x, y;
     private boolean rect = true;
     private boolean clear = false;
+    private boolean tail = false;
 
     public Objc(int sb, int w, int h)
     {
@@ -432,6 +450,11 @@ class Objc extends Canvas
     public void rectangle(boolean r)
     {
         rect = r;
+    }
+
+    public void setTail(boolean t)
+    {
+        tail = t;
     }
 
     @Override
@@ -465,6 +488,9 @@ class Objc extends Canvas
     @Override
     public void update(Graphics g)
     {
+        if(!tail)
+            clear = true;
+
         if(clear)
         {
             super.paint(g);
@@ -486,7 +512,6 @@ class Objc extends Canvas
             g.fillOval(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj, sObj);
             g.setColor(Color.black);
             g.drawOval(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj - 1, sObj - 1);     
-        
         }
     }
 //Close the class
