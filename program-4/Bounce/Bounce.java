@@ -61,7 +61,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     // objects
     private Insets insets;
     Button start, shape, clear, tail, quit;
-    // private Objc object; TODO: uncomment when object class written
+    private Objc object; //TODO: uncomment when object class written
     private Label speedLabel = new Label("Speed", Label.CENTER);
     private Label sizeLabel = new Label("Size", Label.CENTER);
     Scrollbar speedScrollbar, sizeScrollbar;
@@ -86,7 +86,8 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             e.printStackTrace();
         }
         setElementPositions();
-        // startThread(); TODO: uncomment when startThread() written
+        started = false;
+        startThread(); //TODO: uncomment when startThread() written
     }
 
     void calculateScreenSizes() {
@@ -171,15 +172,15 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeScrollbar.setBackground(Color.gray);
 
         // create object TODO: uncomment when object class written
-        // object = new Objc(objectSize, maxObjectSize, screenWidth, screenHeight);
-        // object.setBackground(Color.white);
+        object = new Objc(objectSize, maxObjectSize, screenWidth, screenHeight);
+        object.setBackground(Color.white);
 
         // add scrollbars, labels, object to frame
         add(speedScrollbar);
         add(sizeScrollbar);
         add(speedLabel);
         add(sizeLabel);
-        // add(object); TODO: uncomment when object class written
+        add(object); //TODO: uncomment when object class written
 
         // add listeners to scrollbars
         speedScrollbar.addAdjustmentListener(this);
@@ -256,18 +257,131 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeLabel.setSize(scrollWidth, SCROLLBARHEIGHT);
 
         // set object bounds
-        // object.setBounds(insets.left, insets.top, screenWidth, screenHeight); TODO: uncomment when object class written
+        object.setBounds(insets.left, insets.top, screenWidth, screenHeight); //TODO: uncomment when object class written
 
+    }
+
+    public void startThread()
+    {
+        if(thread == null)
+        {
+            thread = new Thread(this);
+            thread.start();
+            started = true;
+        }
+        object.repaint();
+    }
+
+    public void stop()
+    {
+        thread.interrupt();
+        start.removeActionListener(this);
+        shape.removeActionListener(this);
+        clear.removeActionListener(this);
+        tail.removeActionListener(this);
+        quit.removeActionListener(this);
+        speedScrollbar.removeAdjustmentListener(this);
+        sizeScrollbar.removeAdjustmentListener(this);
+        this.removeComponentListener(this);
+        this.removeWindowListener(this);
+        dispose();
+        System.exit(0); 
+    }
+
+    public void startAction(){
+        if(start.getLabel().equals("Start")){
+            start.setLabel("Stop");
+            thread.start();
+            paused = false;
+        }
+        if(start.getLabel().equals("Stop")) {
+            start.setLabel("Start");
+            thread.interrupt();
+            paused = true;
+        }
+    }
+
+    public void shapeAction(){
+        if(shape.getLabel().equals("Circle")){
+            shape.setLabel("Square");
+            object.rectangle(false);
+        }
+        if(shape.getLabel().equals("Square")) {
+            shape.setLabel("Circle");
+            object.rectangle(true);
+        }
+        if(!started){
+            object.clear();
+        }
+        object.repaint();
+    }
+
+    public void tailAction(){
+        if(tail.getLabel().equals("Tail")){
+            tail.setLabel("No Tail");
+            object.setTail(true);
+        }
+        if(tail.getLabel().equals("No Tail")) {
+            tail.setLabel("Tail");
+            object.setTail(false);
+        }
+    }
+
+    public void clearAction(){
+        object.clear();
+        object.repaint();
+    }
+
+    public void quitAction(){
+        stop();
+    }
+
+    public void speedAction(int ts){
+        ts = (ts/2) * 2 + 1; // make odd
+        object.update(this.getGraphics());
+    }
+
+    public void sizeAction(int ts){
+        
     }
 
     @Override
     public void run() {}
 
     @Override
-    public void adjustmentValueChanged(AdjustmentEvent e) {}
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+        Object source = e.getSource();
+        int ts = e.getValue();
+
+        if (source == sizeScrollbar) {
+            sizeAction(ts);
+        }
+        if (source == speedScrollbar) {
+            speedAction(ts);
+        }
+        object.repaint();
+    }
 
     @Override
-    public void actionPerformed(ActionEvent e) {}
+    public void actionPerformed(ActionEvent e) {
+        Object source = e.getSource();
+
+        if (source == start) {
+            startAction();
+        }
+        if (source == shape) {
+            shapeAction();
+        }
+        if (source == clear) {
+            clearAction();
+        }
+        if (source == tail) {
+            tailAction();
+        }
+        if (source == quit) {
+            quitAction();
+        }
+    }
 
     @Override
     public void componentHidden(ComponentEvent e) {}
@@ -276,7 +390,13 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void componentMoved(ComponentEvent e) {}
 
     @Override
-    public void componentResized(ComponentEvent e) {}
+    public void componentResized(ComponentEvent e) {
+        winWidth = getWidth();
+        winHeight = getHeight();
+        calculateScreenSizes();
+        setElementPositions();
+        object.resize(winWidth, winHeight);
+    }
 
     @Override
     public void componentShown(ComponentEvent e) {}
@@ -288,7 +408,9 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void windowClosed(WindowEvent e) {}
 
     @Override
-    public void windowClosing(WindowEvent e) {}
+    public void windowClosing(WindowEvent e) {
+        stop();
+    }
 
     @Override
     public void windowDeactivated(WindowEvent e) {}
@@ -301,4 +423,97 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     @Override
     public void windowOpened(WindowEvent e) {}
+}
+
+
+class Objc extends Canvas
+{
+    private static final long serialVersionUID = 11L;
+    private int screenWidth;
+    private int screenHeight;
+    private int sObj;
+
+    private int x, y;
+    private boolean rect = true;
+    private boolean clear = false;
+    private boolean tail = false;
+
+    public Objc(int obSize, int maxSize, int w, int h)
+    {
+        this.screenWidth = w;
+        this.screenHeight = h;
+        if(obSize <= maxSize)
+            this.sObj = obSize;
+        rect = true;
+        clear = false;
+        y = this.screenHeight/2;
+        x = this.screenWidth/2;
+    }
+
+    public void rectangle(boolean r)
+    {
+        rect = r;
+    }
+
+    public void setTail(boolean t)
+    {
+        tail = t;
+    }
+
+    public void update(int ns)
+    {
+        sObj = ns;
+    }
+
+    public void reSize(int w, int h)
+    {
+        screenWidth = w;
+        screenHeight = h;
+        y = screenHeight/2;
+        x = screenWidth/2;
+    }
+
+    public void clear()
+    {
+        clear = true;
+    }
+
+    @Override
+    public void paint(Graphics g)
+    {
+        g.setColor(Color.red);
+        g.drawRect(0 ,0, this.screenWidth - 1, this.screenHeight -1);
+        update(g);
+    }
+
+    @Override
+    public void update(Graphics g)
+    {
+        if(!tail)
+            clear = true;
+
+        if(clear)
+        {
+            super.paint(g);
+            clear = false;
+            g.setColor(Color.red);
+            g.drawRect(0 ,0, this.screenWidth - 1, this.screenHeight -1);
+        }
+
+        if(rect)
+        {
+            g.setColor(Color.lightGray);
+            g.fillRect(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj, sObj);
+            g.setColor(Color.black);
+            g.drawRect(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj - 1, sObj - 1);     
+        }
+        else 
+        {
+            g.setColor(Color.lightGray);
+            g.fillOval(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj, sObj);
+            g.setColor(Color.black);
+            g.drawOval(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj - 1, sObj - 1);     
+        }
+    }
+//Close the class
 }
