@@ -362,7 +362,12 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void componentMoved(ComponentEvent e) {}
 
     @Override
-    public void componentResized(ComponentEvent e) {}
+    public void componentResized(ComponentEvent e) {
+        winWidth = getWidth();
+        winHeight = getHead();
+        calculateScreenSizes()
+        setElementPositions()
+    }
 
     @Override
     public void componentShown(ComponentEvent e) {}
