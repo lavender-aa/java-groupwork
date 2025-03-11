@@ -86,7 +86,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
             e.printStackTrace();
         }
         setElementPositions();
-        // startThread(); TODO: uncomment when startThread() written
+        startThread(); //TODO: uncomment when startThread() written
     }
 
     void calculateScreenSizes() {
@@ -179,7 +179,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         add(sizeScrollbar);
         add(speedLabel);
         add(sizeLabel);
-        // add(object); TODO: uncomment when object class written
+        add(object); //TODO: uncomment when object class written
 
         // add listeners to scrollbars
         speedScrollbar.addAdjustmentListener(this);
@@ -260,6 +260,11 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     }
 
+    public void startThread()
+    {
+        object.repaint();
+    }
+
     public void stop()
     {
         start.removeActionListener();
@@ -276,43 +281,46 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     }
 
     public void startAction(){
-        if(start.getText().equals("Start")){
-            start.setText("Stop");
+        if(start.getLabel().equals("Start")){
+            start.setLabel("Stop");
         }
-        if(start.getText().equals("Stop")) {
-            start.setText("Start");
+        if(start.getLabel().equals("Stop")) {
+            start.setLabel("Start");
         }
     }
 
     public void shapeAction(){
-        if(shape.getText().equals("Circle")){
-            //object.shape(oval);
-            shape.setText("Square");
+        if(shape.getLabel().equals("Circle")){
+            shape.setLabel("Square");
+            object.rectangle(false);
         }
-        if(shape.getText().equals("Square")) {
-            //object.shape(rectangle);
-            shape.setText("Circle");
+        if(shape.getLabel().equals("Square")) {
+            shape.setLabel("Circle");
+            object.rectangle(true);
         }
+        object.repaint();
     }
 
     public void tailAction(){
-        if(tail.getText().equals("Tail")){
-            tail.setText("No Tail");
+        if(tail.getLabel().equals("Tail")){
+            tail.setLabel("No Tail");
         }
-        if(tail.getText().equals("No Tail")) {
-            tail.setText("Tail");
+        if(tail.getLabel().equals("No Tail")) {
+            tail.setLabel("Tail");
     }
 
     public void clearAction(){
-        
+        object.clear();
+        object.repaint();
     }
 
     public void quitAction(){
         stop();
     }
 
-    public void speedAction(){
-        
+    public void speedAction(int ts){
+        ts = (ts/2) * 2 + 1; // make odd
+        object.update();
     }
 
     public void sizeAction(){
@@ -324,14 +332,15 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
-        Object source = e.getSource();
+        Scrollbar source = e.getSource();
 
-        if (source == size) {
-            sizeAction();
+        if (source == sizeScrollbar) {
+            sizeAction(e.getValue());
         }
-        if (source == speed) {
+        if (source == speedScrollbar) {
             speedAction();
         }
+        object.repaint();
     }
 
     @Override
