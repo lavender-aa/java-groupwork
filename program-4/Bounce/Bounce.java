@@ -256,7 +256,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         sizeLabel.setSize(scrollWidth, SCROLLBARHEIGHT);
 
         // set object bounds
-        // object.setBounds(insets.left, insets.top, screenWidth, screenHeight); TODO: uncomment when object class written
+        object.setBounds(insets.left, insets.top, screenWidth, screenHeight); //TODO: uncomment when object class written
 
     }
 
@@ -374,8 +374,9 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void componentResized(ComponentEvent e) {
         winWidth = getWidth();
         winHeight = getHead();
-        calculateScreenSizes()
-        setElementPositions()
+        calculateScreenSizes();
+        setElementPositions();
+        object.resize(winWidth, winHeight);
     }
 
     @Override
@@ -403,4 +404,90 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     @Override
     public void windowOpened(WindowEvent e) {}
+}
+
+
+class Objc extends Canvas
+{
+    private static final long serialVersionUID = 11L;
+    private int screenWidth;
+    private int screenHeight;
+    private  int sObj;
+
+    private int x, y;
+    private boolean rect = true;
+    private boolean clear = false;
+
+    public Objc(int sb, int w, int h)
+    {
+        this.screenWidth = w;
+        this.screenHeight = h;
+        this.sObj = sb;
+        rect = true;
+        clear = false;
+        y = this.screenHeight/2;
+        x = this.screenWidth/2;
+    }
+
+    public void rectangle(boolean r)
+    {
+        rect = r;
+    }
+
+    @Override
+    public void update(int ns)
+    {
+        sObj = ns;
+    }
+
+    public void reSize(int w, int h)
+    {
+        screenWidth = w;
+        screenHeight = h;
+        y = screenHeight/2;
+        x = screenWidth/2;
+    }
+
+    @Override
+    public void clear()
+    {
+        clear = true;
+    }
+
+    @Override
+    public void paint(Graphics g)
+    {
+        g.setColor(Color.red);
+        g.drawRect(0 ,0, this.screenWidth - 1, this.screenHeight -1);
+        update(g);
+    }
+
+    @Override
+    public void update(Graphics g)
+    {
+        if(clear)
+        {
+            super.paint(g);
+            clear = false;
+            g.setColor(Color.red);
+            g.drawRect(0 ,0, this.screenWidth - 1, this.screenHeight -1);
+        }
+
+        if(rect)
+        {
+            g.setColor(Color.lightGray);
+            g.fillRect(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj, sObj);
+            g.setColor(Color.black);
+            g.drawRect(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj - 1, sObj - 1);     
+        }
+        else 
+        {
+            g.setColor(Color.lightGray);
+            g.fillOval(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj, sObj);
+            g.setColor(Color.black);
+            g.drawOval(x - (sObj - 1) / 2, y - (sObj - 1) / 2, sObj - 1, sObj - 1);     
+        
+        }
+    }
+//Close the class
 }
