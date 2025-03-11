@@ -275,13 +275,13 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     public void stop()
     {
         thread.interrupt();
-        start.removeActionListener();
-        shape.removeActionListener();
-        clear.removeActionListener();
-        tail.removeActionListener();
-        quit.removeActionListener();
-        speedScrollbar.removeAdjustmentListener();
-        sizeScrollbar.removeAdjustmentListener();
+        start.removeActionListener(this);
+        shape.removeActionListener(this);
+        clear.removeActionListener(this);
+        tail.removeActionListener(this);
+        quit.removeActionListener(this);
+        speedScrollbar.removeAdjustmentListener(this);
+        sizeScrollbar.removeAdjustmentListener(this);
         this.removeComponentListener(this);
         this.removeWindowListener(this);
         dispose();
@@ -324,6 +324,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
         if(tail.getLabel().equals("No Tail")) {
             tail.setLabel("Tail");
             object.setTail(false);
+        }
     }
 
     public void clearAction(){
@@ -337,10 +338,10 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     public void speedAction(int ts){
         ts = (ts/2) * 2 + 1; // make odd
-        object.update();
+        object.update(this.getGraphics());
     }
 
-    public void sizeAction(){
+    public void sizeAction(int ts){
         
     }
 
@@ -349,13 +350,14 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
 
     @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
-        Scrollbar source = e.getSource();
+        Object source = e.getSource();
+        int ts = e.getValue();
 
         if (source == sizeScrollbar) {
-            sizeAction(e.getValue());
+            sizeAction(ts);
         }
         if (source == speedScrollbar) {
-            speedAction();
+            speedAction(ts);
         }
         object.repaint();
     }
@@ -390,7 +392,7 @@ implements WindowListener, ComponentListener, ActionListener, AdjustmentListener
     @Override
     public void componentResized(ComponentEvent e) {
         winWidth = getWidth();
-        winHeight = getHead();
+        winHeight = getHeight();
         calculateScreenSizes();
         setElementPositions();
         object.resize(winWidth, winHeight);
@@ -429,18 +431,19 @@ class Objc extends Canvas
     private static final long serialVersionUID = 11L;
     private int screenWidth;
     private int screenHeight;
-    private  int sObj;
+    private int sObj;
 
     private int x, y;
     private boolean rect = true;
     private boolean clear = false;
     private boolean tail = false;
 
-    public Objc(int sb, int w, int h)
+    public Objc(int obSize, int maxSize, int w, int h)
     {
         this.screenWidth = w;
         this.screenHeight = h;
-        this.sObj = sb;
+        if(obSize <= maxSize)
+            this.sObj = obSize;
         rect = true;
         clear = false;
         y = this.screenHeight/2;
@@ -457,7 +460,6 @@ class Objc extends Canvas
         tail = t;
     }
 
-    @Override
     public void update(int ns)
     {
         sObj = ns;
@@ -471,7 +473,6 @@ class Objc extends Canvas
         x = screenWidth/2;
     }
 
-    @Override
     public void clear()
     {
         clear = true;
