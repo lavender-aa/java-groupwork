@@ -21,8 +21,6 @@ implements WindowListener, ComponentListener, ActionListener,
  
     // constants
     private final Point FRAMESIZE = new Point(640, 400);
-    //  private final int WIDTH = 640;  // initial frame width
-    //  private final int HEIGHT = 400; // initial frame height
     private final int BUTTONHEIGHT = 30; // button height
     private final int BUTTONHEIGHTSPACING = 5; // button height spacing
     private final int MINOBJECTSIZE = 10;
@@ -37,12 +35,10 @@ implements WindowListener, ComponentListener, ActionListener,
     private final double SECONDS_TO_MILLIS = 1000;
 
     // primitives + strings
-    private int winWidth = WIDTH;
-    private int winHeight = HEIGHT;
+    private Point window = FRAMESIZE;
     private int winTop = 10;  // top of frame
     private int winLeft = 10; // left side of frame
-    private int screenWidth;
-    private int screenHeight;
+    private Point screen;
     private int screenCenter = WIDTH / 2;
     private int buttonWidth = 50;
     private int buttonSpacing = buttonWidth / 4;
@@ -57,7 +53,7 @@ implements WindowListener, ComponentListener, ActionListener,
     
     // objects
     private Insets insets;
-    Button start, shape, clear, tail, quit;
+    Button start, pause, quit;
     private Ball ball;
     private Label speedLabel = new Label("Speed", Label.CENTER);
     private Label sizeLabel = new Label("Size", Label.CENTER);
@@ -73,72 +69,25 @@ implements WindowListener, ComponentListener, ActionListener,
         Object source = e.getSource();
 
         if(source == start) {
-            handleStartButton();
+            if(start.getLabel().equals("Pause")) {
+                start.setLabel("Run");
+                paused = true;
+                ball.setPaused(true);
+                thread.interrupt();
+            }
+            else {
+                start.setLabel("Pause");
+                paused = false;
+                ball.setPaused(false);
+                startThread();
+            }
         }
-        else if(source == shape) {
-            handleShapeButton();
-        }
-        else if(source == clear) {
-            handleClearButton();
-        }
-        else if(source == tail) {
-            handleTailButton();
+        else if(source == pause) {
+            // pause button
         }
         else { // source == quit
-            handleQuitButton();
+            stop();
         }
-    }
-
-    void handleStartButton() {
-        if(start.getLabel().equals("Pause")) {
-            start.setLabel("Run");
-            paused = true;
-            ball.setPaused(true);
-            thread.interrupt();
-        }
-        else {
-            start.setLabel("Pause");
-            paused = false;
-            ball.setPaused(false);
-            startThread();
-        }
-    }
-
-    void handleShapeButton() {
-        if(!started) {
-            ball.clear();
-        }
-        if(shape.getLabel().equals("Circle")) {
-            shape.setLabel("Square");
-            ball.rectangle(false);
-            ball.setRectToCirc();
-        }
-        else {
-            shape.setLabel("Circle");
-            ball.rectangle(true);
-        }
-        ball.paint(ball.getGraphics());
-    }
-
-    void handleClearButton() {
-        ball.clear();
-        ball.paint(ball.getGraphics());
-    }
-
-    void handleTailButton() {
-        if(tail.getLabel().equals("Tail")) {
-            tail.setLabel("No Tail");
-            ball.setTail(true);
-            
-        }
-        else if(tail.getLabel().equals("No Tail")) {
-            tail.setLabel("Tail");
-            ball.setTail(false);
-        }
-    }
-
-    void handleQuitButton() {
-        stop();
     }
 
 
@@ -157,8 +106,7 @@ implements WindowListener, ComponentListener, ActionListener,
         winHeight= getHeight();
         calculateScreenSizes();
         sizeScrollbar.setMaximum(maxObjectSize);
-        ball.resize(screenWidth, screenHeight, maxObjectSize);
-        setElementPositions();
+        ball.resize(screen, maxObjectSize);
     }
 
     @Override
@@ -209,9 +157,7 @@ implements WindowListener, ComponentListener, ActionListener,
     void stop() {
         // remove all listeners
         start.removeActionListener(this);
-        shape.removeActionListener(this);
-        clear.removeActionListener(this);
-        tail.removeActionListener(this);
+        pause.removeActionListener(this);
         quit.removeActionListener(this);
         speedScrollbar.removeAdjustmentListener(this);
         sizeScrollbar.removeAdjustmentListener(this);
@@ -286,28 +232,28 @@ implements WindowListener, ComponentListener, ActionListener,
         insets = getInsets();
 
         // set screen width (has borders on left and right)
-        screenWidth = winWidth - insets.left - insets.right;
+        screen.x = window.x - insets.left - insets.right;
 
         // set screen height (vertical insets, space at bottom for two rows of buttons)
-        screenHeight = winHeight - insets.top - insets.bottom - (2 * (BUTTONHEIGHT + BUTTONHEIGHTSPACING));
+        screen.y = window.y - insets.top - insets.bottom - (2 * (BUTTONHEIGHT + BUTTONHEIGHTSPACING));
         
         // set frame size
-        setSize(winWidth, winHeight);
+        setSize(window.x, window.y);
 
         // calculate center, button width, button spacing
-        screenCenter = screenWidth / 2;
-        buttonWidth = screenWidth / 11; // 11 units
+        screenCenter = screen.x / 2;
+        buttonWidth = screen.x / 11; // 11 units
         buttonSpacing = buttonWidth / 4;
 
         // determine scroll bar width
         scrollWidth = 2 * buttonWidth;
 
         // recalculate max object size for screen
-        if(screenWidth >= screenHeight) { // limited by height
-            maxObjectSize = screenHeight - screenHeight/4;
+        if(screen.x >= screen.y) { // limited by height
+            maxObjectSize = screen.y - screen.y/4;
         }
         else { // limited by width
-            maxObjectSize = screenWidth - screenWidth/4;
+            maxObjectSize = screen.x - screen.x/4;
         }
 
         // set the background color
@@ -318,22 +264,19 @@ implements WindowListener, ComponentListener, ActionListener,
 
         // initialize program variables
         paused = true;
+        started = false;
         run = true;
         scrollSpeed = 50;
         delay = (int) ((1.0/scrollSpeed) * SECONDS_TO_MILLIS);
         
         // create buttons
         start = new Button("Run");
-       shape = new Button("Circle");
-        clear = new Button("Clear");
-        tail = new Button("No Tail");
+        pause = new Button("Pause");
         quit = new Button("Quit");
 
         // add actionListeners to buttons
         start.addActionListener(this);
-        shape.addActionListener(this);
-        clear.addActionListener(this);
-        tail.addActionListener(this);
+        pause.addActionListener(this);
         quit.addActionListener(this);
 
         // create speed scroll bar
@@ -357,7 +300,7 @@ implements WindowListener, ComponentListener, ActionListener,
         sizeScrollbar.setBackground(Color.gray);
 
         // create ball
-        ball = new Ball(objectSize, maxObjectSize, screenWidth, screenHeight);
+        ball = new Ball(objectSize, maxObjectSize, screen);
         ball.setBackground(Color.white);
         // init sheet, control panels
         sheet.setLayout(new BorderLayout(0,0));
@@ -417,7 +360,6 @@ implements WindowListener, ComponentListener, ActionListener,
 
     // main function
     public static void main(String[] args) {
-        started = false;
         new BouncingBall();
     }
 }
@@ -433,7 +375,6 @@ class Ball extends Canvas {
     private Point screen;
     private int objectSize;
     private int maxObjectSize;
-    private Point oldpos;
     private Point pos;
     private Point dir;
     private boolean clear;
@@ -472,17 +413,17 @@ class Ball extends Canvas {
         }
         else { 
             // limit object size based on collisions with edges
-            if(x + half >= screenWidth) {
-                objectSize = (screenWidth - x) * 2;
+            if(pos.x + half >= screen.x) {
+                objectSize = (screen.x - pos.x) * 2;
             }
-            else if(x - half <= 0) {
-                objectSize = x * 2;
+            else if(pos.x - half <= 0) {
+                objectSize = pos.x * 2;
             }
-            else if(y + half >= screenHeight) {
-                objectSize = (screenHeight - y) * 2;
+            else if(pos.y + half >= screen.y) {
+                objectSize = (screen.y - pos.y) * 2;
             }
-            else if(y - half <= 0) {
-                objectSize = y * 2;
+            else if(pos.y - half <= 0) {
+                objectSize = pos.y * 2;
             }
             else { // no collisions, good
                 objectSize = size;
@@ -493,11 +434,11 @@ class Ball extends Canvas {
 
     public void resize(Point newScreen, int max) {
         screen = newScreen;
-        if(x + objectSize >= screenWidth) {
-            x = screenWidth - objectSize;
+        if(pos.x + objectSize >= screen.x) {
+            pos.x = screen.x - objectSize;
         }
-        if(y + objectSize >= screenHeight) {
-            y = screenHeight - objectSize;
+        if(pos.y + objectSize >= screen.y) {
+            pos.y = screen.y - objectSize;
         }
         maxObjectSize = max;
         if(objectSize > maxObjectSize) {
@@ -510,10 +451,15 @@ class Ball extends Canvas {
     }
 
     @Override
-    public void paint(Graphics g) {
-        g.setColor(Color.red);
-        g.drawRect(0, 0, screenWidth-1, screenHeight-1);
-        update(g);
+    public void paint(Graphics current) {
+        buffer = createImage(screen.x, screen.y);
+        if(nextFrame != null) {
+            nextFrame.dispose();
+            nextFrame = buffer.getGraphics();
+        }
+        nextFrame.setColor(Color.red);
+        nextFrame.drawRect(0, 0, screen.x-1, screen.y-1);
+        update(nextFrame);
         Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
     }
 
@@ -523,82 +469,52 @@ class Ball extends Canvas {
         // get new position
         if(!clear && !paused) {
             updateDirections();
-            oldx = x;
-            oldy = y;
-            x += xdir;
-            y += ydir;
+            pos.x += dir.x;
+            pos.y += dir.y;
         }
 
         // offset x and y so that the object is drawn at 
-        int xpos = x - (objectSize-1)/2;
-        int ypos = y - (objectSize-1)/2;
+        int xpos = pos.x - (objectSize-1)/2;
+        int ypos = pos.y - (objectSize-1)/2;
 
-        // calculate old positions
-        // circles need to be 2 pixels larger to cover artifacts
-        int oldxposCirc = oldx - (objectSize+1)/2;
-        int oldyposCirc = oldy - (objectSize+1)/2;
-        int oldxposRect = oldx - (objectSize-1)/2;
-        int oldyposRect = oldy - (objectSize-1)/2;
-
+        // clear the screen if needed
         if(clear) {
             super.paint(g);
             g.setColor(Color.red);
-            g.drawRect(0, 0, screenWidth-1, screenHeight-1);
-        }
-
-        if(rect) {
-            if(!tail) {
-                g.setColor(getBackground());
-                g.fillRect(oldxposRect, oldyposRect, objectSize, objectSize);
-            }
-            g.setColor(Color.lightGray);
-            g.fillRect(xpos, ypos, objectSize, objectSize);
-            g.setColor(Color.black);
-            g.drawRect(xpos, ypos, objectSize-1, objectSize-1);
-        }
-        else {
-            if(!tail) {
-                g.setColor(getBackground());
-                if(rectToCirc && paused) {
-                    g.fillRect(xpos, ypos, objectSize, objectSize);
-                }
-                else if(rectToCirc) {
-                    g.fillRect(oldxposRect, oldyposRect, objectSize, objectSize);
-                }
-                else {
-                    g.fillOval(oldxposCirc, oldyposCirc, objectSize+2, objectSize+2);
-                }
-            }
-            g.setColor(Color.lightGray);
-            g.fillOval(xpos, ypos, objectSize, objectSize);
-            g.setColor(Color.black);
-            g.drawOval(xpos, ypos, objectSize-1, objectSize-1);
+            g.drawRect(0, 0, screen.x-1, screen.y-1);
+            clear = false;
         }
         
-        clear = false;
-        rectToCirc = false;
+        // draw the circle to the graphics
+        g.setColor(Color.lightGray);
+        g.fillOval(xpos, ypos, objectSize, objectSize);
+        g.setColor(Color.black);
+        g.drawOval(xpos, ypos, objectSize-1, objectSize-1);
+        
+        // swap out current graphics with finished one
+
     }
 
     void updateDirections() {
 
         // right bound check
-        if(x + objectSize/2 >= screenWidth) {
-            xdir = -2;
+        if(pos.x + objectSize/2 >= screen.x) {
+            dir.x = -1;
         }
                 
         // left bound check
-        if(x - objectSize/2 <= 0) {
-            xdir = 2;
+        if(pos.x - objectSize/2 <= 0) {
+            dir.x = 1;
         }
 
         // top bound check
-        if(y - objectSize/2 <= 0) {
-            ydir = 2;
+        if(pos.y - objectSize/2 <= 0) {
+            dir.y = 1;
         }
 
         // bottom bound check
-        if(y + objectSize/2 >= screenHeight) {
-            ydir = -2;
+        if(pos.y + objectSize/2 >= screen.y) {
+            dir.y = -1;
         }
     }
 }
