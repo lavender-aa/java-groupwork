@@ -11,6 +11,8 @@ package Bounce;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+
+import org.w3c.dom.css.Rect;
  
 public class BouncingBall extends Frame
 implements WindowListener, ComponentListener, ActionListener, 
@@ -21,6 +23,7 @@ implements WindowListener, ComponentListener, ActionListener,
  
     // constants
     private final Point FRAMESIZE = new Point(640, 400);
+    private final int BUTTONHEIGHT = 30;
     private final int MINOBJECTSIZE = 10;
     private final int DEFAULTOBJECTSIZE = 21;
     private final int SPEEDSCROLLVISIBLE = 50;
@@ -32,10 +35,8 @@ implements WindowListener, ComponentListener, ActionListener,
     private final double SECONDS_TO_MILLIS = 1000;
 
     // primitives + strings
-    private Point window = FRAMESIZE;
     private int winTop = 10;  // top of frame
     private int winLeft = 10; // left side of frame
-    private Point screen;
     private int maxObjectSize = 500;
     private int objectSize = DEFAULTOBJECTSIZE;
     private boolean run; // control program loop
@@ -46,14 +47,24 @@ implements WindowListener, ComponentListener, ActionListener,
     
     // objects
     private Insets insets;
-    Button start, pause, quit;
+    private Button start, pause, quit;
     private Ball ball;
     private Label speedLabel = new Label("Speed", Label.CENTER);
     private Label sizeLabel = new Label("Size", Label.CENTER);
-    Scrollbar speedScrollbar, sizeScrollbar;
+    private Scrollbar speedScrollbar, sizeScrollbar;
     private Thread thread;
     private Panel sheet = new Panel();
     private Panel control = new Panel();
+    private Point screen;
+    private Point window = FRAMESIZE;
+    private Point m1 = new Point(0,0); // first mouse point
+    private Point m2 = new Point(0,0); // second
+    private Rectangle perimiter = new Rectangle(); // bouncing perimiter
+    private Rectangle db = new Rectangle(); // mouse drag box
+
+
+
+
 
 
     // actions
@@ -205,12 +216,7 @@ implements WindowListener, ComponentListener, ActionListener,
         setLayout(new BorderLayout());
         setVisible(true);
         calculateScreenSizes();
-        try {
-            initComponents();
-        }
-        catch(Exception e) {
-            e.printStackTrace();
-        }
+        initComponents();
         startThread();
     }
 
@@ -218,7 +224,9 @@ implements WindowListener, ComponentListener, ActionListener,
         insets = getInsets();
 
         // set screen width (has borders on left and right)
+        screen = new Point();
         screen.x = window.x - insets.left - insets.right;
+        screen.y = window.y - insets.top - insets.bottom - 2*BUTTONHEIGHT;
         
         // set frame size
         setSize(window.x, window.y);
@@ -235,7 +243,7 @@ implements WindowListener, ComponentListener, ActionListener,
        setBackground(Color.lightGray);
     }
 
-    void initComponents() throws Exception, IOException{
+    void initComponents() {
 
         // initialize program variables
         paused = true;
@@ -243,16 +251,17 @@ implements WindowListener, ComponentListener, ActionListener,
         run = true;
         scrollSpeed = 50;
         delay = (int) ((1.0/scrollSpeed) * SECONDS_TO_MILLIS);
+
+        // init perimiter
+        perimiter.setBounds(0,0,screen.x,screen.y);
+        perimiter.grow(-1,-1);
         
         // create buttons
         start = new Button("Run");
         pause = new Button("Pause");
         quit = new Button("Quit");
-
-        // add actionListeners to buttons
-        start.addActionListener(this);
-        pause.addActionListener(this);
-        quit.addActionListener(this);
+        start.setEnabled(true);
+        pause.setEnabled(false);
 
         // create speed scroll bar
         speedScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
@@ -277,14 +286,65 @@ implements WindowListener, ComponentListener, ActionListener,
         // create ball
         ball = new Ball(objectSize, maxObjectSize, screen);
         ball.setBackground(Color.white);
+
         // init sheet, control panels
         sheet.setLayout(new BorderLayout(0,0));
+        sheet.add("Center", ball);
+        sheet.setVisible(true);
+
         GridBagLayout gbl = new GridBagLayout();
+        GridBagConstraints c = new GridBagConstraints();
         control.setLayout(gbl);
+        control.setVisible(true);
+        control.setSize(window.x, 2*BUTTONHEIGHT);
+
+        // weights, width/height
+        double rowWeight[] = {2};
+        double colWeight[] = {1, 5, 1, 2, 2, 2, 1, 5, 1};
+        gbl.rowWeights = rowWeight;
+        gbl.columnWeights = colWeight;
+
+        // add buttons, scrollbars, text to control panel
+        c.gridx = 1;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.gridheight = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        gbl.setConstraints(speedScrollbar, c);
+        control.add(speedScrollbar);
+
+        c.gridy = 1;
+        gbl.setConstraints(speedLabel, c);
+        control.add(speedLabel);
+
+        c.gridx = 3;
+        c.gridy = 0;
+        gbl.setConstraints(start, c);
+        control.add(start);
+
+        c.gridx = 4;
+        gbl.setConstraints(pause, c);
+        control.add(pause);
+
+        c.gridx = 5;
+        gbl.setConstraints(quit, c);
+        control.add(quit);
+
+        c.gridx = 7;
+        gbl.setConstraints(sizeScrollbar, c);
+        control.add(sizeScrollbar);
+
+        c.gridy = 1;
+        gbl.setConstraints(sizeLabel, c);
+        control.add(sizeLabel);
 
         // add sheets to frame
-         add("Center", sheet);
+        add("Center", sheet);
         add("South", control);
+
+        // init mouse points
+        m1.setLocation(0, 0);
+        m2.setLocation(0, 0);
 
         // add listeners
         speedScrollbar.addAdjustmentListener(this);
@@ -293,11 +353,14 @@ implements WindowListener, ComponentListener, ActionListener,
         this.addWindowListener(this);
         ball.addMouseMotionListener(this);
         ball.addMouseListener(this);
+        start.addActionListener(this);
+        pause.addActionListener(this);
+        quit.addActionListener(this);
 
         // set sizes, bounds, validate layout
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        setPreferredSize(new Dimension(window.x, window.y));
         setMinimumSize(getPreferredSize());
-        setBounds(winLeft, winTop, WIDTH, HEIGHT);
+        setBounds(winLeft, winTop, window.x, window.y);
         validate();
     }
 
@@ -430,6 +493,8 @@ class Ball extends Canvas {
         buffer = createImage(screen.x, screen.y);
         if(nextFrame != null) {
             nextFrame.dispose();
+        }
+        else {
             nextFrame = buffer.getGraphics();
         }
         nextFrame.setColor(Color.red);
