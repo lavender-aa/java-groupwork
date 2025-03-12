@@ -51,6 +51,7 @@ implements WindowListener, ComponentListener, ActionListener,
     private Ball ball;
     private Label speedLabel = new Label("Speed", Label.CENTER);
     private Label sizeLabel = new Label("Size", Label.CENTER);
+    private Label placeholder = new Label("", Label.CENTER);
     private Scrollbar speedScrollbar, sizeScrollbar;
     private Thread thread;
     private Panel sheet = new Panel();
@@ -337,6 +338,11 @@ implements WindowListener, ComponentListener, ActionListener,
         c.gridy = 1;
         gbl.setConstraints(sizeLabel, c);
         control.add(sizeLabel);
+
+        c.gridx = 8;
+        c.gridy = 0;
+        gbl.setConstraints(placeholder, c);
+        control.add(placeholder);
 
         // add sheets to frame
         add("Center", sheet);
