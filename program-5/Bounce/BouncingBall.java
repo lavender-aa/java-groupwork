@@ -21,8 +21,6 @@ implements WindowListener, ComponentListener, ActionListener,
  
     // constants
     private final Point FRAMESIZE = new Point(640, 400);
-    private final int BUTTONHEIGHT = 30; // button height
-    private final int BUTTONHEIGHTSPACING = 5; // button height spacing
     private final int MINOBJECTSIZE = 10;
     private final int DEFAULTOBJECTSIZE = 21;
     private final int SPEEDSCROLLVISIBLE = 50;
@@ -31,7 +29,6 @@ implements WindowListener, ComponentListener, ActionListener,
     private final int SPEEDSCROLLMAX = 300;
     private final int SCROLLUNIT = 10; // unit step size
     private final int SCROLLBLOCK = 50; // block step size
-    private final int SCROLLBARHEIGHT = BUTTONHEIGHT;
     private final double SECONDS_TO_MILLIS = 1000;
 
     // primitives + strings
@@ -39,12 +36,8 @@ implements WindowListener, ComponentListener, ActionListener,
     private int winTop = 10;  // top of frame
     private int winLeft = 10; // left side of frame
     private Point screen;
-    private int screenCenter = WIDTH / 2;
-    private int buttonWidth = 50;
-    private int buttonSpacing = buttonWidth / 4;
     private int maxObjectSize = 500;
     private int objectSize = DEFAULTOBJECTSIZE;
-    private int scrollWidth;
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
     private static boolean started; // control animation
@@ -226,20 +219,9 @@ implements WindowListener, ComponentListener, ActionListener,
 
         // set screen width (has borders on left and right)
         screen.x = window.x - insets.left - insets.right;
-
-        // set screen height (vertical insets, space at bottom for two rows of buttons)
-        screen.y = window.y - insets.top - insets.bottom - (2 * (BUTTONHEIGHT + BUTTONHEIGHTSPACING));
         
         // set frame size
         setSize(window.x, window.y);
-
-        // calculate center, button width, button spacing
-        screenCenter = screen.x / 2;
-        buttonWidth = screen.x / 11; // 11 units
-        buttonSpacing = buttonWidth / 4;
-
-        // determine scroll bar width
-        scrollWidth = 2 * buttonWidth;
 
         // recalculate max object size for screen
         if(screen.x >= screen.y) { // limited by height
