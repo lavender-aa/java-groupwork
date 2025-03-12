@@ -12,15 +12,16 @@
  import java.awt.event.*;
  import java.io.*;
  
- public class Bounce extends Frame
+ public class BouncingBall extends Frame
  implements WindowListener, ComponentListener, ActionListener, AdjustmentListener, Runnable {
  
      // serial UID
      private static final long serialVersionUID = 10L;
  
      // constants
-     private final int WIDTH = 640;  // initial frame width
-     private final int HEIGHT = 400; // initial frame height
+     private final Point FRAMESIZE = new Point(640, 400);
+    //  private final int WIDTH = 640;  // initial frame width
+    //  private final int HEIGHT = 400; // initial frame height
      private final int BUTTONHEIGHT = 30; // button height
      private final int BUTTONHEIGHTSPACING = 5; // button height spacing
      private final int MINOBJECTSIZE = 10;
@@ -236,8 +237,8 @@
  
  
      // constructor
-     public Bounce() {
-         setLayout(null);
+     public BouncingBall() {
+         setLayout(new BorderLayout());
          setVisible(true);
          calculateScreenSizes();
          try {
@@ -456,41 +457,42 @@
      // main function
      public static void main(String[] args) {
          started = false;
-         new Bounce();
+         new BouncingBall();
      }
  }
  
  
- // objc class
- class Objc extends Canvas {
+ // ball class
+ class Ball extends Canvas {
  
      // data
      private static final long serialVersionUID = 11L;
-     private int screenWidth;
-     private int screenHeight;
+    //  private int screenWidth;
+    //  private int screenHeight;
+     private Point screen;
      private int objectSize;
      private int maxObjectSize;
-     private int oldx, oldy;
-     private int x, y;
-     private int xdir, ydir;
+    //  private int oldx, oldy;
+     private Point oldpos;
+    //  private int x, y;
+     private Point pos; 
+    //  private int xdir, ydir;
+     private Point dir;
      private boolean rect;
      private boolean clear;
      private boolean tail;
      private boolean paused;
      private boolean rectToCirc;
  
-     public Objc(int size, int max, int w, int h) {
-         screenWidth = w;
-         screenHeight = h;
+     public Ball(int size, int max, Point screenSize) {
+         screen = screenSize;
          objectSize = size;
          maxObjectSize = max;
          rect = true;
          clear = false;
          tail = true;
-         y = screenHeight/2;
-         x = screenWidth/2;
-         xdir = 2;
-         ydir = 2;
+         pos = new Point(screen.x/2, screen.y/2);
+         dir = new Point(1,1);
          paused = true;
          rectToCirc = false;
      }
