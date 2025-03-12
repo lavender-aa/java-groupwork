@@ -10,9 +10,6 @@
 package Bounce;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-
-import org.w3c.dom.css.Rect;
  
 public class BouncingBall extends Frame
 implements WindowListener, ComponentListener, ActionListener, 
@@ -205,7 +202,7 @@ implements WindowListener, ComponentListener, ActionListener,
             if(ball.getObjSize() != newSize) {
                 sb.setValue(ball.getObjSize());
             }
-            ball.paint(ball.getGraphics());
+            ball.repaint();
         }
     }
 
@@ -391,7 +388,7 @@ implements WindowListener, ComponentListener, ActionListener,
                 try {
                     Thread.sleep(delay);
                 } catch (InterruptedException e) {}
-                ball.paint(ball.getGraphics());
+                ball.repaint();
             }
         }
         started = false;
@@ -419,14 +416,12 @@ class Ball extends Canvas {
     private int maxObjectSize;
     private Point pos;
     private Point dir;
-    private boolean clear;
     private boolean paused;
 
     public Ball(int size, int max, Point screenSize) {
         screen = screenSize;
         objectSize = size;
         maxObjectSize = max;
-        clear = false;
         pos = new Point(screen.x/2, screen.y/2);
         dir = new Point(1,1);
         paused = true;
@@ -471,7 +466,7 @@ class Ball extends Canvas {
                 objectSize = size;
             }
         }
-        this.paint(this.getGraphics());
+        repaint();
     }
 
     public void resize(Point newScreen, int max) {
@@ -488,47 +483,33 @@ class Ball extends Canvas {
         }
     }
 
-    public void clear() {
-        clear = true;
-    }
-
     @Override
     public void paint(Graphics current) {
         buffer = createImage(screen.x, screen.y);
         if(nextFrame != null) {
             nextFrame.dispose();
         }
-        else {
-            nextFrame = buffer.getGraphics();
-        }
+        nextFrame = buffer.getGraphics();
         nextFrame.setColor(Color.red);
         nextFrame.drawRect(0, 0, screen.x-1, screen.y-1);
         update(nextFrame);
-        Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
         current.drawImage(buffer, 0, 0, null);
+        Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
     }
 
     @Override
     public void update(Graphics g) {
 
         // get new position
-        if(!clear && !paused) {
+        if(!paused) {
             updateDirections();
             pos.x += dir.x;
             pos.y += dir.y;
         }
 
-        // offset x and y so that the object is drawn at 
+        // offset location to make x/y the origin
         int xpos = pos.x - (objectSize-1)/2;
         int ypos = pos.y - (objectSize-1)/2;
-
-        // clear the screen if needed
-        if(clear) {
-            super.paint(g);
-            g.setColor(Color.red);
-            g.drawRect(0, 0, screen.x-1, screen.y-1);
-            clear = false;
-        }
         
         // draw the circle to the graphics
         g.setColor(Color.lightGray);
