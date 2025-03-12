@@ -57,11 +57,13 @@
      // objects
      private Insets insets;
      Button start, shape, clear, tail, quit;
-     private Objc object;
+     private Ball ball;
      private Label speedLabel = new Label("Speed", Label.CENTER);
      private Label sizeLabel = new Label("Size", Label.CENTER);
      Scrollbar speedScrollbar, sizeScrollbar;
      private Thread thread;
+     private Panel sheet = new Panel();
+     private Panel control = new Panel();
  
  
      // actions
@@ -90,47 +92,47 @@
          if(start.getLabel().equals("Pause")) {
              start.setLabel("Run");
              paused = true;
-             object.setPaused(true);
+             ball.setPaused(true);
              thread.interrupt();
          }
          else {
              start.setLabel("Pause");
              paused = false;
-             object.setPaused(false);
+             ball.setPaused(false);
              startThread();
          }
      }
  
      void handleShapeButton() {
          if(!started) {
-             object.clear();
+             ball.clear();
          }
          if(shape.getLabel().equals("Circle")) {
              shape.setLabel("Square");
-             object.rectangle(false);
-             object.setRectToCirc();
+             ball.rectangle(false);
+             ball.setRectToCirc();
          }
          else {
              shape.setLabel("Circle");
-             object.rectangle(true);
+             ball.rectangle(true);
          }
-         object.paint(object.getGraphics());
+         ball.paint(ball.getGraphics());
      }
  
      void handleClearButton() {
-         object.clear();
-         object.paint(object.getGraphics());
+         ball.clear();
+         ball.paint(ball.getGraphics());
      }
  
      void handleTailButton() {
          if(tail.getLabel().equals("Tail")) {
              tail.setLabel("No Tail");
-             object.setTail(true);
+             ball.setTail(true);
              
          }
          else if(tail.getLabel().equals("No Tail")) {
              tail.setLabel("Tail");
-             object.setTail(false);
+             ball.setTail(false);
          }
      }
  
@@ -154,7 +156,7 @@
          winHeight= getHeight();
          calculateScreenSizes();
          sizeScrollbar.setMaximum(maxObjectSize);
-         object.resize(screenWidth, screenHeight, maxObjectSize);
+         ball.resize(screenWidth, screenHeight, maxObjectSize);
          setElementPositions();
      }
  
@@ -221,15 +223,15 @@
          }
          else if(sb == sizeScrollbar) {
              paused = true;
-             object.setPaused(true);
+             ball.setPaused(true);
              start.setLabel("Run");
              int newSize = sb.getValue();
              newSize = (newSize/2)*2 + 1; // force the size to be odd for center position
-             object.updateSize(newSize);
-             if(object.getObjSize() != newSize) {
-                 sb.setValue(object.getObjSize());
+             ball.updateSize(newSize);
+             if(ball.getObjSize() != newSize) {
+                 sb.setValue(ball.getObjSize());
              }
-             object.paint(object.getGraphics());
+             ball.paint(ball.getGraphics());
          }
      }
  
@@ -298,13 +300,6 @@
          tail = new Button("No Tail");
          quit = new Button("Quit");
  
-         // add buttons to the frame
-         add("Center", start);
-         add("Center", shape);
-         add("Center", clear);
-         add("Center", tail);
-         add("Center", quit);
- 
          // add actionListeners to buttons
          start.addActionListener(this);
          shape.addActionListener(this);
@@ -332,22 +327,22 @@
          sizeScrollbar.setVisibleAmount(SIZESCROLLVISIBLE);
          sizeScrollbar.setBackground(Color.gray);
  
-         // create object
-         object = new Objc(objectSize, maxObjectSize, screenWidth, screenHeight);
-         object.setBackground(Color.white);
+         // create ball
+         ball = new Ball(objectSize, maxObjectSize, screenWidth, screenHeight);
+         ball.setBackground(Color.white);
+
+         // init sheet, control panels
+         sheet.setLayout(new BorderLayout(0,0));
+         GridBagLayout gbl = new GridBagLayout();
+         control.setLayout(gbl);
  
-         // add scrollbars, labels, object to frame
-         add(speedScrollbar);
-         add(sizeScrollbar);
-         add(speedLabel);
-         add(sizeLabel);
-         add(object);
+         // add sheets to frame
+         add("Center", sheet);
+         add("South", control);
  
-         // add listeners to scrollbars
+         // ad listeners
          speedScrollbar.addAdjustmentListener(this);
          sizeScrollbar.addAdjustmentListener(this);
- 
-         // add listeners to the frame
          this.addComponentListener(this);
          this.addWindowListener(this);
  
@@ -356,70 +351,6 @@
          setMinimumSize(getPreferredSize());
          setBounds(winLeft, winTop, WIDTH, HEIGHT);
          validate();
-     }
- 
-     void setElementPositions() {
- 
-         // set button positions
-         start.setLocation(
-             screenCenter - 2*(buttonWidth+buttonSpacing) - buttonWidth/2,
-             screenHeight + BUTTONHEIGHTSPACING + insets.top
-         );
-         shape.setLocation(
-             screenCenter - buttonWidth - buttonSpacing - buttonWidth/2,
-             screenHeight + BUTTONHEIGHTSPACING + insets.top
-         );
-         tail.setLocation(
-             screenCenter - buttonWidth/2,
-             screenHeight + BUTTONHEIGHTSPACING + insets.top
-         );
-         clear.setLocation(
-             screenCenter + buttonSpacing + buttonWidth/2,
-             screenHeight + BUTTONHEIGHTSPACING + insets.top
-         );
-         quit.setLocation(
-             screenCenter + buttonWidth + 2*buttonSpacing + buttonWidth/2,
-             screenHeight + BUTTONHEIGHTSPACING + insets.top
-         );
- 
-         // set button sizes
-         start.setSize(buttonWidth, BUTTONHEIGHT);
-         shape.setSize(buttonWidth, BUTTONHEIGHT);
-         tail.setSize(buttonWidth, BUTTONHEIGHT);
-         clear.setSize(buttonWidth, BUTTONHEIGHT);
-         quit.setSize(buttonWidth, BUTTONHEIGHT);
- 
-         // set scrollbar positions
-         speedScrollbar.setLocation(
-             insets.left + buttonSpacing,
-             screenHeight + BUTTONHEIGHTSPACING + insets.top
-         );
-         sizeScrollbar.setLocation(
-             winWidth - scrollWidth - insets.right - buttonSpacing,
-             screenHeight + BUTTONHEIGHTSPACING + insets.top
-         );
- 
-         // set scrollbar sizes
-         speedScrollbar.setSize(scrollWidth, SCROLLBARHEIGHT);
-         sizeScrollbar.setSize(scrollWidth, SCROLLBARHEIGHT);
- 
-         // set label positions
-         speedLabel.setLocation(
-             insets.left + buttonSpacing,
-             screenHeight + BUTTONHEIGHTSPACING + BUTTONHEIGHT + insets.top
-         );
-         sizeLabel.setLocation(
-             winWidth - scrollWidth - insets.right - buttonSpacing,
-             screenHeight + BUTTONHEIGHTSPACING + BUTTONHEIGHT + insets.top
-         );
- 
-         // set label sizes
-         speedLabel.setSize(scrollWidth, BUTTONHEIGHT);
-         sizeLabel.setSize(scrollWidth, SCROLLBARHEIGHT);
- 
-         // set object bounds
-         object.setBounds(insets.left, insets.top, screenWidth, screenHeight);
- 
      }
  
  
