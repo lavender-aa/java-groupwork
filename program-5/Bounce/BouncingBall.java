@@ -300,9 +300,7 @@ implements WindowListener, ComponentListener, ActionListener,
         control.setSize(window.x, 2*BUTTONHEIGHT);
 
         // weights, width/height
-        double rowWeight[] = {2};
         double colWeight[] = {1, 5, 1, 2, 2, 2, 1, 5, 1};
-        gbl.rowWeights = rowWeight;
         gbl.columnWeights = colWeight;
 
         // add buttons, scrollbars, text to control panel
