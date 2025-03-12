@@ -69,21 +69,14 @@ implements WindowListener, ComponentListener, ActionListener,
         Object source = e.getSource();
 
         if(source == start) {
-            if(start.getLabel().equals("Pause")) {
-                start.setLabel("Run");
-                paused = true;
-                ball.setPaused(true);
-                thread.interrupt();
-            }
-            else {
-                start.setLabel("Pause");
-                paused = false;
-                ball.setPaused(false);
-                startThread();
-            }
+            start.setEnabled(false);
+            pause.setEnabled(true);
+            paused = false;
         }
         else if(source == pause) {
-            // pause button
+            pause.setEnabled(false);
+            start.setEnabled(true);
+            paused = true;
         }
         else { // source == quit
             stop();
@@ -102,8 +95,8 @@ implements WindowListener, ComponentListener, ActionListener,
 
     @Override
     public void componentResized(ComponentEvent e) {
-        winWidth = getWidth();
-        winHeight= getHeight();
+        window.x = getWidth();
+        window.y = getHeight();
         calculateScreenSizes();
         sizeScrollbar.setMaximum(maxObjectSize);
         ball.resize(screen, maxObjectSize);
@@ -461,6 +454,7 @@ class Ball extends Canvas {
         nextFrame.drawRect(0, 0, screen.x-1, screen.y-1);
         update(nextFrame);
         Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
+        current.drawImage(buffer, 0, 0, null);
     }
 
     @Override
@@ -490,9 +484,6 @@ class Ball extends Canvas {
         g.fillOval(xpos, ypos, objectSize, objectSize);
         g.setColor(Color.black);
         g.drawOval(xpos, ypos, objectSize-1, objectSize-1);
-        
-        // swap out current graphics with finished one
-
     }
 
     void updateDirections() {
