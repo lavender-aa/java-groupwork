@@ -10,6 +10,7 @@
 package Bounce;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Vector;
  
 public class BouncingBall extends Frame
 implements WindowListener, ComponentListener, ActionListener, 
@@ -411,6 +412,7 @@ class Ball extends Canvas {
     private int maxObjectSize;
     private Point pos;
     private Point dir;
+    private Vector<Rectangle> walls;
     private boolean paused;
 
     public Ball(int size, int max, Point screenSize) {
@@ -419,6 +421,7 @@ class Ball extends Canvas {
         maxObjectSize = max;
         pos = new Point(screen.x/2, screen.y/2);
         dir = new Point(1,1);
+        walls = new Vector<Rectangle>();
         paused = true;
     }
     public void setPos(Point newpos) {
@@ -432,6 +435,26 @@ class Ball extends Canvas {
     public void setPaused(boolean val) {
         paused = val;
     }
+
+    // wall related
+
+    public void addWall(Rectangle r) {
+        walls.add(r);
+    }
+
+    public void removeWallAt(int i) {
+        walls.removeElementAt(i);
+    }
+
+    public Rectangle getWallAt(int i) {
+        return walls.elementAt(i);
+    }
+
+    public int getNumWalls() {
+        return walls.size();
+    }
+
+
 
     public void updateSize(int size) {
 
