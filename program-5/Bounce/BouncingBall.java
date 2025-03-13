@@ -38,7 +38,6 @@ implements WindowListener, ComponentListener, ActionListener,
     private int objectSize = DEFAULTOBJECTSIZE;
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
-    private static boolean started; // control animation
     private int scrollSpeed;
     private int delay; // current time delay
     
@@ -245,7 +244,6 @@ implements WindowListener, ComponentListener, ActionListener,
 
         // initialize program variables
         paused = true;
-        started = false;
         run = true;
         scrollSpeed = 50;
         delay = (int) ((1.0/scrollSpeed) * SECONDS_TO_MILLIS);
@@ -384,14 +382,12 @@ implements WindowListener, ComponentListener, ActionListener,
                 Thread.sleep(1);
             } catch (InterruptedException e) {}
             if(!paused) {
-                started = true;
                 try {
                     Thread.sleep(delay);
                 } catch (InterruptedException e) {}
                 ball.repaint();
             }
         }
-        started = false;
     }
     
 
