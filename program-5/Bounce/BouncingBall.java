@@ -11,6 +11,8 @@ package Bounce;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
+
+import org.w3c.dom.css.Rect;
  
 public class BouncingBall extends Frame
 implements WindowListener, ComponentListener, ActionListener, 
@@ -115,7 +117,26 @@ implements WindowListener, ComponentListener, ActionListener,
      // mouse events
 
      @Override
-    public void mouseDragged(MouseEvent e) {}
+    public void mouseDragged(MouseEvent e) {
+        db.setBounds(getDragBox(e));
+        if(perimiter.contains(db)) {
+
+        }
+        ball.setDragBox(db);
+        ball.repaint();
+    }
+
+    Rectangle getDragBox(MouseEvent e) {
+        m2.setLocation(e.getPoint());
+
+        // create box
+        int x = Math.min(m1.x, m2.x);
+        int y = Math.min(m1.y, m2.y);
+        int width = Math.abs(m1.x - m2.x);
+        int height = Math.abs(m1.y - m2.y);
+
+        return new Rectangle(x, y, width, height);
+    }
 
     @Override
     public void mouseMoved(MouseEvent e) {}
@@ -130,10 +151,23 @@ implements WindowListener, ComponentListener, ActionListener,
     public void mouseExited(MouseEvent e) {}
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+        m1.setLocation(e.getPoint());
+    }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+        Rectangle b = ball.getRect();
+        b.grow(1, 1);
+        boolean store = true;
+
+        // don't create wall if it's intersecting with the ball 
+        if(db.intersects(b)) {
+            store = false;
+        }
+        
+        
+    }
    
 
 
@@ -413,7 +447,9 @@ class Ball extends Canvas {
     private Point pos;
     private Point dir;
     private Vector<Rectangle> walls;
+    private static final Rectangle ZERO = new Rectangle(0,0,0,0);
     private boolean paused;
+    private boolean ballCollided;
 
     public Ball(int size, int max, Point screenSize) {
         screen = screenSize;
@@ -423,7 +459,11 @@ class Ball extends Canvas {
         dir = new Point(1,1);
         walls = new Vector<Rectangle>();
         paused = true;
+        ballCollided = false;
     }
+
+    // position, size, pause
+
     public void setPos(Point newpos) {
        pos = newpos;
     }
@@ -435,6 +475,12 @@ class Ball extends Canvas {
     public void setPaused(boolean val) {
         paused = val;
     }
+
+    public Rectangle getRect() {
+        return new Rectangle(pos.x - objectSize/2, pos.y - objectSize/2, objectSize, objectSize);
+    }
+
+
 
     // wall related
 
@@ -452,6 +498,49 @@ class Ball extends Canvas {
 
     public int getNumWalls() {
         return walls.size();
+    }
+
+    Rectangle wallTouchingBall() {
+        Rectangle r = ZERO;
+        Rectangle ball = new Rectangle(pos.x - objectSize/2, pos.y - objectSize/2, objectSize, objectSize);
+        ball.grow(1,1);
+
+        int i = 0;
+        while(i < walls.size() && !ballCollided) {
+            r = walls.elementAt(i);
+            if(r.intersects(ball)) {
+                ballCollided = true;
+
+                // update ball direction: test each edge of the rect
+                Rectangle top = new Rectangle(r.x + 1, r.y, r.width - 2, 1);
+                Rectangle bottom = new Rectangle(r.x + 1, r.y + r.height, r.width - 2, 1);
+                Rectangle left = new Rectangle(r.x, r.y + 1, 1, r.height - 2);
+                // Rectangle right = new Rectangle(r.x + r.width, r.y + 1, 1, r.height - 2);
+
+                if(ball.intersects(top)) {
+                    dir.y = -1;
+                }
+                else if(ball.intersects(bottom)) {
+                    dir.y = 1;  
+                }
+                else if(ball.intersects(left)) {
+                    dir.x = -1; 
+                }
+                else {
+                    dir.x = 1;
+                }
+            }
+            else {
+                i++;
+            }
+        }
+
+        if(ballCollided) {
+            return r;
+        } 
+        else {
+            return ZERO;
+        }
     }
 
 
@@ -514,17 +603,28 @@ class Ball extends Canvas {
         nextFrame = buffer.getGraphics();
         nextFrame.setColor(Color.red);
         nextFrame.drawRect(0, 0, screen.x-1, screen.y-1);
-        update(nextFrame);
-        current.drawImage(buffer, 0, 0, null);
-        Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
-    }
 
-    @Override
-    public void update(Graphics g) {
+        // draw walls
+        for(int i = 0; i < walls.size(); i++) {
+            Rectangle temp = walls.elementAt(i);
+            nextFrame.fillRect(temp.x, temp.y, temp.width, temp.height);
+        }
 
         // get new position
         if(!paused) {
-            updateDirections();
+            // update ball directions
+            if(pos.x + objectSize/2 >= screen.x) {
+            dir.x = -1;
+            }
+            if(pos.x - objectSize/2 <= 0) {
+                dir.x = 1;
+            }
+            if(pos.y - objectSize/2 <= 0) {
+                dir.y = 1;
+            }
+            if(pos.y + objectSize/2 >= screen.y) {
+                dir.y = -1;
+            }
             pos.x += dir.x;
             pos.y += dir.y;
         }
@@ -534,33 +634,13 @@ class Ball extends Canvas {
         int ypos = pos.y - (objectSize-1)/2;
         
         // draw the circle to the graphics
-        g.setColor(Color.lightGray);
-        g.fillOval(xpos, ypos, objectSize, objectSize);
-        g.setColor(Color.black);
-        g.drawOval(xpos, ypos, objectSize-1, objectSize-1);
-    }
+        nextFrame.setColor(Color.lightGray);
+        nextFrame.fillOval(xpos, ypos, objectSize, objectSize);
+        nextFrame.setColor(Color.black);
+        nextFrame.drawOval(xpos, ypos, objectSize-1, objectSize-1);
 
-    void updateDirections() {
-
-        // right bound check
-        if(pos.x + objectSize/2 >= screen.x) {
-            dir.x = -1;
-        }
-                
-        // left bound check
-        if(pos.x - objectSize/2 <= 0) {
-            dir.x = 1;
-        }
-
-        // top bound check
-        if(pos.y - objectSize/2 <= 0) {
-            dir.y = 1;
-        }
-
-        // bottom bound check
-        if(pos.y + objectSize/2 >= screen.y) {
-            dir.y = -1;
-        }
+        current.drawImage(buffer, 0, 0, null);
+        Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
     }
 }
  
