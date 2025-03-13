@@ -25,7 +25,7 @@ implements WindowListener, ComponentListener, ActionListener,
     private final int DEFAULTOBJECTSIZE = 21;
     private final int SPEEDSCROLLVISIBLE = 50;
     private final int SIZESCROLLVISIBLE = 25;
-    private final int SPEEDSCROLLMIN = 1;
+    private final int SPEEDSCROLLMIN = 5;
     private final int SPEEDSCROLLMAX = 300;
     private final int SCROLLUNIT = 10; // unit step size
     private final int SCROLLBLOCK = 50; // block step size
@@ -73,11 +73,13 @@ implements WindowListener, ComponentListener, ActionListener,
             start.setEnabled(false);
             pause.setEnabled(true);
             paused = false;
+            ball.setPaused(false);
         }
         else if(source == pause) {
             pause.setEnabled(false);
             start.setEnabled(true);
             paused = true;
+            ball.setPaused(true);
         }
         else { // source == quit
             stop();
@@ -192,9 +194,6 @@ implements WindowListener, ComponentListener, ActionListener,
             delay = (int) ((1.0/sb.getValue()) * SECONDS_TO_MILLIS);
         }
         else if(sb == sizeScrollbar) {
-            paused = true;
-            ball.setPaused(true);
-            start.setLabel("Run");
             int newSize = sb.getValue();
             newSize = (newSize/2)*2 + 1; // force the size to be odd for center position
             ball.updateSize(newSize);
@@ -462,7 +461,6 @@ class Ball extends Canvas {
                 objectSize = size;
             }
         }
-        repaint();
     }
 
     public void resize(Point newScreen, int max) {
@@ -481,7 +479,7 @@ class Ball extends Canvas {
 
     @Override
     public void repaint() {
-        this.paint(this.getGraphics());
+        paint(getGraphics());
     }
 
     @Override
