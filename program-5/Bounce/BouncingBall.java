@@ -490,7 +490,6 @@ class Ball extends Canvas {
 
     @Override
     public void paint(Graphics current) {
-        super.paint(current);
         buffer = createImage(screen.x, screen.y);
         if(nextFrame != null) {
             nextFrame.dispose();
