@@ -466,10 +466,6 @@ class Ball extends Canvas {
 
     // position, size, pause
 
-    public void setPos(Point newpos) {
-       pos = newpos;
-    }
-
     public int getObjSize() {
         return objectSize;
     }
@@ -679,4 +675,3 @@ class Ball extends Canvas {
         Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
     }
 }
- 
