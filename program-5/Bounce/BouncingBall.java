@@ -59,6 +59,7 @@ implements WindowListener, ComponentListener, ActionListener,
     private Point m2 = new Point(0,0); // second
     private Rectangle perimiter = new Rectangle(); // bouncing perimiter
     private Rectangle db = new Rectangle(); // mouse drag box
+    private static final Rectangle ZERO = new Rectangle(0,0,0,0);
 
 
 
@@ -121,7 +122,6 @@ implements WindowListener, ComponentListener, ActionListener,
             db = perimiter.intersection(db);
         }
         ball.setDragBox(new Rectangle(db));
-        if(paused) ball.repaint();
     }
 
     Rectangle getDragBox(MouseEvent e) {
@@ -142,7 +142,6 @@ implements WindowListener, ComponentListener, ActionListener,
     @Override
     public void mouseClicked(MouseEvent e) {
         ball.updateWalls(new Point(e.getPoint()));
-        if(paused) ball.repaint();
     }
 
     @Override
@@ -162,11 +161,11 @@ implements WindowListener, ComponentListener, ActionListener,
         b.grow(1, 1);
 
         // don't create wall if it's intersecting with the ball 
-        if(!db.intersects(b)) {
+        if(!db.intersects(b) && db != ZERO) {
             ball.addWall(new Rectangle(db));
         }
         ball.nullifyDragBox();
-        if(paused) ball.repaint();
+        db = ZERO;
     }
    
 
@@ -284,6 +283,7 @@ implements WindowListener, ComponentListener, ActionListener,
         run = true;
         scrollSpeed = 50;
         delay = (int) ((1.0/scrollSpeed) * SECONDS_TO_MILLIS);
+        db = ZERO;
 
         // init perimiter
         perimiter.setBounds(0,0,screen.x,screen.y);
@@ -495,14 +495,17 @@ class Ball extends Canvas {
             }
             i++;
         }
+        repaint();
     }
 
     public void setDragBox(Rectangle db) {
         dragBox = db;
+        repaint();
     }
 
     public void nullifyDragBox() {
         dragBox = null;
+        repaint();
     }
 
     public void addWall(Rectangle r) {
@@ -528,6 +531,8 @@ class Ball extends Canvas {
             }
             i++;
         }
+        // debug
+        i++;
     }
 
     void updateWallDirs() {
