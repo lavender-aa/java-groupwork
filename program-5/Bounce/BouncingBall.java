@@ -117,7 +117,7 @@ implements WindowListener, ComponentListener, ActionListener,
     @Override
     public void mouseDragged(MouseEvent e) {
         db.setBounds(getDragBox(e));
-        if(perimiter.contains(db)) {
+        if(perimiter.intersection(db) != db) {
             db = perimiter.intersection(db);
         }
         ball.setDragBox(new Rectangle(db));
@@ -141,7 +141,7 @@ implements WindowListener, ComponentListener, ActionListener,
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        ball.updateWalls(e.getPoint());
+        ball.updateWalls(new Point(e.getPoint()));
         if(paused) ball.repaint();
     }
 
@@ -254,13 +254,16 @@ implements WindowListener, ComponentListener, ActionListener,
     void calculateScreenSizes() {
         insets = getInsets();
 
-        // set screen width (has borders on left and right)
+        // set screen width, height (has borders on left and right)
         screen = new Point();
         screen.x = window.x - insets.left - insets.right;
-        screen.y = window.y - insets.top - insets.bottom - 2*BUTTONHEIGHT;
+        screen.y = window.y - insets.top - insets.bottom - control.getHeight();
         
         // set frame size
         setSize(window.x, window.y);
+
+        // set the perimiter size
+        perimiter = new Rectangle(0,0,screen.x, screen.y);
 
         // recalculate max object size for screen
         if(screen.x >= screen.y) { // limited by height
@@ -326,9 +329,8 @@ implements WindowListener, ComponentListener, ActionListener,
         GridBagConstraints c = new GridBagConstraints();
         control.setLayout(gbl);
         control.setVisible(true);
-        control.setSize(window.x, 2*BUTTONHEIGHT);
 
-        // weights, width/height
+        // weights
         double colWeight[] = {1, 5, 1, 2, 2, 2, 1, 5, 1};
         gbl.columnWeights = colWeight;
 
@@ -448,7 +450,6 @@ class Ball extends Canvas {
     private Point dir;
     private Vector<Rectangle> walls;
     private Rectangle dragBox;
-    private static final Rectangle ZERO = new Rectangle(0,0,0,0);
     private boolean paused;
     private boolean ballCollided;
 
@@ -627,9 +628,11 @@ class Ball extends Canvas {
         nextFrame.setColor(Color.black);
 
         // draw walls
-        for(int i = 0; i < walls.size(); i++) {
+        int i = 0;
+        while(i < walls.size()) {
             Rectangle temp = walls.elementAt(i);
             nextFrame.fillRect(temp.x, temp.y, temp.width, temp.height);
+            i++;
         }
 
         // draw drag box
