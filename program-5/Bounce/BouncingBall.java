@@ -11,8 +11,6 @@ package Bounce;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
-
-import org.w3c.dom.css.Rect;
  
 public class BouncingBall extends Frame
 implements WindowListener, ComponentListener, ActionListener, 
@@ -114,15 +112,15 @@ implements WindowListener, ComponentListener, ActionListener,
 
 
 
-     // mouse events
+    // mouse events
 
-     @Override
+    @Override
     public void mouseDragged(MouseEvent e) {
         db.setBounds(getDragBox(e));
         if(perimiter.contains(db)) {
-
+            db = perimiter.intersection(db);
         }
-        ball.setDragBox(db);
+        ball.setDragBox(new Rectangle(db));
         ball.repaint();
     }
 
@@ -142,7 +140,10 @@ implements WindowListener, ComponentListener, ActionListener,
     public void mouseMoved(MouseEvent e) {}
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+        ball.updateWalls(e.getPoint());
+        ball.repaint();
+    }
 
     @Override
     public void mouseEntered(MouseEvent e) {}
@@ -159,14 +160,13 @@ implements WindowListener, ComponentListener, ActionListener,
     public void mouseReleased(MouseEvent e) {
         Rectangle b = ball.getRect();
         b.grow(1, 1);
-        boolean store = true;
 
         // don't create wall if it's intersecting with the ball 
-        if(db.intersects(b)) {
-            store = false;
+        if(!db.intersects(b)) {
+            ball.addWall(new Rectangle(db));
         }
-        
-        
+        ball.nullifyDragBox();
+        ball.repaint();
     }
    
 
@@ -384,11 +384,11 @@ implements WindowListener, ComponentListener, ActionListener,
         sizeScrollbar.addAdjustmentListener(this);
         this.addComponentListener(this);
         this.addWindowListener(this);
-        ball.addMouseMotionListener(this);
-        ball.addMouseListener(this);
         start.addActionListener(this);
         pause.addActionListener(this);
         quit.addActionListener(this);
+        ball.addMouseListener(this);
+        ball.addMouseMotionListener(this);
 
         // set sizes, bounds, validate layout
         setPreferredSize(new Dimension(window.x, window.y));
@@ -447,6 +447,7 @@ class Ball extends Canvas {
     private Point pos;
     private Point dir;
     private Vector<Rectangle> walls;
+    private Rectangle dragBox;
     private static final Rectangle ZERO = new Rectangle(0,0,0,0);
     private boolean paused;
     private boolean ballCollided;
@@ -458,6 +459,7 @@ class Ball extends Canvas {
         pos = new Point(screen.x/2, screen.y/2);
         dir = new Point(1,1);
         walls = new Vector<Rectangle>();
+        dragBox = null;
         paused = true;
         ballCollided = false;
     }
@@ -484,20 +486,47 @@ class Ball extends Canvas {
 
     // wall related
 
+    public void updateWalls(Point p) {
+        int i = 0;
+        while(i < walls.size()) {
+            if(walls.elementAt(i).contains(p)) {
+                walls.removeElementAt(i);
+            }
+            i++;
+        }
+    }
+
+    public void setDragBox(Rectangle db) {
+        dragBox = db;
+    }
+
+    public void nullifyDragBox() {
+        dragBox = null;
+    }
+
     public void addWall(Rectangle r) {
-        walls.add(r);
-    }
+        boolean add = true;
 
-    public void removeWallAt(int i) {
-        walls.removeElementAt(i);
-    }
+        // only add if not dominated
+        int i = 0;
+        while(i < walls.size()) {
+            if(walls.elementAt(i).contains(r)) {
+                add = false;
+            }
+            i++;
+        }
 
-    public Rectangle getWallAt(int i) {
-        return walls.elementAt(i);
-    }
+        if(add) walls.add(r);
 
-    public int getNumWalls() {
-        return walls.size();
+        // remove any dominated walls
+        i = 0;
+        while(i < walls.size()) {
+            Rectangle wall = walls.elementAt(i);
+            if(r.contains(wall) && !wall.equals(r)) {
+                walls.removeElementAt(i);
+            }
+            i++;
+        }
     }
 
     Rectangle wallTouchingBall() {
@@ -603,11 +632,17 @@ class Ball extends Canvas {
         nextFrame = buffer.getGraphics();
         nextFrame.setColor(Color.red);
         nextFrame.drawRect(0, 0, screen.x-1, screen.y-1);
+        nextFrame.setColor(Color.black);
 
         // draw walls
         for(int i = 0; i < walls.size(); i++) {
             Rectangle temp = walls.elementAt(i);
             nextFrame.fillRect(temp.x, temp.y, temp.width, temp.height);
+        }
+
+        // draw drag box
+        if(dragBox != null) {
+            nextFrame.drawRect(dragBox.x, dragBox.y, dragBox.width, dragBox.height);
         }
 
         // get new position
