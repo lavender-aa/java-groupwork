@@ -121,7 +121,7 @@ implements WindowListener, ComponentListener, ActionListener,
             db = perimiter.intersection(db);
         }
         ball.setDragBox(new Rectangle(db));
-        ball.repaint();
+        if(paused) ball.repaint();
     }
 
     Rectangle getDragBox(MouseEvent e) {
@@ -142,7 +142,7 @@ implements WindowListener, ComponentListener, ActionListener,
     @Override
     public void mouseClicked(MouseEvent e) {
         ball.updateWalls(e.getPoint());
-        ball.repaint();
+        if(paused) ball.repaint();
     }
 
     @Override
@@ -166,7 +166,7 @@ implements WindowListener, ComponentListener, ActionListener,
             ball.addWall(new Rectangle(db));
         }
         ball.nullifyDragBox();
-        ball.repaint();
+        if(paused) ball.repaint();
     }
    
 
@@ -235,7 +235,7 @@ implements WindowListener, ComponentListener, ActionListener,
             if(ball.getObjSize() != newSize) {
                 sb.setValue(ball.getObjSize());
             }
-            ball.repaint();
+            if(paused) ball.repaint();
         }
     }
 
@@ -529,14 +529,13 @@ class Ball extends Canvas {
         }
     }
 
-    Rectangle wallTouchingBall() {
-        Rectangle r = ZERO;
+    void updateWallDirs() {
         Rectangle ball = new Rectangle(pos.x - objectSize/2, pos.y - objectSize/2, objectSize, objectSize);
         ball.grow(1,1);
 
         int i = 0;
         while(i < walls.size() && !ballCollided) {
-            r = walls.elementAt(i);
+            Rectangle r = walls.elementAt(i);
             if(r.intersects(ball)) {
                 ballCollided = true;
 
@@ -544,7 +543,7 @@ class Ball extends Canvas {
                 Rectangle top = new Rectangle(r.x + 1, r.y, r.width - 2, 1);
                 Rectangle bottom = new Rectangle(r.x + 1, r.y + r.height, r.width - 2, 1);
                 Rectangle left = new Rectangle(r.x, r.y + 1, 1, r.height - 2);
-                // Rectangle right = new Rectangle(r.x + r.width, r.y + 1, 1, r.height - 2);
+                Rectangle right = new Rectangle(r.x + r.width, r.y + 1, 1, r.height - 2);
 
                 if(ball.intersects(top)) {
                     dir.y = -1;
@@ -555,20 +554,13 @@ class Ball extends Canvas {
                 else if(ball.intersects(left)) {
                     dir.x = -1; 
                 }
-                else {
+                else if(ball.intersects(right)) {
                     dir.x = 1;
                 }
             }
             else {
                 i++;
             }
-        }
-
-        if(ballCollided) {
-            return r;
-        } 
-        else {
-            return ZERO;
         }
     }
 
@@ -649,7 +641,7 @@ class Ball extends Canvas {
         if(!paused) {
             // update ball directions
             if(pos.x + objectSize/2 >= screen.x) {
-            dir.x = -1;
+                dir.x = -1;
             }
             if(pos.x - objectSize/2 <= 0) {
                 dir.x = 1;
@@ -660,6 +652,8 @@ class Ball extends Canvas {
             if(pos.y + objectSize/2 >= screen.y) {
                 dir.y = -1;
             }
+            updateWallDirs();
+            ballCollided = false;
             pos.x += dir.x;
             pos.y += dir.y;
         }
