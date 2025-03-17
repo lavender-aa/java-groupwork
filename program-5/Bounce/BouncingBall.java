@@ -21,7 +21,6 @@ implements WindowListener, ComponentListener, ActionListener,
  
     // constants
     private final Point FRAMESIZE = new Point(640, 400);
-    private final int BUTTONHEIGHT = 30;
     private final int MINOBJECTSIZE = 10;
     private final int DEFAULTOBJECTSIZE = 21;
     private final int SPEEDSCROLLVISIBLE = 50;
