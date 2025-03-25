@@ -495,7 +495,7 @@ class Ball extends Canvas {
 
     public void setDragBox(Rectangle db) {
         dragBox = db;
-        repaint();
+        if(paused) repaint();
     }
 
     public void nullifyDragBox() {
