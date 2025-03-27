@@ -20,40 +20,33 @@ implements WindowListener, ComponentListener, ActionListener,
     private static final long serialVersionUID = 10L;
  
     // constants
-    private final Point FRAMESIZE = new Point(640, 400);
-    private final int MINOBJECTSIZE = 10;
-    private final int DEFAULTOBJECTSIZE = 21;
-    private final int SPEEDSCROLLVISIBLE = 50;
-    private final int SIZESCROLLVISIBLE = 25;
-    private final int SPEEDSCROLLMIN = 5;
-    private final int SPEEDSCROLLMAX = 300;
-    private final int SCROLLUNIT = 10; // unit step size
-    private final int SCROLLBLOCK = 50; // block step size
     private final double SECONDS_TO_MILLIS = 1000;
 
-    // primitives + strings
+    // primitives
     private int winTop = 10;  // top of frame
     private int winLeft = 10; // left side of frame
-    private int maxObjectSize = 500;
-    private int objectSize = DEFAULTOBJECTSIZE;
+    private int ballSize = 21;
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
-    private int scrollSpeed;
-    private int delay; // current time delay
+    private int delay; // change in time for the projectile
+    private final int BALLTICKS = 4; // ball moves once every 4 time steps
+    private int angle;
+    private int velocity;
+    private int maxVelocity;
     
     // objects
     private Insets insets;
     private Button start, pause, quit;
     private Ball ball;
-    private Label speedLabel = new Label("Speed", Label.CENTER);
-    private Label sizeLabel = new Label("Size", Label.CENTER);
+    private Label angleLabel = new Label("Angle", Label.CENTER);
+    private Label VelocityLabel = new Label("Velocity", Label.CENTER);
     private Label placeholder = new Label("", Label.CENTER);
-    private Scrollbar speedScrollbar, sizeScrollbar;
+    private Scrollbar angleScrollbar, velocityScrollbar;
     private Thread thread;
     private Panel sheet = new Panel();
     private Panel control = new Panel();
     private Point screen;
-    private Point window = FRAMESIZE;
+    private Point window = new Point(650, 400);
     private Point m1 = new Point(0,0); // first mouse point
     private Point m2 = new Point(0,0); // second
     private Rectangle perimiter = new Rectangle(); // bouncing perimiter
@@ -102,8 +95,7 @@ implements WindowListener, ComponentListener, ActionListener,
         window.x = getWidth();
         window.y = getHeight();
         calculateScreenSizes();
-        sizeScrollbar.setMaximum(maxObjectSize);
-        ball.resize(screen, maxObjectSize);
+        ball.resize(screen);
     }
 
     @Override
@@ -188,8 +180,8 @@ implements WindowListener, ComponentListener, ActionListener,
         start.removeActionListener(this);
         pause.removeActionListener(this);
         quit.removeActionListener(this);
-        speedScrollbar.removeAdjustmentListener(this);
-        sizeScrollbar.removeAdjustmentListener(this);
+        angleScrollbar.removeAdjustmentListener(this);
+        velocityScrollbar.removeAdjustmentListener(this);
         this.removeComponentListener(this);
         this.removeWindowListener(this);
         ball.removeMouseMotionListener(this);
@@ -223,10 +215,10 @@ implements WindowListener, ComponentListener, ActionListener,
     @Override
     public void adjustmentValueChanged(AdjustmentEvent e) {
         Scrollbar sb = (Scrollbar) e.getSource();
-        if(sb == speedScrollbar) {
+        if(sb == angleScrollbar) {
             delay = (int) ((1.0/sb.getValue()) * SECONDS_TO_MILLIS);
         }
-        else if(sb == sizeScrollbar) {
+        else if(sb == velocityScrollbar) {
             int newSize = sb.getValue();
             newSize = (newSize/2)*2 + 1; // force the size to be odd for center position
             ball.updateSize(newSize);
@@ -263,14 +255,6 @@ implements WindowListener, ComponentListener, ActionListener,
         // set the perimiter size
         perimiter = new Rectangle(0,0,screen.x, screen.y);
 
-        // recalculate max object size for screen
-        if(screen.x >= screen.y) { // limited by height
-            maxObjectSize = screen.y - screen.y/4;
-        }
-        else { // limited by width
-            maxObjectSize = screen.x - screen.x/4;
-        }
-
         // set the background color
        setBackground(Color.lightGray);
     }
@@ -280,8 +264,7 @@ implements WindowListener, ComponentListener, ActionListener,
         // initialize program variables
         paused = true;
         run = true;
-        scrollSpeed = 50;
-        delay = (int) ((1.0/scrollSpeed) * SECONDS_TO_MILLIS);
+        delay = 100; // millis; 0.1 seconds
         db = ZERO;
 
         // init perimiter
@@ -296,27 +279,27 @@ implements WindowListener, ComponentListener, ActionListener,
         pause.setEnabled(false);
 
         // create speed scroll bar
-        speedScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
-        speedScrollbar.setMaximum(SPEEDSCROLLMAX);
-        speedScrollbar.setMinimum(SPEEDSCROLLMIN);
-        speedScrollbar.setUnitIncrement(SCROLLUNIT);
-        speedScrollbar.setBlockIncrement(SCROLLBLOCK);
-        speedScrollbar.setValue(scrollSpeed);
-        speedScrollbar.setVisibleAmount(SPEEDSCROLLVISIBLE);
-        speedScrollbar.setBackground(Color.gray);
+        angleScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
+        angleScrollbar.setMaximum(90); // all vertical
+        angleScrollbar.setMinimum(0); // all horizontal
+        angleScrollbar.setUnitIncrement(10);
+        angleScrollbar.setBlockIncrement(50);
+        angleScrollbar.setValue(angle);
+        angleScrollbar.setVisibleAmount(50);
+        angleScrollbar.setBackground(Color.gray);
 
         // create size scroll bar
-        sizeScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
-        sizeScrollbar.setMaximum(maxObjectSize);
-        sizeScrollbar.setMinimum(MINOBJECTSIZE);
-        sizeScrollbar.setUnitIncrement(SCROLLUNIT);
-        sizeScrollbar.setBlockIncrement(SCROLLBLOCK);
-        sizeScrollbar.setValue(objectSize);
-        sizeScrollbar.setVisibleAmount(SIZESCROLLVISIBLE);
-        sizeScrollbar.setBackground(Color.gray);
+        velocityScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
+        velocityScrollbar.setMaximum(maxVelocity);
+        velocityScrollbar.setMinimum(10);
+        velocityScrollbar.setUnitIncrement(10);
+        velocityScrollbar.setBlockIncrement(50);
+        velocityScrollbar.setValue(ballSize);
+        velocityScrollbar.setVisibleAmount(25);
+        velocityScrollbar.setBackground(Color.gray);
 
         // create ball
-        ball = new Ball(objectSize, maxObjectSize, screen);
+        ball = new Ball(ballSize, screen);
         ball.setBackground(Color.white);
 
         // init sheet, control panels
@@ -339,12 +322,12 @@ implements WindowListener, ComponentListener, ActionListener,
         c.gridwidth = 1;
         c.gridheight = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
-        gbl.setConstraints(speedScrollbar, c);
-        control.add(speedScrollbar);
+        gbl.setConstraints(angleScrollbar, c);
+        control.add(angleScrollbar);
 
         c.gridy = 1;
-        gbl.setConstraints(speedLabel, c);
-        control.add(speedLabel);
+        gbl.setConstraints(angleLabel, c);
+        control.add(angleLabel);
 
         c.gridx = 3;
         c.gridy = 0;
@@ -360,12 +343,12 @@ implements WindowListener, ComponentListener, ActionListener,
         control.add(quit);
 
         c.gridx = 7;
-        gbl.setConstraints(sizeScrollbar, c);
-        control.add(sizeScrollbar);
+        gbl.setConstraints(velocityScrollbar, c);
+        control.add(velocityScrollbar);
 
         c.gridy = 1;
-        gbl.setConstraints(sizeLabel, c);
-        control.add(sizeLabel);
+        gbl.setConstraints(VelocityLabel, c);
+        control.add(VelocityLabel);
 
         c.gridx = 8;
         c.gridy = 0;
@@ -381,8 +364,8 @@ implements WindowListener, ComponentListener, ActionListener,
         m2.setLocation(0, 0);
 
         // add listeners
-        speedScrollbar.addAdjustmentListener(this);
-        sizeScrollbar.addAdjustmentListener(this);
+        angleScrollbar.addAdjustmentListener(this);
+        velocityScrollbar.addAdjustmentListener(this);
         this.addComponentListener(this);
         this.addWindowListener(this);
         start.addActionListener(this);
@@ -443,8 +426,7 @@ class Ball extends Canvas {
     private Image buffer;
     private Graphics nextFrame;
     private Point screen;
-    private int objectSize;
-    private int maxObjectSize;
+    private int ballSize;
     private Point pos;
     private Point dir;
     private Vector<Rectangle> walls;
@@ -452,10 +434,9 @@ class Ball extends Canvas {
     private boolean paused;
     private boolean ballCollided;
 
-    public Ball(int size, int max, Point screenSize) {
+    public Ball(int size, Point screenSize) {
         screen = screenSize;
-        objectSize = size;
-        maxObjectSize = max;
+        ballSize = size;
         pos = new Point(screen.x/2, screen.y/2);
         dir = new Point(1,1);
         walls = new Vector<Rectangle>();
@@ -467,7 +448,7 @@ class Ball extends Canvas {
     // position, size, pause
 
     public int getObjSize() {
-        return objectSize;
+        return ballSize;
     }
 
     public void setPaused(boolean val) {
@@ -475,7 +456,7 @@ class Ball extends Canvas {
     }
 
     public Rectangle getRect() {
-        return new Rectangle(pos.x - objectSize/2, pos.y - objectSize/2, objectSize, objectSize);
+        return new Rectangle(pos.x - ballSize/2, pos.y - ballSize/2, ballSize, ballSize);
     }
 
 
@@ -531,7 +512,7 @@ class Ball extends Canvas {
     }
 
     void updateWallDirs() {
-        Rectangle ball = new Rectangle(pos.x - objectSize/2, pos.y - objectSize/2, objectSize, objectSize);
+        Rectangle ball = new Rectangle(pos.x - ballSize/2, pos.y - ballSize/2, ballSize, ballSize);
         ball.grow(1,1);
 
         int i = 0;
@@ -573,41 +554,30 @@ class Ball extends Canvas {
         // get origin of object
         int half = size/2;
 
-        // limit object to maximum size
-        if(size >= maxObjectSize) {
-            objectSize = maxObjectSize;
+        if(pos.x + half >= screen.x) {
+            ballSize = (screen.x - pos.x) * 2;
         }
-        else { 
-            // limit object size based on collisions with edges
-            if(pos.x + half >= screen.x) {
-                objectSize = (screen.x - pos.x) * 2;
-            }
-            else if(pos.x - half <= 0) {
-                objectSize = pos.x * 2;
-            }
-            else if(pos.y + half >= screen.y) {
-                objectSize = (screen.y - pos.y) * 2;
-            }
-            else if(pos.y - half <= 0) {
-                objectSize = pos.y * 2;
-            }
-            else { // no collisions, good
-                objectSize = size;
-            }
+        else if(pos.x - half <= 0) {
+            ballSize = pos.x * 2;
+        }
+        else if(pos.y + half >= screen.y) {
+            ballSize = (screen.y - pos.y) * 2;
+        }
+        else if(pos.y - half <= 0) {
+            ballSize = pos.y * 2;
+        }
+        else { // no collisions, good
+            ballSize = size;
         }
     }
 
-    public void resize(Point newScreen, int max) {
+    public void resize(Point newScreen) {
         screen = newScreen;
-        if(pos.x + objectSize >= screen.x) {
-            pos.x = screen.x - objectSize;
+        if(pos.x + ballSize >= screen.x) {
+            pos.x = screen.x - ballSize;
         }
-        if(pos.y + objectSize >= screen.y) {
-            pos.y = screen.y - objectSize;
-        }
-        maxObjectSize = max;
-        if(objectSize > maxObjectSize) {
-            objectSize = maxObjectSize;
+        if(pos.y + ballSize >= screen.y) {
+            pos.y = screen.y - ballSize;
         }
     }
 
@@ -643,16 +613,16 @@ class Ball extends Canvas {
         // get new position
         if(!paused) {
             // update ball directions
-            if(pos.x + objectSize/2 >= screen.x) {
+            if(pos.x + ballSize/2 >= screen.x) {
                 dir.x = -1;
             }
-            if(pos.x - objectSize/2 <= 0) {
+            if(pos.x - ballSize/2 <= 0) {
                 dir.x = 1;
             }
-            if(pos.y - objectSize/2 <= 0) {
+            if(pos.y - ballSize/2 <= 0) {
                 dir.y = 1;
             }
-            if(pos.y + objectSize/2 >= screen.y) {
+            if(pos.y + ballSize/2 >= screen.y) {
                 dir.y = -1;
             }
             updateWallDirs();
@@ -662,14 +632,14 @@ class Ball extends Canvas {
         }
 
         // offset location to make x/y the origin
-        int xpos = pos.x - (objectSize-1)/2;
-        int ypos = pos.y - (objectSize-1)/2;
+        int xpos = pos.x - (ballSize-1)/2;
+        int ypos = pos.y - (ballSize-1)/2;
         
         // draw the circle to the graphics
         nextFrame.setColor(Color.lightGray);
-        nextFrame.fillOval(xpos, ypos, objectSize, objectSize);
+        nextFrame.fillOval(xpos, ypos, ballSize, ballSize);
         nextFrame.setColor(Color.black);
-        nextFrame.drawOval(xpos, ypos, objectSize-1, objectSize-1);
+        nextFrame.drawOval(xpos, ypos, ballSize-1, ballSize-1);
 
         current.drawImage(buffer, 0, 0, null);
         Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
