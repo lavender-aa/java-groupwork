@@ -12,7 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
  
-public class BouncingBall extends Frame
+public class CannonVsBall extends Frame
 implements WindowListener, ComponentListener, ActionListener, 
            AdjustmentListener, Runnable, MouseListener, MouseMotionListener {
  
@@ -241,7 +241,7 @@ implements WindowListener, ComponentListener, ActionListener,
 
 
     // constructor
-    public BouncingBall() {
+    public CannonVsBall() {
         setLayout(new BorderLayout());
         setVisible(true);
         calculateScreenSizes();
@@ -430,7 +430,7 @@ implements WindowListener, ComponentListener, ActionListener,
 
     // main function
     public static void main(String[] args) {
-        new BouncingBall();
+        new CannonVsBall();
     }
 }
  
