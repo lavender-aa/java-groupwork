@@ -22,6 +22,8 @@ implements WindowListener, ComponentListener, ActionListener,
     // constants
     private final double SECONDS_TO_MILLIS = 1000;
     private final int BALLTICKS = 4; // ball moves once every 4 time steps
+    private final int cannonLength = 100;
+    private final int cannonWidth = 20;
 
     // primitives
     private int winTop = 10;  // top of frame
@@ -138,7 +140,7 @@ implements WindowListener, ComponentListener, ActionListener,
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        Rectangle b = game.getRect();
+        Rectangle b = game.getBallRect();
         b.grow(1, 1);
 
         // don't create wall if it's intersecting with the ball 
@@ -203,7 +205,7 @@ implements WindowListener, ComponentListener, ActionListener,
     public void adjustmentValueChanged(AdjustmentEvent e) {
         Scrollbar sb = (Scrollbar) e.getSource();
         if(sb == angleScrollbar) {
-            // change angle
+            game.setCannonAngle(sb.getValue());
         }
         else if(sb == velocityScrollbar) {
             // change initial projectile velocity 
@@ -294,7 +296,7 @@ implements WindowListener, ComponentListener, ActionListener,
 
         // create speed scroll bar
         angleScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
-        angleScrollbar.setMaximum(90); // all vertical
+        angleScrollbar.setMaximum(110); // all vertical
         angleScrollbar.setMinimum(0); // all horizontal
         angleScrollbar.setUnitIncrement(10);
         angleScrollbar.setBlockIncrement(45);
@@ -313,7 +315,7 @@ implements WindowListener, ComponentListener, ActionListener,
         velocityScrollbar.setBackground(Color.gray);
 
         // create ball
-        game = new GameArea(ballSize, screen);
+        game = new GameArea(ballSize, screen, cannonLength, cannonWidth);
         game.setBackground(Color.white);
 
         // init sheet, control panels
@@ -449,12 +451,18 @@ class GameArea extends Canvas {
     private int ballSize;
     private Point ballPos;
     private Point ballDir;
+    private Point projPos;
+    private Point cannonBase;
+    private int cannonLength;
+    private int cannonWidth;
+    private int cannonAngle;
+    private boolean launchProj;
     private Vector<Rectangle> walls;
     private Rectangle dragBox;
     private boolean paused;
     private boolean ballCollided;
 
-    public GameArea(int size, Point screenSize) {
+    public GameArea(int size, Point screenSize, int cannonL, int cannonW) {
         screen = screenSize;
         ballSize = size;
         ballPos = new Point(screen.x/2, screen.y/2);
@@ -463,20 +471,31 @@ class GameArea extends Canvas {
         dragBox = null;
         paused = true;
         ballCollided = false;
-    }
-
-    // ballballPosition, size, pause
-
-    public int getObjSize() {
-        return ballSize;
+        cannonBase = new Point(screen.x, screen.y);
+        cannonLength = cannonL;
+        cannonWidth = cannonW;
+        cannonAngle = 45;
+        launchProj = false;
     }
 
     public void setPaused(boolean val) {
         paused = val;
     }
 
-    public Rectangle getRect() {
+    public Rectangle getBallRect() {
         return new Rectangle(ballPos.x - ballSize/2, ballPos.y - ballSize/2, ballSize, ballSize);
+    }
+
+
+    // cannon related
+
+    public void setCannonAngle(int degrees) {
+        cannonAngle = degrees;
+        repaint();
+    }
+
+    public void launchProjectile() {
+        launchProj = true;   
     }
 
 
@@ -568,28 +587,6 @@ class GameArea extends Canvas {
 
 
 
-    public void updateSize(int size) {
-
-        // get half of the object size, set old size,
-        // get origin of object
-        int half = size/2;
-
-        if(ballPos.x + half >= screen.x) {
-            ballSize = (screen.x - ballPos.x) * 2;
-        }
-        else if(ballPos.x - half <= 0) {
-            ballSize = ballPos.x * 2;
-        }
-        else if(ballPos.y + half >= screen.y) {
-            ballSize = (screen.y - ballPos.y) * 2;
-        }
-        else if(ballPos.y - half <= 0) {
-            ballSize = ballPos.y * 2;
-        }
-        else { // no collisions, good
-            ballSize = size;
-        }
-    }
 
     public void resize(Point newScreen) {
         screen = newScreen;
@@ -599,6 +596,8 @@ class GameArea extends Canvas {
         if(ballPos.y + ballSize >= screen.y) {
             ballPos.y = screen.y - ballSize;
         }
+
+        cannonBase = new Point(screen.x - 45, screen.y - 45);
     }
 
     @Override
@@ -629,6 +628,36 @@ class GameArea extends Canvas {
         if(dragBox != null) {
             nextFrame.drawRect(dragBox.x, dragBox.y, dragBox.width, dragBox.height);
         }
+
+        // draw cannon
+        double angleRad = (cannonAngle * Math.PI) / 180.0;
+        double cos = Math.cos(angleRad);
+        double sin = Math.sin(angleRad);
+        Point offsetL = new Point(
+                                    (int)(-1 * cannonWidth * sin)/2,
+                                    (int)(cannonWidth * cos)/2
+                                 );
+        Point offsetU = new Point(-1 * offsetL.x, -1 * offsetL.y);
+        Point c = new Point(
+                                cannonBase.x + (int)(-1*cannonLength*cos),
+                                cannonBase.y + (int)(-1*cannonLength*sin)
+                           );
+        Point c1 = new Point(c.x + offsetL.x, c.y + offsetL.y);
+        Point c2 = new Point(c.x + offsetU.x, c.y + offsetU.y);
+        Point a1 = new Point(cannonBase.x + offsetL.x, cannonBase.y + offsetL.y);
+        Point a2 = new Point(cannonBase.x + offsetU.x, cannonBase.y + offsetU.y);
+
+        Polygon cannon = new Polygon();
+        cannon.addPoint(c1.x, c1.y);
+        cannon.addPoint(c2.x, c2.y);
+        cannon.addPoint(a2.x, a2.y);
+        cannon.addPoint(a1.x, a1.y);
+        nextFrame.setColor(Color.BLACK);
+        nextFrame.fillPolygon(cannon);
+        
+        // circle over base of cannon
+        nextFrame.setColor(Color.MAGENTA);
+        nextFrame.fillOval(cannonBase.x - 30, cannonBase.y - 30, 60, 60);
 
         // get new ballPosition
         if(!paused) {
