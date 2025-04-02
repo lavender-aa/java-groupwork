@@ -36,7 +36,7 @@ implements WindowListener, ComponentListener, ActionListener,
     
     // objects
     private Insets insets;
-    private Ball ball;
+    private GameArea game;
     private Label angleLabel = new Label("Angle (45)", Label.CENTER);
     private Label VelocityLabel = new Label("Initial Velocity ()", Label.CENTER);
     private Label placeholder = new Label("", Label.CENTER);
@@ -85,7 +85,7 @@ implements WindowListener, ComponentListener, ActionListener,
         window.x = getWidth();
         window.y = getHeight();
         calculateScreenSizes();
-        ball.resize(screen);
+        game.resize(screen);
     }
 
     @Override
@@ -102,7 +102,7 @@ implements WindowListener, ComponentListener, ActionListener,
         if(perimiter.intersection(db) != db) {
             db = perimiter.intersection(db);
         }
-        ball.setDragBox(new Rectangle(db));
+        game.setDragBox(new Rectangle(db));
     }
 
     Rectangle getDragBox(MouseEvent e) {
@@ -122,7 +122,7 @@ implements WindowListener, ComponentListener, ActionListener,
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        ball.updateWalls(new Point(e.getPoint()));
+        game.updateWalls(new Point(e.getPoint()));
     }
 
     @Override
@@ -138,14 +138,14 @@ implements WindowListener, ComponentListener, ActionListener,
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        Rectangle b = ball.getRect();
+        Rectangle b = game.getRect();
         b.grow(1, 1);
 
         // don't create wall if it's intersecting with the ball 
         if(!db.intersects(b) && db != ZERO) {
-            ball.addWall(new Rectangle(db));
+            game.addWall(new Rectangle(db));
         }
-        ball.nullifyDragBox();
+        game.nullifyDragBox();
         db = ZERO;
     }
    
@@ -171,8 +171,8 @@ implements WindowListener, ComponentListener, ActionListener,
         velocityScrollbar.removeAdjustmentListener(this);
         this.removeComponentListener(this);
         this.removeWindowListener(this);
-        ball.removeMouseMotionListener(this);
-        ball.removeMouseListener(this);
+        game.removeMouseMotionListener(this);
+        game.removeMouseListener(this);
 
         // close thread
         run = false;
@@ -313,12 +313,12 @@ implements WindowListener, ComponentListener, ActionListener,
         velocityScrollbar.setBackground(Color.gray);
 
         // create ball
-        ball = new Ball(ballSize, screen);
-        ball.setBackground(Color.white);
+        game = new GameArea(ballSize, screen);
+        game.setBackground(Color.white);
 
         // init sheet, control panels
         sheet.setLayout(new BorderLayout(0,0));
-        sheet.add("Center", ball);
+        sheet.add("Center", game);
         sheet.setVisible(true);
 
         GridBagLayout gbl = new GridBagLayout();
@@ -390,8 +390,8 @@ implements WindowListener, ComponentListener, ActionListener,
         velocityScrollbar.addAdjustmentListener(this);
         this.addComponentListener(this);
         this.addWindowListener(this);
-        ball.addMouseListener(this);
-        ball.addMouseMotionListener(this);
+        game.addMouseListener(this);
+        game.addMouseMotionListener(this);
 
         // set sizes, bounds, validate layout
         setPreferredSize(new Dimension(window.x, window.y));
@@ -422,7 +422,7 @@ implements WindowListener, ComponentListener, ActionListener,
                 try {
                     Thread.sleep(delay);
                 } catch (InterruptedException e) {}
-                ball.repaint();
+                game.repaint();
             }
         }
     }
@@ -437,8 +437,9 @@ implements WindowListener, ComponentListener, ActionListener,
 }
  
  
-// ball class
-class Ball extends Canvas {
+// class where all the drawing happens
+// contains the ball, projectile, cannon, walls
+class GameArea extends Canvas {
 
     // data
     private static final long serialVersionUID = 11L;
@@ -446,25 +447,25 @@ class Ball extends Canvas {
     private Graphics nextFrame;
     private Point screen;
     private int ballSize;
-    private Point pos;
-    private Point dir;
+    private Point ballPos;
+    private Point ballDir;
     private Vector<Rectangle> walls;
     private Rectangle dragBox;
     private boolean paused;
     private boolean ballCollided;
 
-    public Ball(int size, Point screenSize) {
+    public GameArea(int size, Point screenSize) {
         screen = screenSize;
         ballSize = size;
-        pos = new Point(screen.x/2, screen.y/2);
-        dir = new Point(1,1);
+        ballPos = new Point(screen.x/2, screen.y/2);
+        ballDir = new Point(1,1);
         walls = new Vector<Rectangle>();
         dragBox = null;
         paused = true;
         ballCollided = false;
     }
 
-    // position, size, pause
+    // ballballPosition, size, pause
 
     public int getObjSize() {
         return ballSize;
@@ -475,7 +476,7 @@ class Ball extends Canvas {
     }
 
     public Rectangle getRect() {
-        return new Rectangle(pos.x - ballSize/2, pos.y - ballSize/2, ballSize, ballSize);
+        return new Rectangle(ballPos.x - ballSize/2, ballPos.y - ballSize/2, ballSize, ballSize);
     }
 
 
@@ -531,7 +532,7 @@ class Ball extends Canvas {
     }
 
     void updateWallDirs() {
-        Rectangle ball = new Rectangle(pos.x - ballSize/2, pos.y - ballSize/2, ballSize, ballSize);
+        Rectangle ball = new Rectangle(ballPos.x - ballSize/2, ballPos.y - ballSize/2, ballSize, ballSize);
         ball.grow(1,1);
 
         int i = 0;
@@ -547,16 +548,16 @@ class Ball extends Canvas {
                 Rectangle right = new Rectangle(r.x + r.width, r.y + 1, 1, r.height - 2);
 
                 if(ball.intersects(top)) {
-                    dir.y = -1;
+                    ballDir.y = -1;
                 }
                 else if(ball.intersects(bottom)) {
-                    dir.y = 1;  
+                    ballDir.y = 1;  
                 }
                 else if(ball.intersects(left)) {
-                    dir.x = -1; 
+                    ballDir.x = -1; 
                 }
                 else if(ball.intersects(right)) {
-                    dir.x = 1;
+                    ballDir.x = 1;
                 }
             }
             else {
@@ -573,17 +574,17 @@ class Ball extends Canvas {
         // get origin of object
         int half = size/2;
 
-        if(pos.x + half >= screen.x) {
-            ballSize = (screen.x - pos.x) * 2;
+        if(ballPos.x + half >= screen.x) {
+            ballSize = (screen.x - ballPos.x) * 2;
         }
-        else if(pos.x - half <= 0) {
-            ballSize = pos.x * 2;
+        else if(ballPos.x - half <= 0) {
+            ballSize = ballPos.x * 2;
         }
-        else if(pos.y + half >= screen.y) {
-            ballSize = (screen.y - pos.y) * 2;
+        else if(ballPos.y + half >= screen.y) {
+            ballSize = (screen.y - ballPos.y) * 2;
         }
-        else if(pos.y - half <= 0) {
-            ballSize = pos.y * 2;
+        else if(ballPos.y - half <= 0) {
+            ballSize = ballPos.y * 2;
         }
         else { // no collisions, good
             ballSize = size;
@@ -592,11 +593,11 @@ class Ball extends Canvas {
 
     public void resize(Point newScreen) {
         screen = newScreen;
-        if(pos.x + ballSize >= screen.x) {
-            pos.x = screen.x - ballSize;
+        if(ballPos.x + ballSize >= screen.x) {
+            ballPos.x = screen.x - ballSize;
         }
-        if(pos.y + ballSize >= screen.y) {
-            pos.y = screen.y - ballSize;
+        if(ballPos.y + ballSize >= screen.y) {
+            ballPos.y = screen.y - ballSize;
         }
     }
 
@@ -629,36 +630,36 @@ class Ball extends Canvas {
             nextFrame.drawRect(dragBox.x, dragBox.y, dragBox.width, dragBox.height);
         }
 
-        // get new position
+        // get new ballPosition
         if(!paused) {
             // update ball directions
-            if(pos.x + ballSize/2 >= screen.x) {
-                dir.x = -1;
+            if(ballPos.x + ballSize/2 >= screen.x) {
+                ballDir.x = -1;
             }
-            if(pos.x - ballSize/2 <= 0) {
-                dir.x = 1;
+            if(ballPos.x - ballSize/2 <= 0) {
+                ballDir.x = 1;
             }
-            if(pos.y - ballSize/2 <= 0) {
-                dir.y = 1;
+            if(ballPos.y - ballSize/2 <= 0) {
+                ballDir.y = 1;
             }
-            if(pos.y + ballSize/2 >= screen.y) {
-                dir.y = -1;
+            if(ballPos.y + ballSize/2 >= screen.y) {
+                ballDir.y = -1;
             }
             updateWallDirs();
             ballCollided = false;
-            pos.x += dir.x;
-            pos.y += dir.y;
+            ballPos.x += ballDir.x;
+            ballPos.y += ballDir.y;
         }
 
         // offset location to make x/y the origin
-        int xpos = pos.x - (ballSize-1)/2;
-        int ypos = pos.y - (ballSize-1)/2;
+        int xballPos = ballPos.x - (ballSize-1)/2;
+        int yballPos = ballPos.y - (ballSize-1)/2;
         
         // draw the circle to the graphics
         nextFrame.setColor(Color.lightGray);
-        nextFrame.fillOval(xpos, ypos, ballSize, ballSize);
+        nextFrame.fillOval(xballPos, yballPos, ballSize, ballSize);
         nextFrame.setColor(Color.black);
-        nextFrame.drawOval(xpos, ypos, ballSize-1, ballSize-1);
+        nextFrame.drawOval(xballPos, yballPos, ballSize-1, ballSize-1);
 
         current.drawImage(buffer, 0, 0, null);
         Toolkit.getDefaultToolkit().sync(); // to remove animation stutters on linux
