@@ -40,6 +40,10 @@ implements WindowListener, ComponentListener, ActionListener,
     private Label angleLabel = new Label("Angle (45)", Label.CENTER);
     private Label VelocityLabel = new Label("Initial Velocity ()", Label.CENTER);
     private Label placeholder = new Label("", Label.CENTER);
+    private Label boundsStatus = new Label("Projectile in bounds.", Label.CENTER);
+    private Label timeLabel = new Label("Time: 0s", Label.CENTER);
+    private Label ballScoreLabel = new Label("Ball: 0", Label.CENTER);
+    private Label cannonScoreLabel = new Label("Cannon: 0", Label.CENTER);
     private Scrollbar angleScrollbar, velocityScrollbar;
     private Thread thread;
     private Panel sheet = new Panel();
@@ -341,18 +345,25 @@ implements WindowListener, ComponentListener, ActionListener,
 
         c.gridx = 3;
         c.gridy = 0;
-        // bounds label
+        c.gridwidth = 3;
+        gbl.setConstraints(boundsStatus, c);
+        control.add(boundsStatus);
 
         c.gridy = 1;
-        // time label
+        c.gridwidth = 1;
+        gbl.setConstraints(timeLabel, c);
+        control.add(timeLabel);
 
         c.gridx = 4;
-        // ball score label
+        gbl.setConstraints(ballScoreLabel, c);
+        control.add(ballScoreLabel);
 
         c.gridx = 5;
-        // cannon score label
+        gbl.setConstraints(cannonScoreLabel, c);
+        control.add(cannonScoreLabel);
 
         c.gridx = 7;
+        c.gridy = 0;
         gbl.setConstraints(velocityScrollbar, c);
         control.add(velocityScrollbar);
 
