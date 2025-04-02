@@ -21,6 +21,7 @@ implements WindowListener, ComponentListener, ActionListener,
  
     // constants
     private final double SECONDS_TO_MILLIS = 1000;
+    private final int BALLTICKS = 4; // ball moves once every 4 time steps
 
     // primitives
     private int winTop = 10;  // top of frame
@@ -28,18 +29,16 @@ implements WindowListener, ComponentListener, ActionListener,
     private int ballSize = 21;
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
-    private int delay; // change in time for the projectile
-    private final int BALLTICKS = 4; // ball moves once every 4 time steps
-    private int angle;
+    private int delay = 50; // millis -> 0.05s -> 20fps
+    private int angle = 45; // degrees
     private int velocity;
     private int maxVelocity;
     
     // objects
     private Insets insets;
-    private Button start, pause, quit;
     private Ball ball;
-    private Label angleLabel = new Label("Angle", Label.CENTER);
-    private Label VelocityLabel = new Label("Velocity", Label.CENTER);
+    private Label angleLabel = new Label("Angle (45)", Label.CENTER);
+    private Label VelocityLabel = new Label("Initial Velocity ()", Label.CENTER);
     private Label placeholder = new Label("", Label.CENTER);
     private Scrollbar angleScrollbar, velocityScrollbar;
     private Thread thread;
@@ -52,6 +51,7 @@ implements WindowListener, ComponentListener, ActionListener,
     private Rectangle perimiter = new Rectangle(); // bouncing perimiter
     private Rectangle db = new Rectangle(); // mouse drag box
     private static final Rectangle ZERO = new Rectangle(0,0,0,0);
+    private MenuBar menu;
 
 
 
@@ -62,22 +62,8 @@ implements WindowListener, ComponentListener, ActionListener,
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
+        
 
-        if(source == start) {
-            start.setEnabled(false);
-            pause.setEnabled(true);
-            paused = false;
-            ball.setPaused(false);
-        }
-        else if(source == pause) {
-            pause.setEnabled(false);
-            start.setEnabled(true);
-            paused = true;
-            ball.setPaused(true);
-        }
-        else { // source == quit
-            stop();
-        }
     }
 
 
@@ -177,9 +163,6 @@ implements WindowListener, ComponentListener, ActionListener,
 
     void stop() {
         // remove all listeners
-        start.removeActionListener(this);
-        pause.removeActionListener(this);
-        quit.removeActionListener(this);
         angleScrollbar.removeAdjustmentListener(this);
         velocityScrollbar.removeAdjustmentListener(this);
         this.removeComponentListener(this);
@@ -216,16 +199,10 @@ implements WindowListener, ComponentListener, ActionListener,
     public void adjustmentValueChanged(AdjustmentEvent e) {
         Scrollbar sb = (Scrollbar) e.getSource();
         if(sb == angleScrollbar) {
-            delay = (int) ((1.0/sb.getValue()) * SECONDS_TO_MILLIS);
+            // change angle
         }
         else if(sb == velocityScrollbar) {
-            int newSize = sb.getValue();
-            newSize = (newSize/2)*2 + 1; // force the size to be odd for center position
-            ball.updateSize(newSize);
-            if(ball.getObjSize() != newSize) {
-                sb.setValue(ball.getObjSize());
-            }
-            if(paused) ball.repaint();
+            // change initial projectile velocity 
         }
     }
 
@@ -266,26 +243,59 @@ implements WindowListener, ComponentListener, ActionListener,
         run = true;
         delay = 100; // millis; 0.1 seconds
         db = ZERO;
+        maxVelocity = 100;
 
         // init perimiter
         perimiter.setBounds(0,0,screen.x,screen.y);
         perimiter.grow(-1,-1);
-        
-        // create buttons
-        start = new Button("Run");
-        pause = new Button("Pause");
-        quit = new Button("Quit");
-        start.setEnabled(true);
-        pause.setEnabled(false);
+
+        // menu and items
+        menu = new MenuBar();
+        Menu ctrl = new Menu("Control");
+        ctrl.add(new MenuItem("Pause", new MenuShortcut(KeyEvent.VK_P)));
+        ctrl.add(new MenuItem("Run", new MenuShortcut(KeyEvent.VK_R)));
+        ctrl.add(new MenuItem("Restart"));
+        ctrl.addSeparator();
+        ctrl.add(new MenuItem("Quit"));
+        Menu params = new Menu("Parameters");
+        Menu size = new Menu("Size");
+        size.add(new MenuItem("x-small"));
+        size.add(new MenuItem("small"));
+        size.add(new MenuItem("medium"));
+        size.add(new MenuItem("large"));
+        size.add(new MenuItem("x-large"));
+        Menu speed = new Menu("Speed");
+        speed.add(new MenuItem("x-slow"));
+        speed.add(new MenuItem("slow"));
+        speed.add(new MenuItem("medium"));
+        speed.add(new MenuItem("fast"));
+        speed.add(new MenuItem("x-fast"));
+        params.add(size);
+        params.add(speed);
+        Menu env = new Menu("Environment");
+        env.add(new MenuItem("Mercury"));
+        env.add(new MenuItem("Venus"));
+        env.add(new MenuItem("Earth"));
+        env.add(new MenuItem("Moon"));
+        env.add(new MenuItem("Mars"));
+        env.add(new MenuItem("Jupiter"));
+        env.add(new MenuItem("Saturn"));
+        env.add(new MenuItem("Neptune"));
+        env.add(new MenuItem("Uranus"));
+        env.add(new MenuItem("Pluto"));
+        menu.add(ctrl);
+        menu.add(params);
+        menu.add(env);
+
 
         // create speed scroll bar
         angleScrollbar = new Scrollbar(Scrollbar.HORIZONTAL);
         angleScrollbar.setMaximum(90); // all vertical
         angleScrollbar.setMinimum(0); // all horizontal
         angleScrollbar.setUnitIncrement(10);
-        angleScrollbar.setBlockIncrement(50);
+        angleScrollbar.setBlockIncrement(45);
         angleScrollbar.setValue(angle);
-        angleScrollbar.setVisibleAmount(50);
+        angleScrollbar.setVisibleAmount(20);
         angleScrollbar.setBackground(Color.gray);
 
         // create size scroll bar
@@ -331,16 +341,16 @@ implements WindowListener, ComponentListener, ActionListener,
 
         c.gridx = 3;
         c.gridy = 0;
-        gbl.setConstraints(start, c);
-        control.add(start);
+        // bounds label
+
+        c.gridy = 1;
+        // time label
 
         c.gridx = 4;
-        gbl.setConstraints(pause, c);
-        control.add(pause);
+        // ball score label
 
         c.gridx = 5;
-        gbl.setConstraints(quit, c);
-        control.add(quit);
+        // cannon score label
 
         c.gridx = 7;
         gbl.setConstraints(velocityScrollbar, c);
@@ -358,6 +368,7 @@ implements WindowListener, ComponentListener, ActionListener,
         // add sheets to frame
         add("Center", sheet);
         add("South", control);
+        setMenuBar(menu);
 
         // init mouse points
         m1.setLocation(0, 0);
@@ -368,9 +379,6 @@ implements WindowListener, ComponentListener, ActionListener,
         velocityScrollbar.addAdjustmentListener(this);
         this.addComponentListener(this);
         this.addWindowListener(this);
-        start.addActionListener(this);
-        pause.addActionListener(this);
-        quit.addActionListener(this);
         ball.addMouseListener(this);
         ball.addMouseMotionListener(this);
 
