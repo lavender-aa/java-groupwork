@@ -20,8 +20,6 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     private static final long serialVersionUID = 10L;
  
     // constants
-    private final double SECONDS_TO_MILLIS = 1000;
-    private final int BALLTICKS = 4; // ball moves once every 4 time steps
     private final int cannonLength = 100;
     private final int cannonWidth = 20;
     private final int xsmallSize = 10;
@@ -39,7 +37,6 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     private int delay = 50; // millis -> 0.05s -> 20fps
     private int time = 0; // millis
     private int angle = 45; // degrees
-    private int velocity = 10;
     private int maxVelocity = 100;
     private int ballScore = 0;
     private int cannonScore = 0;
@@ -155,6 +152,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     @Override
     public void mouseClicked(MouseEvent e) {
         game.updateWalls(new Point(e.getPoint()));
+        game.fireCannonTest(e.getPoint());
     }
 
     @Override
@@ -665,6 +663,13 @@ class GameArea extends Canvas {
         double sin = Math.sin(Math.toRadians(cannonAngle));
         projPos = new Point(cannonBase.x + (int)(-1*cannonLength*cos),cannonBase.y + (int)(-1*cannonLength*sin));
         repaint();
+    }
+
+    public void fireCannonTest(Point mouse) {
+        Rectangle base = new Rectangle(cannonBase.x - 30, cannonBase.y - 30, 60, 60);
+        if(base.contains(mouse)) {
+            launchProjectile();
+        };
     }
 
 
