@@ -13,7 +13,7 @@ import java.awt.event.*;
 import java.util.Vector;
  
 public class CannonVsBall extends Frame
-implements WindowListener, ComponentListener, ActionListener, 
+implements WindowListener, ComponentListener, ActionListener, ItemListener,
            AdjustmentListener, Runnable, MouseListener, MouseMotionListener {
  
     // serial UID
@@ -24,6 +24,11 @@ implements WindowListener, ComponentListener, ActionListener,
     private final int BALLTICKS = 4; // ball moves once every 4 time steps
     private final int cannonLength = 100;
     private final int cannonWidth = 20;
+    private final int xsmallSize = 10;
+    private final int smallSize = 50;
+    private final int mediumSize = 100;
+    private final int largeSize = 150;
+    private final int xlaregSize = 200;
 
     // primitives
     private int winTop = 10;  // top of frame
@@ -32,15 +37,18 @@ implements WindowListener, ComponentListener, ActionListener,
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
     private int delay = 50; // millis -> 0.05s -> 20fps
+    private int time = 0; // millis
     private int angle = 45; // degrees
-    private int velocity;
-    private int maxVelocity;
+    private int velocity = 10;
+    private int maxVelocity = 100;
+    private int ballScore = 0;
+    private int cannonScore = 0;
     
     // objects
     private Insets insets;
     private GameArea game;
     private Label angleLabel = new Label("Angle (45)", Label.CENTER);
-    private Label VelocityLabel = new Label("Initial Velocity ()", Label.CENTER);
+    private Label VelocityLabel = new Label("Initial Velocity (10)", Label.CENTER);
     private Label placeholder = new Label("", Label.CENTER);
     private Label boundsStatus = new Label("Projectile in bounds.", Label.CENTER);
     private Label timeLabel = new Label("Time: 0s", Label.CENTER);
@@ -58,6 +66,10 @@ implements WindowListener, ComponentListener, ActionListener,
     private Rectangle db = new Rectangle(); // mouse drag box
     private static final Rectangle ZERO = new Rectangle(0,0,0,0);
     private MenuBar menu;
+    private CheckboxMenuItem sz1, sz2, sz3, sz4, sz5; // sizes
+    private CheckboxMenuItem sp1, sp2, sp3, sp4, sp5; // speeds
+    private CheckboxMenuItem p1, p2, p3, p4, p5, p6, p7, p8, p9, p10; // gravities
+    private MenuItem start, pause, restart, quit;
 
 
 
@@ -67,9 +79,27 @@ implements WindowListener, ComponentListener, ActionListener,
     // actions
     @Override
     public void actionPerformed(ActionEvent e) {
-        Object source = e.getSource();
+        MenuItem item = (MenuItem)e.getSource();
         
+        if(item == start) {
+            paused = false;
+        }
+        if(item == pause) {
+            paused = true;
+        }
+        if(item == restart) {
+            ballScore = 0;
+            ballScoreLabel.setText("Ball: 0");
 
+            cannonScore = 0;
+            cannonScoreLabel.setText("Cannon: 0");
+
+            time = 0;
+            timeLabel.setText("Time: 0s");
+        }
+        if(item == quit) {
+            stop();
+        }
     }
 
 
@@ -209,7 +239,79 @@ implements WindowListener, ComponentListener, ActionListener,
         }
         else if(sb == velocityScrollbar) {
             // change initial projectile velocity 
+            game.setVelocity(sb.getValue());
         }
+    }
+
+
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        CheckboxMenuItem box = (CheckboxMenuItem)e.getSource();
+
+        if(box == sz1 || box == sz2 || box == sz3 || box == sz4 || box == sz5) {
+            sz1.setState(false);
+            sz2.setState(false);
+            sz3.setState(false);
+            sz4.setState(false);
+            sz5.setState(false);
+            box.setState(true);
+            setSize();
+        }
+        if(box == sp1 || box == sp2 || box == sp3 || box == sp4 || box == sp5) {
+            sp1.setState(false);
+            sp2.setState(false);
+            sp3.setState(false);
+            sp4.setState(false);
+            sp5.setState(false);
+            box.setState(true);
+            setSpeed();
+        }
+        if(box == p1 || box == p2 || box == p3 || box == p4 || box == p5 || 
+           box == p6 || box == p7 || box == p8 || box == p9 || box == p10) {
+            p1.setState(false);
+            p2.setState(false);
+            p3.setState(false);
+            p4.setState(false);
+            p5.setState(false);
+            p6.setState(false);
+            p7.setState(false);
+            p8.setState(false);
+            p9.setState(false);
+            p10.setState(false);
+            box.setState(true);
+            setPlanet();
+        }
+    }
+
+    void setSize() {
+        if(sz1.getState()) { ballSize = xsmallSize; }
+        if(sz2.getState()) { ballSize = smallSize; }
+        if(sz3.getState()) { ballSize = mediumSize; }
+        if(sz4.getState()) { ballSize = largeSize; }
+        if(sz5.getState()) { ballSize = xlaregSize; }
+        game.updateBallSize(ballSize);
+    }
+
+    void setSpeed() {
+        if(sp1.getState()) { delay = 500; }
+        if(sp2.getState()) { delay = 250; }
+        if(sp3.getState()) { delay = 50; }
+        if(sp4.getState()) { delay = 25; }
+        if(sp5.getState()) { delay = 15; }
+    }
+
+    void setPlanet() {
+        if(p1.getState()) { game.setAccel(-4); }
+        if(p2.getState()) { game.setAccel(-9); }
+        if(p3.getState()) { game.setAccel(-10); }
+        if(p4.getState()) { game.setAccel(-2); }
+        if(p5.getState()) { game.setAccel(-4); }
+        if(p6.getState()) { game.setAccel(-25); }
+        if(p7.getState()) { game.setAccel(-11); }
+        if(p8.getState()) { game.setAccel(-9); }
+        if(p9.getState()) { game.setAccel(-11); }
+        if(p10.getState()) { game.setAccel(-1); }
     }
 
 
@@ -245,7 +347,7 @@ implements WindowListener, ComponentListener, ActionListener,
     void initComponents() {
 
         // initialize program variables
-        paused = true;
+        paused = false;
         run = true;
         delay = 100; // millis; 0.1 seconds
         db = ZERO;
@@ -258,37 +360,40 @@ implements WindowListener, ComponentListener, ActionListener,
         // menu and items
         menu = new MenuBar();
         Menu ctrl = new Menu("Control");
-        ctrl.add(new MenuItem("Pause", new MenuShortcut(KeyEvent.VK_P)));
-        ctrl.add(new MenuItem("Run", new MenuShortcut(KeyEvent.VK_R)));
-        ctrl.add(new MenuItem("Restart"));
+        ctrl.add(pause = new MenuItem("Pause", new MenuShortcut(KeyEvent.VK_P)));
+        ctrl.add(start = new MenuItem("Run", new MenuShortcut(KeyEvent.VK_R)));
+        ctrl.add(restart = new MenuItem("Restart"));
         ctrl.addSeparator();
-        ctrl.add(new MenuItem("Quit"));
+        ctrl.add(quit = new MenuItem("Quit"));
         Menu params = new Menu("Parameters");
         Menu size = new Menu("Size");
-        size.add(new MenuItem("x-small"));
-        size.add(new MenuItem("small"));
-        size.add(new MenuItem("medium"));
-        size.add(new MenuItem("large"));
-        size.add(new MenuItem("x-large"));
+        size.add(sz1 = new CheckboxMenuItem("x-small"));
+        size.add(sz2 = new CheckboxMenuItem("small"));
+        size.add(sz3 = new CheckboxMenuItem("medium"));
+        sz3.setState(true);
+        size.add(sz4 = new CheckboxMenuItem("large"));
+        size.add(sz5 = new CheckboxMenuItem("x-large"));
         Menu speed = new Menu("Speed");
-        speed.add(new MenuItem("x-slow"));
-        speed.add(new MenuItem("slow"));
-        speed.add(new MenuItem("medium"));
-        speed.add(new MenuItem("fast"));
-        speed.add(new MenuItem("x-fast"));
+        speed.add(sp1 = new CheckboxMenuItem("x-slow"));
+        speed.add(sp2 = new CheckboxMenuItem("slow"));
+        speed.add(sp3 = new CheckboxMenuItem("medium"));
+        sp3.setState(true);
+        speed.add(sp4 = new CheckboxMenuItem("fast"));
+        speed.add(sp5 = new CheckboxMenuItem("x-fast"));
         params.add(size);
         params.add(speed);
         Menu env = new Menu("Environment");
-        env.add(new MenuItem("Mercury"));
-        env.add(new MenuItem("Venus"));
-        env.add(new MenuItem("Earth"));
-        env.add(new MenuItem("Moon"));
-        env.add(new MenuItem("Mars"));
-        env.add(new MenuItem("Jupiter"));
-        env.add(new MenuItem("Saturn"));
-        env.add(new MenuItem("Neptune"));
-        env.add(new MenuItem("Uranus"));
-        env.add(new MenuItem("Pluto"));
+        env.add(p1 = new CheckboxMenuItem("Mercury"));
+        env.add(p2 = new CheckboxMenuItem("Venus"));
+        env.add(p3 = new CheckboxMenuItem("Earth"));
+        p3.setState(true);
+        env.add(p4 = new CheckboxMenuItem("Moon"));
+        env.add(p5 = new CheckboxMenuItem("Mars"));
+        env.add(p6 = new CheckboxMenuItem("Jupiter"));
+        env.add(p7 = new CheckboxMenuItem("Saturn"));
+        env.add(p8 = new CheckboxMenuItem("Uranus"));
+        env.add(p9 = new CheckboxMenuItem("Neptune"));
+        env.add(p10 = new CheckboxMenuItem("Pluto"));
         menu.add(ctrl);
         menu.add(params);
         menu.add(env);
@@ -395,6 +500,32 @@ implements WindowListener, ComponentListener, ActionListener,
         game.addMouseListener(this);
         game.addMouseMotionListener(this);
 
+        // menu listeners
+        sz1.addItemListener(this);
+        sz2.addItemListener(this);
+        sz3.addItemListener(this);
+        sz4.addItemListener(this);
+        sz5.addItemListener(this);
+        sp1.addItemListener(this);
+        sp2.addItemListener(this);
+        sp3.addItemListener(this);
+        sp4.addItemListener(this);
+        sp5.addItemListener(this);
+        p1.addItemListener(this);
+        p2.addItemListener(this);
+        p3.addItemListener(this);
+        p4.addItemListener(this);
+        p5.addItemListener(this);
+        p6.addItemListener(this);
+        p7.addItemListener(this);
+        p8.addItemListener(this);
+        p9.addItemListener(this);
+        p10.addItemListener(this);
+        start.addActionListener(this);
+        pause.addActionListener(this);
+        restart.addActionListener(this);
+        quit.addActionListener(this);
+
         // set sizes, bounds, validate layout
         setPreferredSize(new Dimension(window.x, window.y));
         setMinimumSize(getPreferredSize());
@@ -423,6 +554,11 @@ implements WindowListener, ComponentListener, ActionListener,
             if(!paused) {
                 try {
                     Thread.sleep(delay);
+                    time += delay;
+                    game.setTime(time);
+                    timeLabel.setText("Time: " + (time / 1000) + "s");
+                    ballScoreLabel.setText("Ball: " + ballScore);
+                    cannonScoreLabel.setText("Cannon: " + cannonScore);
                 } catch (InterruptedException e) {}
                 game.repaint();
             }
@@ -452,15 +588,23 @@ class GameArea extends Canvas {
     private Point ballPos;
     private Point ballDir;
     private Point projPos;
+    private int projSize;
     private Point cannonBase;
     private int cannonLength;
     private int cannonWidth;
     private int cannonAngle;
+    private int initVelocity;
     private boolean launchProj;
+    private int projIteration;
     private Vector<Rectangle> walls;
     private Rectangle dragBox;
     private boolean paused;
     private boolean ballCollided;
+    private int time;
+    private int timeBallShot;
+    private double acceleration;
+    private double xf;
+    private double yf;
 
     public GameArea(int size, Point screenSize, int cannonL, int cannonW) {
         screen = screenSize;
@@ -476,6 +620,14 @@ class GameArea extends Canvas {
         cannonWidth = cannonW;
         cannonAngle = 45;
         launchProj = false;
+        projSize = 15;
+        projIteration = 0;
+        timeBallShot = 0;
+        time = 0;
+        initVelocity = 10;
+        acceleration = -10.0;
+        xf = -10;
+        yf = -10;
     }
 
     public void setPaused(boolean val) {
@@ -486,8 +638,20 @@ class GameArea extends Canvas {
         return new Rectangle(ballPos.x - ballSize/2, ballPos.y - ballSize/2, ballSize, ballSize);
     }
 
+    public void setAccel(int acc) {
+        acceleration = acc;
+    }
+
+    public void setVelocity(int vel) {
+        initVelocity = vel;
+    }
+
 
     // cannon related
+
+    public void setTime(int newtime) {
+        time = newtime;
+    }
 
     public void setCannonAngle(int degrees) {
         cannonAngle = degrees;
@@ -495,7 +659,12 @@ class GameArea extends Canvas {
     }
 
     public void launchProjectile() {
-        launchProj = true;   
+        launchProj = true;
+        timeBallShot = time;
+        double cos = Math.cos(Math.toRadians(cannonAngle));
+        double sin = Math.sin(Math.toRadians(cannonAngle));
+        projPos = new Point(cannonBase.x + (int)(-1*cannonLength*cos),cannonBase.y + (int)(-1*cannonLength*sin));
+        repaint();
     }
 
 
@@ -586,6 +755,33 @@ class GameArea extends Canvas {
     }
 
 
+    public void updateBallSize(int size) {
+
+        // get half of the object size, set old size,
+        // get origin of object
+        int half = size/2;
+
+        // limit object to maximum size
+        // limit object size based on collisions with edges
+        if(ballPos.x + half >= screen.x) {
+            ballSize = (screen.x - ballPos.x) * 2;
+        }
+        else if(ballPos.x - half <= 0) {
+            ballSize = ballPos.x * 2;
+        }
+        else if(ballPos.y + half >= screen.y) {
+            ballSize = (screen.y - ballPos.y) * 2;
+        }
+        else if(ballPos.y - half <= 0) {
+            ballSize = ballPos.y * 2;
+        }
+        else { // no collisions, good
+            ballSize = size;
+        }
+
+    }
+
+
 
 
     public void resize(Point newScreen) {
@@ -630,7 +826,7 @@ class GameArea extends Canvas {
         }
 
         // draw cannon
-        double angleRad = (cannonAngle * Math.PI) / 180.0;
+        double angleRad = Math.toRadians(cannonAngle);
         double cos = Math.cos(angleRad);
         double sin = Math.sin(angleRad);
         Point offsetL = new Point(
@@ -659,26 +855,55 @@ class GameArea extends Canvas {
         nextFrame.setColor(Color.MAGENTA);
         nextFrame.fillOval(cannonBase.x - 30, cannonBase.y - 30, 60, 60);
 
-        // get new ballPosition
+        // get new ball and projectile positions
         if(!paused) {
-            // update ball directions
-            if(ballPos.x + ballSize/2 >= screen.x) {
-                ballDir.x = -1;
+            if(projIteration == 3) {
+                // update ball directions
+                if(ballPos.x + ballSize/2 >= screen.x) {
+                    ballDir.x = -1;
+                }
+                if(ballPos.x - ballSize/2 <= 0) {
+                    ballDir.x = 1;
+                }
+                if(ballPos.y - ballSize/2 <= 0) {
+                    ballDir.y = 1;
+                }
+                if(ballPos.y + ballSize/2 >= screen.y) {
+                    ballDir.y = -1;
+                }
+                updateWallDirs();
+                ballCollided = false;
+                ballPos.x += ballDir.x;
+                ballPos.y += ballDir.y;
             }
-            if(ballPos.x - ballSize/2 <= 0) {
-                ballDir.x = 1;
+
+            if(launchProj) {
+                // update projectile position
+                double dt = (time - timeBallShot)/1000.0;
+
+                // x direction
+                double x0 = c.x;
+                double v_x0 = initVelocity * Math.cos(angleRad);
+                xf = x0 + (v_x0 * dt);
+
+                // y direction
+                double y0 = c.y;
+                double v_y0 = initVelocity * Math.sin(angleRad);
+                yf = y0 + (v_y0 * dt) + (0.5 * acceleration * Math.pow(dt, 2));
+
+                if(yf < 0) launchProj = false;
             }
-            if(ballPos.y - ballSize/2 <= 0) {
-                ballDir.y = 1;
-            }
-            if(ballPos.y + ballSize/2 >= screen.y) {
-                ballDir.y = -1;
-            }
-            updateWallDirs();
-            ballCollided = false;
-            ballPos.x += ballDir.x;
-            ballPos.y += ballDir.y;
         }
+
+        // offset location to make x/y the origin
+        int xProjPos = (int)xf - (projSize-1)/2;
+        int yProjPos = (int)yf - (projSize-1)/2;
+
+        // draw projectile to graphics
+        nextFrame.setColor(Color.blue);
+        nextFrame.fillOval(xProjPos, yProjPos, projSize, projSize);
+        nextFrame.setColor(Color.black);
+        nextFrame.drawOval(xProjPos, yProjPos, projSize, projSize);
 
         // offset location to make x/y the origin
         int xballPos = ballPos.x - (ballSize-1)/2;
