@@ -42,15 +42,15 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     private int delay; // millis -> 0.05s -> 20fps
     private int time = 0; // millis
     private int angle = 45; // degrees
-    private int maxVelocity = 200;
+    private int maxVelocity = 225;
     private int ballScore = 0;
     private int cannonScore = 0;
     
     // objects
     private Insets insets;
     private GameArea game;
-    private Label angleLabel = new Label("Angle (45)", Label.CENTER);
-    private Label VelocityLabel = new Label("Initial Velocity (10)", Label.CENTER);
+    private Label angleLabel = new Label("Angle: 45", Label.CENTER);
+    private Label velocityLabel = new Label("Initial Velocity: 30", Label.CENTER);
     private Label placeholder = new Label("", Label.CENTER);
     private Label boundsStatus = new Label("Projectile in bounds.", Label.CENTER);
     private Label timeLabel = new Label("Time: 0s", Label.CENTER);
@@ -241,9 +241,11 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
         Scrollbar sb = (Scrollbar) e.getSource();
         if(sb == angleScrollbar) {
             game.setCannonAngle(sb.getValue());
+            angleLabel.setText("Angle: " + sb.getValue());
         }
         else if(sb == velocityScrollbar) {
             game.setVelocity(sb.getValue());
+            velocityLabel.setText("Initial Velocity: " + sb.getValue());
         }
     }
 
@@ -355,7 +357,6 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
         run = true;
         delay = mediumSpeed;
         db = ZERO;
-        maxVelocity = 100;
 
         // init perimiter
         perimiter.setBounds(0,0,screen.x,screen.y);
@@ -419,7 +420,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
         velocityScrollbar.setMinimum(10);
         velocityScrollbar.setUnitIncrement(10);
         velocityScrollbar.setBlockIncrement(50);
-        velocityScrollbar.setValue(ballSize);
+        velocityScrollbar.setValue(30);
         velocityScrollbar.setVisibleAmount(25);
         velocityScrollbar.setBackground(Color.gray);
 
@@ -479,8 +480,8 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
         control.add(velocityScrollbar);
 
         c.gridy = 1;
-        gbl.setConstraints(VelocityLabel, c);
-        control.add(VelocityLabel);
+        gbl.setConstraints(velocityLabel, c);
+        control.add(velocityLabel);
 
         c.gridx = 8;
         c.gridy = 0;
@@ -617,7 +618,7 @@ class GameArea extends Canvas {
         screen = screenSize;
         ballSize = size;
         ballPos = new Point(screen.x/2, screen.y/2);
-        ballDir = new Point(1,1);
+        ballDir = new Point(2,2);
         walls = new Vector<Rectangle>();
         dragBox = null;
         paused = true;
@@ -755,16 +756,16 @@ class GameArea extends Canvas {
                 Rectangle right = new Rectangle(r.x + r.width, r.y + 1, 1, r.height - 2);
 
                 if(ball.intersects(top)) {
-                    ballDir.y = -1;
+                    ballDir.y = -2;
                 }
                 else if(ball.intersects(bottom)) {
-                    ballDir.y = 1;  
+                    ballDir.y = 2;  
                 }
                 else if(ball.intersects(left)) {
-                    ballDir.x = -1; 
+                    ballDir.x = -2; 
                 }
                 else if(ball.intersects(right)) {
-                    ballDir.x = 1;
+                    ballDir.x = 2;
                 }
             }
             else {
@@ -880,16 +881,16 @@ class GameArea extends Canvas {
 
                 // update ball directions
                 if(ballPos.x + ballSize/2 >= screen.x) {
-                    ballDir.x = -1;
+                    ballDir.x = -2;
                 }
                 if(ballPos.x - ballSize/2 <= 0) {
-                    ballDir.x = 1;
+                    ballDir.x = 2;
                 }
                 if(ballPos.y - ballSize/2 <= 0) {
-                    ballDir.y = 1;
+                    ballDir.y = 2;
                 }
                 if(ballPos.y + ballSize/2 >= screen.y) {
-                    ballDir.y = -1;
+                    ballDir.y = -2;
                 }
                 updateWallDirs();
                 ballCollided = false;
@@ -920,7 +921,7 @@ class GameArea extends Canvas {
                     projMoving = false;
                 }
             }
-            projIteration = (projIteration + 1) % 3; // cycles of 0-2
+            projIteration = (projIteration + 1) % 2; // cycles of 0-1
         }
 
         // offset location to make x/y the origin
