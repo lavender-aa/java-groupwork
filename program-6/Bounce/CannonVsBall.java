@@ -27,6 +27,11 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     private final int mediumSize = 100;
     private final int largeSize = 150;
     private final int xlaregSize = 200;
+    private final int xslowSpeed = 25;
+    private final int slowSpeed = 10;
+    private final int mediumSpeed = 5;
+    private final int fastSpeed = 2;
+    private final int xfastSpeed = 1;
 
     // primitives
     private int winTop = 10;  // top of frame
@@ -34,10 +39,10 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     private int ballSize = 21;
     private boolean run; // control program loop
     private boolean paused; // control running vs paused
-    private int delay = 50; // millis -> 0.05s -> 20fps
+    private int delay; // millis -> 0.05s -> 20fps
     private int time = 0; // millis
     private int angle = 45; // degrees
-    private int maxVelocity = 100;
+    private int maxVelocity = 200;
     private int ballScore = 0;
     private int cannonScore = 0;
     
@@ -80,11 +85,13 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
         
         if(item == start) {
             paused = false;
+            game.setPaused(false);
         }
-        if(item == pause) {
+        else if(item == pause) {
             paused = true;
+            game.setPaused(true);
         }
-        if(item == restart) {
+        else if(item == restart) {
             ballScore = 0;
             ballScoreLabel.setText("Ball: 0");
 
@@ -94,7 +101,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
             time = 0;
             timeLabel.setText("Time: 0s");
         }
-        if(item == quit) {
+        else if(item == quit) {
             stop();
         }
     }
@@ -236,7 +243,6 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
             game.setCannonAngle(sb.getValue());
         }
         else if(sb == velocityScrollbar) {
-            // change initial projectile velocity 
             game.setVelocity(sb.getValue());
         }
     }
@@ -292,11 +298,11 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     }
 
     void setSpeed() {
-        if(sp1.getState()) { delay = 500; }
-        if(sp2.getState()) { delay = 250; }
-        if(sp3.getState()) { delay = 50; }
-        if(sp4.getState()) { delay = 25; }
-        if(sp5.getState()) { delay = 15; }
+        if(sp1.getState()) { delay = xslowSpeed; }
+        if(sp2.getState()) { delay = slowSpeed; }
+        if(sp3.getState()) { delay = mediumSpeed; }
+        if(sp4.getState()) { delay = fastSpeed; }
+        if(sp5.getState()) { delay = xfastSpeed; }
     }
 
     void setPlanet() {
@@ -345,9 +351,9 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     void initComponents() {
 
         // initialize program variables
-        paused = false;
+        paused = true;
         run = true;
-        delay = 100; // millis; 0.1 seconds
+        delay = mediumSpeed;
         db = ZERO;
         maxVelocity = 100;
 
@@ -585,19 +591,22 @@ class GameArea extends Canvas {
     private int ballSize;
     private Point ballPos;
     private Point ballDir;
-    private Point projPos;
     private int projSize;
     private Point cannonBase;
     private int cannonLength;
     private int cannonWidth;
     private int cannonAngle;
+    private int initAngle;
     private int initVelocity;
+    private Point initPos;
+    private int cannonVelocity;
     private boolean launchProj;
     private int projIteration;
     private Vector<Rectangle> walls;
     private Rectangle dragBox;
     private boolean paused;
     private boolean ballCollided;
+    private boolean projMoving;
     private int time;
     private int timeBallShot;
     private double acceleration;
@@ -623,7 +632,9 @@ class GameArea extends Canvas {
         timeBallShot = 0;
         time = 0;
         initVelocity = 10;
+        cannonVelocity = 10;
         acceleration = -10.0;
+        projMoving = false;
         xf = -10;
         yf = -10;
     }
@@ -641,7 +652,7 @@ class GameArea extends Canvas {
     }
 
     public void setVelocity(int vel) {
-        initVelocity = vel;
+        cannonVelocity = vel;
     }
 
 
@@ -653,21 +664,24 @@ class GameArea extends Canvas {
 
     public void setCannonAngle(int degrees) {
         cannonAngle = degrees;
-        repaint();
+        if(paused) repaint();
     }
 
     public void launchProjectile() {
         launchProj = true;
+        projMoving = true;
         timeBallShot = time;
-        double cos = Math.cos(Math.toRadians(cannonAngle));
-        double sin = Math.sin(Math.toRadians(cannonAngle));
-        projPos = new Point(cannonBase.x + (int)(-1*cannonLength*cos),cannonBase.y + (int)(-1*cannonLength*sin));
+        initVelocity = cannonVelocity;
+        initAngle = cannonAngle;
+        double cos = Math.cos(Math.toRadians(initAngle));
+        double sin = Math.sin(Math.toRadians(initAngle));
+        initPos = new Point(cannonBase.x + (int)(-1*cannonLength*cos),cannonBase.y + (int)(-1*cannonLength*sin));
         repaint();
     }
 
     public void fireCannonTest(Point mouse) {
         Rectangle base = new Rectangle(cannonBase.x - 30, cannonBase.y - 30, 60, 60);
-        if(base.contains(mouse)) {
+        if(base.contains(mouse) && !projMoving) {
             launchProjectile();
         };
     }
@@ -862,7 +876,8 @@ class GameArea extends Canvas {
 
         // get new ball and projectile positions
         if(!paused) {
-            if(projIteration == 3) {
+            if(projIteration == 0) {
+
                 // update ball directions
                 if(ballPos.x + ballSize/2 >= screen.x) {
                     ballDir.x = -1;
@@ -883,21 +898,29 @@ class GameArea extends Canvas {
             }
 
             if(launchProj) {
-                // update projectile position
-                double dt = (time - timeBallShot)/1000.0;
+                // get time step
+                double dt = (time - timeBallShot)/100.0;
+
+                // cannon already drawn; update angleRad for projectile use
+                // (uses the angle stored when the cannon was pressed instead of current angle)
+                double projAngleRad = Math.toRadians(initAngle);
 
                 // x direction
-                double x0 = c.x;
-                double v_x0 = initVelocity * Math.cos(angleRad);
+                double x0 = initPos.x;
+                double v_x0 = -1 * initVelocity * Math.cos(projAngleRad);
                 xf = x0 + (v_x0 * dt);
 
                 // y direction
-                double y0 = c.y;
-                double v_y0 = initVelocity * Math.sin(angleRad);
-                yf = y0 + (v_y0 * dt) + (0.5 * acceleration * Math.pow(dt, 2));
+                double y0 = initPos.y;
+                double v_y0 = -1 * initVelocity * Math.sin(projAngleRad);
+                yf = y0 + (v_y0 * dt) + (-0.5 * acceleration * Math.pow(dt, 2));
 
-                if(yf < 0) launchProj = false;
+                if(yf > screen.y) {
+                    launchProj = false;
+                    projMoving = false;
+                }
             }
+            projIteration = (projIteration + 1) % 3; // cycles of 0-2
         }
 
         // offset location to make x/y the origin
