@@ -12,7 +12,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Vector;
  
-public class CannonVsBall extends Frame
+public class CannonVSBall extends Frame
 implements WindowListener, ComponentListener, ActionListener, ItemListener,
            AdjustmentListener, Runnable, MouseListener, MouseMotionListener {
  
@@ -319,7 +319,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
 
 
     // constructor
-    public CannonVsBall() {
+    public CannonVSBall() {
         setLayout(new BorderLayout());
         setVisible(true);
         calculateScreenSizes();
@@ -582,7 +582,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
 
     // main function
     public static void main(String[] args) {
-        new CannonVsBall();
+        new CannonVSBall();
     }
 }
  
