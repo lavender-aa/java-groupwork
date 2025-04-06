@@ -50,7 +50,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     private Insets insets;
     private GameArea game;
     private Label angleLabel = new Label("Angle: 45", Label.CENTER);
-    private Label velocityLabel = new Label("Initial Velocity: 30", Label.CENTER);
+    private Label velocityLabel = new Label("Initial Velocity: 100", Label.CENTER);
     private Label placeholder = new Label("", Label.CENTER);
     private Label boundsStatus = new Label("Projectile in bounds.", Label.CENTER);
     private Label timeLabel = new Label("Time: 0s", Label.CENTER);
@@ -353,7 +353,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
     void initComponents() {
 
         // initialize program variables
-        paused = true;
+        paused = false;
         run = true;
         delay = mediumSpeed;
         db = ZERO;
@@ -420,7 +420,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
         velocityScrollbar.setMinimum(10);
         velocityScrollbar.setUnitIncrement(10);
         velocityScrollbar.setBlockIncrement(50);
-        velocityScrollbar.setValue(30);
+        velocityScrollbar.setValue(100);
         velocityScrollbar.setVisibleAmount(25);
         velocityScrollbar.setBackground(Color.gray);
 
@@ -566,6 +566,12 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
                     cannonScoreLabel.setText("Cannon: " + cannonScore);
                 } catch (InterruptedException e) {}
                 game.repaint();
+                if(game.projOutOfBounds()) {
+                    boundsStatus.setText("Projectile out of bounds.");
+                }
+                else {
+                    boundsStatus.setText("Projectile in bounds.");
+                }
             }
         }
     }
@@ -613,6 +619,7 @@ class GameArea extends Canvas {
     private double acceleration;
     private double xf;
     private double yf;
+    private boolean outOfBounds;
 
     public GameArea(int size, Point screenSize, int cannonL, int cannonW) {
         screen = screenSize;
@@ -621,7 +628,7 @@ class GameArea extends Canvas {
         ballDir = new Point(2,2);
         walls = new Vector<Rectangle>();
         dragBox = null;
-        paused = true;
+        paused = false;
         ballCollided = false;
         cannonBase = new Point(screen.x, screen.y);
         cannonLength = cannonL;
@@ -633,11 +640,16 @@ class GameArea extends Canvas {
         timeBallShot = 0;
         time = 0;
         initVelocity = 10;
-        cannonVelocity = 10;
+        cannonVelocity = 100;
         acceleration = -10.0;
         projMoving = false;
         xf = -10;
         yf = -10;
+        outOfBounds = false;
+    }
+
+    public boolean projOutOfBounds() {
+        return outOfBounds;
     }
 
     public void setPaused(boolean val) {
@@ -916,7 +928,7 @@ class GameArea extends Canvas {
                 double v_y0 = -1 * initVelocity * Math.sin(projAngleRad);
                 yf = y0 + (v_y0 * dt) + (-0.5 * acceleration * Math.pow(dt, 2));
 
-                if(yf > screen.y) {
+                if(yf > screen.y + 15 || xf < -30) {
                     launchProj = false;
                     projMoving = false;
                 }
@@ -924,15 +936,41 @@ class GameArea extends Canvas {
             projIteration = (projIteration + 1) % 2; // cycles of 0-1
         }
 
+        // for changing out of bounds text
+        if(xf < -30) {
+            outOfBounds = true;
+        }
+        else {
+            outOfBounds = false;
+        }
+
         // offset location to make x/y the origin
         int xProjPos = (int)xf - (projSize-1)/2;
         int yProjPos = (int)yf - (projSize-1)/2;
 
+        // collision check: projectile with wall
+        for(int j = 0; i < walls.size(); j++) {
+            if(walls.elementAt(j).contains(xProjPos, yProjPos)) {
+                // debug
+                System.out.println("wall-proj collision");
+
+                // collision; remove the wall and stop the projectile
+                walls.remove(j);
+                xProjPos = -100; // put the projectile off screen
+                launchProj = false;
+                projMoving = false;
+            }
+        }
+
+        // collision check: projectile with ball
+
         // draw projectile to graphics
-        nextFrame.setColor(Color.blue);
-        nextFrame.fillOval(xProjPos, yProjPos, projSize, projSize);
-        nextFrame.setColor(Color.black);
-        nextFrame.drawOval(xProjPos, yProjPos, projSize, projSize);
+        if(projMoving) {
+            nextFrame.setColor(Color.blue);
+            nextFrame.fillOval(xProjPos, yProjPos, projSize, projSize);
+            nextFrame.setColor(Color.black);
+            nextFrame.drawOval(xProjPos, yProjPos, projSize, projSize);
+        }
 
         // offset location to make x/y the origin
         int xballPos = ballPos.x - (ballSize-1)/2;
