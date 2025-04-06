@@ -92,14 +92,9 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
             game.setPaused(true);
         }
         else if(item == restart) {
-            ballScore = 0;
-            ballScoreLabel.setText("Ball: 0");
-
-            cannonScore = 0;
-            cannonScoreLabel.setText("Cannon: 0");
-
             time = 0;
             timeLabel.setText("Time: 0s");
+            game.restart();
         }
         else if(item == quit) {
             stop();
@@ -409,7 +404,7 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
         angleScrollbar.setMaximum(110); // all vertical
         angleScrollbar.setMinimum(0); // all horizontal
         angleScrollbar.setUnitIncrement(10);
-        angleScrollbar.setBlockIncrement(45);
+        angleScrollbar.setBlockIncrement(5);
         angleScrollbar.setValue(angle);
         angleScrollbar.setVisibleAmount(20);
         angleScrollbar.setBackground(Color.gray);
@@ -562,16 +557,22 @@ implements WindowListener, ComponentListener, ActionListener, ItemListener,
                     time += delay;
                     game.setTime(time);
                     timeLabel.setText("Time: " + (time / 1000) + "s");
-                    ballScoreLabel.setText("Ball: " + ballScore);
-                    cannonScoreLabel.setText("Cannon: " + cannonScore);
                 } catch (InterruptedException e) {}
                 game.repaint();
+
+                // bounds text
                 if(game.projOutOfBounds()) {
                     boundsStatus.setText("Projectile out of bounds.");
                 }
                 else {
                     boundsStatus.setText("Projectile in bounds.");
                 }
+
+                // scores
+                cannonScore = game.getCannonScore();
+                ballScore = game.getBallScore();
+                cannonScoreLabel.setText("Cannon: " + cannonScore);
+                ballScoreLabel.setText(("Ball: " + ballScore));
             }
         }
     }
@@ -620,6 +621,8 @@ class GameArea extends Canvas {
     private double xf;
     private double yf;
     private boolean outOfBounds;
+    private int cannonScore;
+    private int ballScore;
 
     public GameArea(int size, Point screenSize, int cannonL, int cannonW) {
         screen = screenSize;
@@ -646,6 +649,16 @@ class GameArea extends Canvas {
         xf = -10;
         yf = -10;
         outOfBounds = false;
+        cannonScore = 0;
+        ballScore = 0;
+    }
+
+    public int getCannonScore() {
+        return cannonScore;
+    }
+
+    public int getBallScore() {
+        return ballScore;
     }
 
     public boolean projOutOfBounds() {
@@ -749,6 +762,13 @@ class GameArea extends Canvas {
         }
         // debug
         i++;
+    }
+
+    public void restart() {
+        ballPos.x = screen.x / 2;
+        ballPos.y = screen.y / 2;
+        cannonScore = 0;
+        ballScore = 0;
     }
 
     void updateWallDirs() {
@@ -949,20 +969,45 @@ class GameArea extends Canvas {
         int yProjPos = (int)yf - (projSize-1)/2;
 
         // collision check: projectile with wall
-        for(int j = 0; i < walls.size(); j++) {
-            if(walls.elementAt(j).contains(xProjPos, yProjPos)) {
-                // debug
-                System.out.println("wall-proj collision");
-
-                // collision; remove the wall and stop the projectile
-                walls.remove(j);
-                xProjPos = -100; // put the projectile off screen
-                launchProj = false;
+        Rectangle proj = new Rectangle(xProjPos - projSize/2, yProjPos - projSize/2, projSize, projSize);
+        proj.grow(1,1);
+        i = 0;
+        while(i < walls.size()) {
+            Rectangle r = walls.elementAt(i);
+            if(r.intersects(proj)) {
+                walls.removeElementAt(i);
                 projMoving = false;
+                launchProj = false;
+            }
+            else {
+                i++;
             }
         }
 
         // collision check: projectile with ball
+        Rectangle ballBox = new Rectangle(ballPos.x - ballSize/2, ballPos.y - ballSize/2, ballSize, ballSize);
+        if(ballBox.intersects(proj) && projMoving) {
+            // reset ball, destroy proj, point for cannon
+            ballPos.x = screen.x / 2;
+            ballPos.y = screen.y / 2;
+            ballDir.x = -2;
+            ballDir.y = -2;
+            xProjPos = 0;
+            yProjPos = 0;
+            projMoving = false;
+            launchProj = false;
+            cannonScore++;
+        }
+
+        // collision check: ball with cannon
+        if(cannon.intersects(ballBox)) {
+            // reset ball, point for ball
+            ballPos.x = screen.x / 2;
+            ballPos.y = screen.y / 2;
+            ballDir.x = -2;
+            ballDir.y = -2;
+            ballScore++;
+        }
 
         // draw projectile to graphics
         if(projMoving) {
