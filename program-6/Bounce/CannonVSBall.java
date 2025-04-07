@@ -767,8 +767,14 @@ class GameArea extends Canvas {
     public void restart() {
         ballPos.x = screen.x / 2;
         ballPos.y = screen.y / 2;
+        ballDir.x = 2;
+        ballDir.y = 2;
         cannonScore = 0;
         ballScore = 0;
+        int i = 0;
+        while(i < walls.size()) {
+            walls.removeElementAt(i);
+        }
     }
 
     void updateWallDirs() {
