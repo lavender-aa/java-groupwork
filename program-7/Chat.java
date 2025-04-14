@@ -11,13 +11,13 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Chat extends Frame
-implements WindowListener, ActionListener, ComponentListener {
+implements WindowListener, ActionListener, Runnable {
 
     // serial UID
     private static final long serialVersionUID = 10L;
 
-    // thread related
-    // private Thread thread;
+    // GUI primitives
+    private Dimension window = new Dimension(700, 400);
 
     // GUI objects
     private Panel controls;
@@ -35,9 +35,6 @@ implements WindowListener, ActionListener, ComponentListener {
     private Button disconnectBTN;
     private TextArea statusTA;
 
-    // GUI object arguments
-    int tfLength = 300;
-
     public Chat() {
         setLayout(new BorderLayout());
 
@@ -50,12 +47,12 @@ implements WindowListener, ActionListener, ComponentListener {
         c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.BOTH;
 
-        // panel
+        // panels
         controls = new Panel();
         controls.setLayout(gbl);
 
         // chat textarea
-        chatTA = new TextArea("", 9, 100, TextArea.SCROLLBARS_VERTICAL_ONLY);
+        chatTA = new TextArea("", 10, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
         add("North", chatTA);
 
         // chatbox textfield
@@ -128,12 +125,13 @@ implements WindowListener, ActionListener, ComponentListener {
         gbl.setConstraints(disconnectBTN, c);
         controls.add(disconnectBTN);
 
-        // status textarea
-        statusTA = new TextArea();
-        add("South", statusTA);
-
         // control sheet
         add("Center", controls);
+
+        // status textarea
+        statusTA = new TextArea("", 3, 80, TextArea.SCROLLBARS_VERTICAL_ONLY);
+        add("South", statusTA);
+
 
         // listeners
         chatboxTF.addActionListener(this);
@@ -145,11 +143,10 @@ implements WindowListener, ActionListener, ComponentListener {
         changePortBTN.addActionListener(this);
         connectBTN.addActionListener(this);
         disconnectBTN.addActionListener(this);
-        addComponentListener(this);
         addWindowListener(this);
 
         // set sizes, validate layout
-        setPreferredSize(new Dimension(500, 500));
+        setPreferredSize(window);
         setMinimumSize(new Dimension(300, 300));
         setSize(getPreferredSize());
         validate();
@@ -171,7 +168,6 @@ implements WindowListener, ActionListener, ComponentListener {
         changePortBTN.removeActionListener(this);
         connectBTN.removeActionListener(this);
         disconnectBTN.removeActionListener(this);
-        removeComponentListener(this);
         removeWindowListener(this);
         dispose();
     }
@@ -203,14 +199,5 @@ implements WindowListener, ActionListener, ComponentListener {
     public void windowOpened(WindowEvent e) {}
 
     @Override
-    public void componentHidden(ComponentEvent e) {}
-
-    @Override
-    public void componentMoved(ComponentEvent e) {}
-
-    @Override
-    public void componentResized(ComponentEvent e) {}
-
-    @Override
-    public void componentShown(ComponentEvent e) {}
+    public void run() {}
 }
