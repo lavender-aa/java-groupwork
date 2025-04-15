@@ -12,7 +12,7 @@
  import java.io.*;
  import java.net.*;
  
- public class Chat extends Frame implements WindowListener, ActionListener, Runnable, KeyListener {
+ public class Chat extends Frame implements WindowListener, ActionListener, Runnable {
  
      private static final long serialVersionUID = 10L;
  
@@ -40,9 +40,10 @@
      private PrintWriter writer;
      private Thread listenThread;
      private boolean isServer = false;
+     private volatile boolean running = false;
  
      public Chat() {
-         super("Chat");
+         setTitle("Chat");
  
          setLayout(new BorderLayout());
          GridBagLayout gbl = new GridBagLayout();
@@ -131,7 +132,6 @@
  
          // Listeners
          chatboxTF.addActionListener(this);
-         chatboxTF.addKeyListener(this);
          sendBTN.addActionListener(this);
          hostTF.addActionListener(this);
          changeHostBTN.addActionListener(this);
@@ -154,7 +154,6 @@
          new Chat();
      }
  
-     // Action Handling
      @Override
      public void actionPerformed(ActionEvent e) {
          Object src = e.getSource();
@@ -167,6 +166,8 @@
              connectToServer();
          } else if (src == disconnectBTN) {
              closeConnection();
+             // Re-enable the send button when disconnected
+             sendBTN.setEnabled(false);
          } else if (src == changeHostBTN) {
              statusTA.setText("Host changed to: " + hostTF.getText());
          } else if (src == changePortBTN) {
@@ -175,12 +176,17 @@
      }
  
      private void sendMessage() {
-         String msg = chatboxTF.getText().trim();
-         if (!msg.isEmpty() && writer != null) {
-             writer.println(msg);
-             writer.flush();
-             chatTA.append((isServer ? "Server: " : "Client: ") + msg + "\n");
-             chatboxTF.setText("");
+         // Check if the socket is connected before allowing to send a message
+         if (socket != null && !socket.isClosed() && writer != null) {
+             String msg = chatboxTF.getText().trim();
+             if (!msg.isEmpty()) {
+                 writer.println(msg);
+                 writer.flush();
+                 chatTA.append((isServer ? "Server: " : "Client: ") + msg + "\n");
+                 chatboxTF.setText("");
+             }
+         } else {
+             statusTA.setText("Connection is closed. Unable to send message.");
          }
      }
  
@@ -195,9 +201,9 @@
                      socket = serverSocket.accept();
                      statusTA.setText("Client connected.");
                      setupStreams();
-                     listen();
+                     startListening();
                  } catch (IOException ex) {
-                     ex.printStackTrace();
+                     statusTA.setText("Error accepting connection.");
                  }
              }).start();
          } catch (IOException ex) {
@@ -214,7 +220,8 @@
              statusTA.setText("Connected to server.");
              isServer = false;
              setupStreams();
-             listen();
+             startListening();
+             sendBTN.setEnabled(true); // Enable send button once connected
          } catch (IOException ex) {
              statusTA.setText("Connection failed.");
          }
@@ -225,31 +232,51 @@
          writer = new PrintWriter(socket.getOutputStream(), true);
      }
  
-     private void listen() {
-         listenThread = new Thread(() -> {
-             String msg;
-             try {
-                 while ((msg = reader.readLine()) != null) {
-                     chatTA.append((isServer ? "Client: " : "Server: ") + msg + "\n");
-                 }
-             } catch (IOException ex) {
-                 statusTA.setText("Connection closed.");
-             }
-         });
+     private void startListening() {
+         running = true;
+         listenThread = new Thread(this);
          listenThread.start();
      }
  
-     private void closeConnection() {
+     @Override
+     public void run() {
          try {
-             if (reader != null) reader.close();
-             if (writer != null) writer.close();
-             if (socket != null) socket.close();
-             if (serverSocket != null) serverSocket.close();
-             if (listenThread != null) listenThread.interrupt();
-             statusTA.setText("Disconnected.");
-         } catch (IOException ex) {
-             statusTA.setText("Error closing connection.");
+             String msg;
+             while (running && (msg = reader.readLine()) != null) {
+                 chatTA.append((isServer ? "Client: " : "Server: ") + msg + "\n");
+             }
+         } catch (IOException e) {
+             if (running) statusTA.setText("Connection closed unexpectedly.");
          }
+     }
+ 
+     private void closeConnection() {
+         new Thread(() -> {
+             try {
+                 running = false;
+ 
+                 // Close socket and other resources if they are open
+                 if (socket != null && !socket.isClosed()) {
+                     socket.shutdownInput();
+                     socket.shutdownOutput();
+                     socket.close();
+                 }
+ 
+                 if (reader != null) reader.close();
+                 if (writer != null) writer.close();
+                 if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
+ 
+                 if (listenThread != null && listenThread.isAlive()) {
+                     listenThread.join(100);
+                 }
+ 
+                 // Disable the send button and update the status
+                 sendBTN.setEnabled(false);
+                 statusTA.setText("Disconnected.");
+             } catch (IOException | InterruptedException ex) {
+                 statusTA.setText("Error closing connection.");
+             }
+         }).start();
      }
  
      void stop() {
@@ -258,28 +285,11 @@
          dispose();
      }
  
-     // Window Events
-     @Override
-     public void windowClosing(WindowEvent e) {
-         stop();
-     }
- 
+     @Override public void windowClosing(WindowEvent e) { stop(); }
      @Override public void windowOpened(WindowEvent e) {}
      @Override public void windowClosed(WindowEvent e) {}
      @Override public void windowIconified(WindowEvent e) {}
      @Override public void windowDeiconified(WindowEvent e) {}
      @Override public void windowActivated(WindowEvent e) {}
      @Override public void windowDeactivated(WindowEvent e) {}
- 
-     // KeyListener for Enter in chatbox
-     @Override public void keyTyped(KeyEvent e) {}
-     @Override public void keyPressed(KeyEvent e) {
-         if (e.getSource() == chatboxTF && e.getKeyCode() == KeyEvent.VK_ENTER) {
-             sendMessage();
-         }
-     }
-     @Override public void keyReleased(KeyEvent e) {}
- 
-     @Override
-     public void run() {}
  }
