@@ -166,7 +166,6 @@
              connectToServer();
          } else if (src == disconnectBTN) {
              closeConnection();
-             // Re-enable the send button when disconnected
              sendBTN.setEnabled(false);
          } else if (src == changeHostBTN) {
              statusTA.setText("Host changed to: " + hostTF.getText());
@@ -176,7 +175,6 @@
      }
  
      private void sendMessage() {
-         // Check if the socket is connected before allowing to send a message
          if (socket != null && !socket.isClosed() && writer != null) {
              String msg = chatboxTF.getText().trim();
              if (!msg.isEmpty()) {
@@ -194,6 +192,7 @@
          try {
              int port = Integer.parseInt(portTF.getText());
              serverSocket = new ServerSocket(port);
+             serverSocket.setSoTimeout(60000); // 60 seconds timeout
              statusTA.setText("Server started. Waiting for client on port " + port + "...");
              isServer = true;
              new Thread(() -> {
@@ -202,6 +201,8 @@
                      statusTA.setText("Client connected.");
                      setupStreams();
                      startListening();
+                 } catch (SocketTimeoutException ex) {
+                     statusTA.setText("Server timed out waiting for client.");
                  } catch (IOException ex) {
                      statusTA.setText("Error accepting connection.");
                  }
@@ -216,12 +217,13 @@
              String host = hostTF.getText();
              int port = Integer.parseInt(portTF.getText());
              statusTA.setText("Connecting to " + host + ":" + port + "...");
-             socket = new Socket(host, port);
+             socket = new Socket();
+             socket.connect(new InetSocketAddress(host, port), 30000); // 30 seconds timeout
              statusTA.setText("Connected to server.");
              isServer = false;
              setupStreams();
              startListening();
-             sendBTN.setEnabled(true); // Enable send button once connected
+             sendBTN.setEnabled(true);
          } catch (IOException ex) {
              statusTA.setText("Connection failed.");
          }
@@ -255,7 +257,6 @@
              try {
                  running = false;
  
-                 // Close socket and other resources if they are open
                  if (socket != null && !socket.isClosed()) {
                      socket.shutdownInput();
                      socket.shutdownOutput();
@@ -270,7 +271,7 @@
                      listenThread.join(100);
                  }
  
-                 // Disable the send button and update the status
+                 chatTA.setText("Disconnected. Chat cleared.\n");
                  sendBTN.setEnabled(false);
                  statusTA.setText("Disconnected.");
              } catch (IOException | InterruptedException ex) {
