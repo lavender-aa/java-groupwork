@@ -39,7 +39,6 @@ public class Chat extends Frame implements WindowListener, ActionListener, Runna
     private BufferedReader reader;
     private PrintWriter writer;
     private Thread listenThread;
-    private Thread closeThread;
     private boolean isServer = false;
     private volatile boolean running = false;
  
