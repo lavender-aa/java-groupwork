@@ -4,7 +4,6 @@
 * Authors: Group 6
 *      - Lavender Wilson (wil81891@pennwest.edu)
 *      - Camron Mellott (mel98378@pennwest.edu)
-*      - Nicola Razumic-Rushin (raz73517@pennwest.edu)
 */
 
 import java.awt.*;
@@ -39,7 +38,6 @@ public class Chat extends Frame implements WindowListener, ActionListener, Runna
     private BufferedReader reader;
     private PrintWriter writer;
     private Thread listenThread;
-    private Thread closeThread;
     private boolean isServer = false;
     private volatile boolean running = false;
  
@@ -71,6 +69,7 @@ public class Chat extends Frame implements WindowListener, ActionListener, Runna
         controls.add(chatboxTF);
  
         sendBTN = new Button("Send");
+        sendBTN.setEnabled(false);
         c.gridx = 5;
         c.gridwidth = 1;
         gbl.setConstraints(sendBTN, c);
@@ -204,6 +203,7 @@ public class Chat extends Frame implements WindowListener, ActionListener, Runna
         }
     }
  
+    // accept connection inside a new thread so that the main program doesn't freeze
     private class ServerWaiter implements Runnable {
         @Override
         public void run() {
@@ -262,42 +262,28 @@ public class Chat extends Frame implements WindowListener, ActionListener, Runna
     }
  
     private void closeConnection() {
-        startCloseThread();
-    }
- 
-    private void startCloseThread() {
-        if (closeThread == null || !closeThread.isAlive()) {
-            closeThread = new Thread(new ConnectionCloser());
-            closeThread.start();
-        }
-    }
- 
-    private class ConnectionCloser implements Runnable {
-        @Override
-        public void run() {
-            try {
-                running = false;
- 
-                if (socket != null && !socket.isClosed()) {
-                    socket.shutdownInput();
-                    socket.shutdownOutput();
-                    socket.close();
-                }
- 
-                if (reader != null) reader.close();
-                if (writer != null) writer.close();
-                if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
- 
-                if (listenThread != null && listenThread.isAlive()) {
-                    listenThread.join(100);
-                }
- 
-                chatTA.setText("");
-                sendBTN.setEnabled(false);
-                statusTA.setText("Disconnected. Chat cleared.");
-            } catch (IOException | InterruptedException ex) {
-                statusTA.setText("Error closing connection.");
+        try {
+            running = false;
+
+            if (socket != null && !socket.isClosed()) {
+                socket.shutdownInput();
+                socket.shutdownOutput();
+                socket.close();
             }
+
+            if (reader != null) reader.close();
+            if (writer != null) writer.close();
+            if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
+
+            if (listenThread != null && listenThread.isAlive()) {
+                listenThread.join(100);
+            }
+
+            chatTA.setText("");
+            sendBTN.setEnabled(false);
+            statusTA.setText("Disconnected. Chat cleared.");
+        } catch (IOException | InterruptedException ex) {
+            statusTA.setText("Error closing connection.");
         }
     }
  
