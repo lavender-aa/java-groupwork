@@ -4,7 +4,6 @@
 * Authors: Group 6
 *      - Lavender Wilson (wil81891@pennwest.edu)
 *      - Camron Mellott (mel98378@pennwest.edu)
-*      - Nicola Razumic-Rushin (raz73517@pennwest.edu)
 */
 
 import java.awt.*;
