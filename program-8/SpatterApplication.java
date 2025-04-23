@@ -5,6 +5,14 @@ import EDU.emporia.mathbeans.*;
 import EDU.emporia.mathtools.*;
 import java.util.*;
 
+
+/*
+ * todo list:
+ * - [] TODO display initial velocity/angle/height
+ * - [] TODO find, fix calculation error
+ * - [] TODO find, fix operational problems
+ */
+
 public class SpatterApplication extends JFrame implements WindowListener, ActionListener {
     final double gravity=4;
     final double wallDistance=6;
