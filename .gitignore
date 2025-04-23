@@ -13,5 +13,9 @@
 # java source files
 !*.java
 
+# settings and jar for program 8
+!program-8/.vscode/*
+!program-8/edu.jar
+
 # search one level deep
 !*/
