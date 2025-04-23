@@ -61,7 +61,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
 
     public static void main(String[] args) {
         try {
-            SpatterApplication s = new SpatterApplication(); 
+            new SpatterApplication(); 
         }
         catch(Exception e) {
             e.printStackTrace();
