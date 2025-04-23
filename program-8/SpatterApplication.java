@@ -16,6 +16,7 @@ import java.util.*;
 public class SpatterApplication extends JFrame implements WindowListener, ActionListener {
     final double gravity=4;
     final double wallDistance=6;
+    private boolean isStandalone = false;
     double t=0;
     double x1=0, y1=4;
     double oldx1=x1, oldy1=y1;
@@ -24,9 +25,8 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     double spatterWidth=0, spatterLength=0;
     boolean dragging1=false;
     boolean dragging2=false;
-    javax.swing.Timer animationTimer;
     boolean move=false;
-    private boolean isStandalone = false;
+    javax.swing.Timer animationTimer;
     JPanel jPanel1 = new JPanel();
     MathGrapher graph = new MathGrapher();
     MathGrapher dropShapeGraph = new MathGrapher();
