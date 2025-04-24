@@ -8,9 +8,8 @@ import java.util.*;
 
 /*
  * todo list:
- * - [] TODO: display initial velocity/angle/height
  * - [] TODO: make right wall more obvious
- * - [] TODO: find, fix calculation error
+ * - [] TODO: find, fix calculation error 
  * - [] TODO: find, fix operational problems
  * 
  * 
@@ -164,7 +163,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         initVelocity.setBounds(new Rectangle(10, 264, 201, 39));
         initVelocity.setText("init. velocity: " + places1(getInitVelocity()));
         initAngle.setBounds(new Rectangle(10, 325, 201, 39));
-        initAngle.setText("init. angle: " + places2(angle(0)));
+        initAngle.setText("init. angle: " + places1(-radToDeg(angle(0.02))));
         this.getContentPane().add(jPanel1, BorderLayout.CENTER);
         this.setResizable(false);
         setVisible(true); // make it visible
@@ -305,6 +304,10 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         return -Math.atan((y(t)-y(t-0.04))/(x(t)-x(t-0.04)));
     }
 
+    public double radToDeg(double rad) {
+        return (rad * 180) / Math.PI;
+    }
+
     public double getInitVelocity() {
         // distance from left handle to right handle (pythagorean theorem)
         // sqrt( (x2-x1)^2 + (y2-y1)^2 )
@@ -318,9 +321,9 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         graph.addPoint(x2,y2,Color.magenta);
 
         // update initial velocity/height/angle labels
-        initHeight.setText("init. height: " + places2(y1));
+        initHeight.setText("init. height: " + places1(y1));
         initVelocity.setText("init. velocity: " + places1(getInitVelocity()));
-        initAngle.setText("init. angle: " + places2(angle(0)));
+        initAngle.setText("init. angle: " + places1(-radToDeg(angle(0.02))));
 
         try {
             directionVector.setXFormula(x2+"*t");
