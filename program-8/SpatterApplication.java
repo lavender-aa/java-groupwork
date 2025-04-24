@@ -198,29 +198,31 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         graph.updateGraph();
 
         // projectile hits wall (time > time it would take for proj to hit wall)
+        // t > dist / vel_0x (will always hit wall later than floor)
         if(t>wallDistance/(x2-x1)) {
             animationTimer.stop();
             floorOrWallLabel.setText("Wall spatter shape");
             lengthLabel.setText("Height (in mm):");
             spatterEllipse.setXRadius((1+Math.random())/2);
-            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.cos(angle(t))); // angle use
+            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.cos(angle(t)));
             dropShapeGraph.addGraph(spatterEllipse, Color.RED);
             widthMathTextField.setMathValue(places1(10*spatterEllipse.getXRadius()));
             lengthMathTextField.setMathValue(places1(10*spatterEllipse.getYRadius()));
-            angleMathTextField.setMathValue(places1(90+angle(t)*180/Math.PI)); // angle use
+            angleMathTextField.setMathValue(places1(90+angle(t)*180/Math.PI));
         }
 
         // projectile hits floor (time > time it would take for proj. to hit ground)
+        // t > (vel_0y + sqrt(vel_0y^2 + 4gh_0)) / 2g
         if(t>(((y2-y1)+Math.sqrt((y1-y2)*(y1-y2)+4*gravity*y1)))/(2*gravity)) {
             animationTimer.stop();
             floorOrWallLabel.setText("Floor spatter shape");
             lengthLabel.setText("Length (in mm):");
             spatterEllipse.setXRadius((1+Math.random())/2);
-            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.sin(angle(t))); // angle use
+            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.sin(angle(t)));
             dropShapeGraph.addGraph(spatterEllipse, Color.RED);
             widthMathTextField.setMathValue(places1(10*spatterEllipse.getXRadius()));
             lengthMathTextField.setMathValue(places1(10*spatterEllipse.getYRadius()));
-            angleMathTextField.setMathValue(places1(-angle(t)*180/Math.PI)); // angle use
+            angleMathTextField.setMathValue(places1(-angle(t)*180/Math.PI));
         }
     }
 
