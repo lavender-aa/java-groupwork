@@ -261,10 +261,10 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         int yMouse=e.getY();
         int distance1Squared = (xMouse-graph.xMathToPixel(x1)) * (xMouse-graph.xMathToPixel(x1)) // x^2
                               +(yMouse-graph.yMathToPixel(y1)) * (yMouse-graph.yMathToPixel(y1)); // + y^2
-        if (distance1Squared < 9) dragging1 = true;
+        if (distance1Squared < 100) dragging1 = true;
         int distance2Squared = (xMouse-graph.xMathToPixel(x2)) * (xMouse-graph.xMathToPixel(x2)) // x^2
                               +(yMouse-graph.yMathToPixel(y2)) * (yMouse-graph.yMathToPixel(y2)); // + y^2
-        if (distance2Squared < 9 && distance1Squared >=9) dragging2 = true;
+        if (distance2Squared < 100 && distance1Squared >=100) dragging2 = true;
     }
 
     void graph_mouseReleased(MouseEvent e) {
@@ -299,8 +299,9 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     }
 
     // TODO: fix?
+    // returns arctan(dy/dx) (approx. angle at time t)
     public double angle(double t) {
-        //return -Math.atan((y(t)-y(t-0.02))/(x(t)-x(t-0.02)));
+        //return -Math.atan((y(t)-y(t-0.02))/(x(t)-x(t-0.02)));   <- 0.02 time difference
         return -Math.atan((y(t)-y(t-0.04))/(x(t)-x(t-0.04)));
     }
 
@@ -325,8 +326,6 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
             directionVector.setXFormula(x2+"*t");
             directionVector.setYFormula(y1+"+"+"("+y2+"-"+y1+")*"+"t");
         } catch(Graphable_error e){}
-        if(x1==x2){}
-        else{}
         try{
             bloodPath.setXFormula("("+x2+"-"+x1+")*t");
             bloodPath.setYFormula(y1+"+("+y2+"-"+y1+")*t-"+gravity+"*t*t");
