@@ -30,11 +30,11 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     // boolean move=false; // unused
     javax.swing.Timer animationTimer; // used for timing projectinge (in place of thread)
     JPanel jPanel1 = new JPanel();
-    MathGrapher graph = new MathGrapher();
-    MathGrapher dropShapeGraph = new MathGrapher();
+    MathGrapher graph = new MathGrapher(); // graph to show projectile motion
+    MathGrapher dropShapeGraph = new MathGrapher(); // graph to show splatter shape
     SymbolicParametricCurve bloodPath = new SymbolicParametricCurve(); // the curve that the projectile follows
     SymbolicParametricCurve directionVector = new SymbolicParametricCurve(); // moved by user to change direction
-    SymbolicParametricCurve wall = new SymbolicParametricCurve(); // ?
+    SymbolicParametricCurve wall = new SymbolicParametricCurve(); // curve that represents the wall
     JLabel jLabel1 = new JLabel(); // title (left side of program)
     JButton trackButton = new JButton();
     JLabel floorOrWallLabel = new JLabel(); // label explaninig if splatter window is on wall or floor
@@ -84,7 +84,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         graph.setG(directionVector);
         graph.setGridLines(MathGrapher.GRIDOFF);
         graph.setToolTipText("Drag left hand point to adjust height, right hand point to adjust direction and velocity");
-        graph.setXMax(6.0);
+        graph.setXMax(6.1);
         graph.setXMin(0.0);
         graph.setYMax(6.0);
         graph.setYMin(0.0);
@@ -202,7 +202,6 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     public void windowIconified(WindowEvent e){}
     public void windowDeiconified(WindowEvent e){}
 
-    // TODO: analyze, comment
     public void actionPerformed(ActionEvent e) {
         Point2D p = bloodPath.getPoint(t);
         graph.plotPoint(p.getX(),p.getY());
@@ -279,7 +278,6 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         return (y1+(y2-y1)*t-gravity*t*t);
     }
 
-    // TODO: fix?
     // returns arctan(dy/dx) (approx. angle at time t)
     public double angle(double t) {
         //return -Math.atan((y(t)-y(t-0.02))/(x(t)-x(t-0.02)));   <- 0.02 time difference
@@ -326,13 +324,16 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
             oldy1=y1;
             oldy2=y2;
 
-            // keep handle inside graph
+            // keep left handle inside graph
             double newY = graph.yPixelToMath(e.getY());
             if(newY > 6) newY = 6;
             else if(newY < 0) newY = 0;
+            y1 = newY;
 
-            y1=newY;
-            y2=oldy2-oldy1+y1;
+            // keep right handle inside graph
+            if(oldy2 - oldy1 + y1 > 6) y2 = 6;
+            else if(oldy2 - oldy1 + y1 < 0) y2 = 0;
+            else y2=oldy2-oldy1+y1;
             repaint();
         }
         if (dragging2) {
