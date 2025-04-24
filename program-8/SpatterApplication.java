@@ -47,6 +47,9 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     MathTextField angleMathTextField = new MathTextField(); // angle of impact
     JLabel jLabel2 = new JLabel(); // angle of impact label
     JButton resetButton = new JButton();
+    JLabel initHeight = new JLabel(); // initial projectile height (y1)
+    JLabel initVelocity = new JLabel(); // initial projectile velocity (sqrt((x2-x1)^2 + (y2-y1)^2))
+    JLabel initAngle = new JLabel(); // initial projectile angle
     
     // Get a parameter value
     private String getProperty(Properties property, String key, String def) {
@@ -156,6 +159,12 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         resetButton.setText("reset");
         resetButton.addActionListener(new SpatterApplication_resetButton_actionAdapter(this));
         resetButton.setBounds(new Rectangle(23, 142, 101, 39));
+        initHeight.setBounds(new Rectangle(10, 203, 101, 39));
+        initHeight.setText("init. height: " + y1);
+        initVelocity.setBounds(new Rectangle(10, 264, 201, 39));
+        initVelocity.setText("init. velocity: " + places1(getInitVelocity()));
+        initAngle.setBounds(new Rectangle(10, 325, 201, 39));
+        initAngle.setText("init. angle: " + places2(angle(0)));
         this.getContentPane().add(jPanel1, BorderLayout.CENTER);
         this.setResizable(false);
         setVisible(true); // make it visible
@@ -175,6 +184,9 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         jPanel1.add(angleMathTextField, null);
         jPanel1.add(jLabel2, null);
         jPanel1.add(resetButton, null);
+        jPanel1.add(initHeight, null);
+        jPanel1.add(initVelocity, null);
+        jPanel1.add(initAngle, null);
         graph.setPointRadius(4);
         graph.updateGraph();
         dropShapeGraph.removeAll();
@@ -286,9 +298,16 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         return (y1+(y2-y1)*t-gravity*t*t);
     }
 
+    // TODO: fix?
     public double angle(double t) {
         //return -Math.atan((y(t)-y(t-0.02))/(x(t)-x(t-0.02)));
         return -Math.atan((y(t)-y(t-0.04))/(x(t)-x(t-0.04)));
+    }
+
+    public double getInitVelocity() {
+        // distance from left handle to right handle (pythagorean theorem)
+        // sqrt( (x2-x1)^2 + (y2-y1)^2 )
+        return Math.sqrt(Math.pow(x2-x1,2) + Math.pow(y2-y1,2));
     }
 
     public void repaint() {
@@ -296,6 +315,12 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         graph.removeAll();
         graph.addPoint(x1,y1,Color.magenta);
         graph.addPoint(x2,y2,Color.magenta);
+
+        // update initial velocity/height/angle labels
+        initHeight.setText("init. height: " + places2(y1));
+        initVelocity.setText("init. velocity: " + places1(getInitVelocity()));
+        initAngle.setText("init. angle: " + places2(angle(0)));
+
         try {
             directionVector.setXFormula(x2+"*t");
             directionVector.setYFormula(y1+"+"+"("+y2+"-"+y1+")*"+"t");
