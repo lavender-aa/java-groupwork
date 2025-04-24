@@ -14,8 +14,6 @@ import java.util.*;
  * - [] TODO: find, fix operational problems
  * 
  * 
- * bugs:
- *  - both handles can go outside bounds of graph
  */
 
 public class SpatterApplication extends JFrame implements WindowListener, ActionListener {
