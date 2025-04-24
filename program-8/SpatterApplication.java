@@ -79,8 +79,6 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         animationTimer = new javax.swing.Timer(1, this);
         this.setSize(new Dimension(660,440));
         jPanel1.setLayout(null);
-
-        // graph setup (for curve and pink vector)
         graph.setTraceEnabled(false);
         graph.setF(bloodPath);
         graph.setG(directionVector);
@@ -93,8 +91,6 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         graph.setBounds(new Rectangle(140, 5, 364, 390));
         graph.addMouseMotionListener(new SpatterApplication_graph_mouseMotionAdapter(this));
         graph.addMouseListener(new SpatterApplication_graph_mouseAdapter(this));
-
-        // graph for projectile motion (?)
         dropShapeGraph.setTraceEnabled(false);
         dropShapeGraph.setAxesColor(Color.lightGray);
         dropShapeGraph.setGridColor(Color.lightGray);
@@ -106,8 +102,6 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         dropShapeGraph.setYMax(5.0);
         dropShapeGraph.setYMin(-5.0);
         dropShapeGraph.setBounds(new Rectangle(507, 7, 131, 124));
-
-        // projectile path and direction vector (?)
         bloodPath.setYFormula("1");
         directionVector.setXFormula("0");
         bloodPath.setTMax(20.0);
