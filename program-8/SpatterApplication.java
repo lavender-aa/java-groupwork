@@ -5,20 +5,9 @@ import EDU.emporia.mathbeans.*;
 import EDU.emporia.mathtools.*;
 import java.util.*;
 
-
-/*
- * todo list:
- * - [] TODO: make right wall more obvious
- * - [] TODO: find, fix calculation error 
- * - [] TODO: find, fix operational problems
- * 
- * 
- */
-
 public class SpatterApplication extends JFrame implements WindowListener, ActionListener {
     final double gravity=4;
     final double wallDistance=6;
-    // private boolean isStandalone = false; // unused
     double t=0; // time for proj. motion
     double x1=0, y1=4; // left handle coords
     double oldx1=x1, oldy1=y1; // left handle old coords
@@ -278,7 +267,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         return (y1+(y2-y1)*t-gravity*t*t);
     }
 
-    // returns arctan(dy/dx) (approx. angle at time t)
+    // returns average projectile angle between time t-0.04 and time t
     public double angle(double t) {
         //return -Math.atan((y(t)-y(t-0.02))/(x(t)-x(t-0.02)));   <- 0.02 time difference
         return Math.atan((y(t)-y(t-0.04))/(x(t)-x(t-0.04)));
@@ -289,7 +278,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     }
 
     public double getInitVelocity() {
-        // distance from left handle to right handle (pythagorean theorem)
+        // distance from left handle to right handle
         // sqrt( (x2-x1)^2 + (y2-y1)^2 )
         return Math.sqrt(Math.pow(x2-x1,2) + Math.pow(y2-y1,2));
     }
