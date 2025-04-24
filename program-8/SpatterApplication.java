@@ -204,7 +204,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
             floorOrWallLabel.setText("Wall spatter shape");
             lengthLabel.setText("Height (in mm):");
             spatterEllipse.setXRadius((1+Math.random())/2);
-            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.cos(angle(t)));
+            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.cos(angle(t))); // cos for 90deg from floor angle
             dropShapeGraph.addGraph(spatterEllipse, Color.RED);
             widthMathTextField.setMathValue(places1(10*spatterEllipse.getXRadius()));
             lengthMathTextField.setMathValue(places1(10*spatterEllipse.getYRadius()));
