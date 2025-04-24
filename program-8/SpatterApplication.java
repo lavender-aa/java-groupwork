@@ -186,18 +186,6 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         repaint();
     }
 
-    // Get Application information
-    // TODO: figure out purpose
-    public String getApplicationInfo() {
-        return "Application Information";
-    }
-
-    // Get parameter info
-    // TODO: figure out purpose
-    public String[][] getParameterInfo() {
-        return null;
-    }
-
     public void stop() {
         this.removeWindowListener(this);
     }
