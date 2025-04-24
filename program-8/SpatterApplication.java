@@ -239,12 +239,12 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     void graph_mousePressed(MouseEvent e) {
         int xMouse=e.getX();
         int yMouse=e.getY();
-        int distance1Squared = (xMouse-graph.xMathToPixel(x1)) * (xMouse-graph.xMathToPixel(x1)) // x^2
-                              +(yMouse-graph.yMathToPixel(y1)) * (yMouse-graph.yMathToPixel(y1)); // + y^2
-        if (distance1Squared < 100) dragging1 = true;
         int distance2Squared = (xMouse-graph.xMathToPixel(x2)) * (xMouse-graph.xMathToPixel(x2)) // x^2
                               +(yMouse-graph.yMathToPixel(y2)) * (yMouse-graph.yMathToPixel(y2)); // + y^2
-        if (distance2Squared < 100 && distance1Squared >=100) dragging2 = true;
+        if (distance2Squared < 100) dragging2 = true;
+        int distance1Squared = (xMouse-graph.xMathToPixel(x1)) * (xMouse-graph.xMathToPixel(x1)) // x^2
+                              +(yMouse-graph.yMathToPixel(y1)) * (yMouse-graph.yMathToPixel(y1)); // + y^2
+        if (distance1Squared < 100 && distance2Squared >=100) dragging1 = true;
     }
 
     void graph_mouseReleased(MouseEvent e) {
