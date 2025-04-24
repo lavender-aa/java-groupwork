@@ -157,7 +157,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         initVelocity.setBounds(new Rectangle(10, 264, 201, 39));
         initVelocity.setText("init. velocity: " + places1(getInitVelocity()));
         initAngle.setBounds(new Rectangle(10, 325, 201, 39));
-        initAngle.setText("init. angle: " + places1(-radToDeg(angle(0.02))));
+        initAngle.setText("init. angle: " + places1(radToDeg(angle(0.02))));
         this.getContentPane().add(jPanel1, BorderLayout.CENTER);
         this.setResizable(false);
         setVisible(true); // make it visible
@@ -214,11 +214,11 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
             floorOrWallLabel.setText("Wall spatter shape");
             lengthLabel.setText("Height (in mm):");
             spatterEllipse.setXRadius((1+Math.random())/2);
-            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/Math.cos(angle(t)));
+            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.cos(angle(t))); // angle use
             dropShapeGraph.addGraph(spatterEllipse, Color.RED);
             widthMathTextField.setMathValue(places1(10*spatterEllipse.getXRadius()));
             lengthMathTextField.setMathValue(places1(10*spatterEllipse.getYRadius()));
-            angleMathTextField.setMathValue(places1(90-angle(t)*180/Math.PI));
+            angleMathTextField.setMathValue(places1(90+angle(t)*180/Math.PI)); // angle use
         }
 
         // projectile hits floor (time > time it would take for proj. to hit ground)
@@ -227,11 +227,11 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
             floorOrWallLabel.setText("Floor spatter shape");
             lengthLabel.setText("Length (in mm):");
             spatterEllipse.setXRadius((1+Math.random())/2);
-            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/Math.sin(angle(t)));
+            spatterEllipse.setYRadius(spatterEllipse.getXRadius()/-Math.sin(angle(t))); // angle use
             dropShapeGraph.addGraph(spatterEllipse, Color.RED);
             widthMathTextField.setMathValue(places1(10*spatterEllipse.getXRadius()));
             lengthMathTextField.setMathValue(places1(10*spatterEllipse.getYRadius()));
-            angleMathTextField.setMathValue(places1(angle(t)*180/Math.PI));
+            angleMathTextField.setMathValue(places1(-angle(t)*180/Math.PI)); // angle use
         }
     }
 
@@ -281,7 +281,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     // returns arctan(dy/dx) (approx. angle at time t)
     public double angle(double t) {
         //return -Math.atan((y(t)-y(t-0.02))/(x(t)-x(t-0.02)));   <- 0.02 time difference
-        return -Math.atan((y(t)-y(t-0.04))/(x(t)-x(t-0.04)));
+        return Math.atan((y(t)-y(t-0.04))/(x(t)-x(t-0.04)));
     }
 
     public double radToDeg(double rad) {
@@ -303,7 +303,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         // update initial velocity/height/angle labels
         initHeight.setText("init. height: " + places1(y1));
         initVelocity.setText("init. velocity: " + places1(getInitVelocity()));
-        initAngle.setText("init. angle: " + places1(-radToDeg(angle(0.02))));
+        initAngle.setText("init. angle: " + places1(radToDeg(angle(0.02))));
 
         try {
             directionVector.setXFormula(x2+"*t");
