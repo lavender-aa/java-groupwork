@@ -8,41 +8,46 @@ import java.util.*;
 
 /*
  * todo list:
- * - [] TODO display initial velocity/angle/height
- * - [] TODO find, fix calculation error
- * - [] TODO find, fix operational problems
+ * - [] TODO: display initial velocity/angle/height
+ * - [] TODO: make right wall more obvious
+ * - [] TODO: find, fix calculation error
+ * - [] TODO: find, fix operational problems
+ * 
+ * 
+ * bugs:
+ *  - both handles can go outside bounds of graph
  */
 
 public class SpatterApplication extends JFrame implements WindowListener, ActionListener {
     final double gravity=4;
     final double wallDistance=6;
-    private boolean isStandalone = false;
-    double t=0;
-    double x1=0, y1=4;
-    double oldx1=x1, oldy1=y1;
-    double x2=1, y2=5;
-    double oldx2=x2, oldy2=y2;
+    // private boolean isStandalone = false; // unused
+    double t=0; // time for proj. motion
+    double x1=0, y1=4; // left handle coords
+    double oldx1=x1, oldy1=y1; // left handle old coords
+    double x2=1, y2=5; // right handle coords
+    double oldx2=x2, oldy2=y2; // right handle old coords
     double spatterWidth=0, spatterLength=0;
-    boolean dragging1=false;
-    boolean dragging2=false;
-    boolean move=false;
-    javax.swing.Timer animationTimer;
+    boolean dragging1=false; // user is dragging the left handle
+    boolean dragging2=false; // user is dragging the right handle
+    // boolean move=false; // unused
+    javax.swing.Timer animationTimer; // used for timing projectinge (in place of thread)
     JPanel jPanel1 = new JPanel();
     MathGrapher graph = new MathGrapher();
     MathGrapher dropShapeGraph = new MathGrapher();
-    SymbolicParametricCurve bloodPath = new SymbolicParametricCurve();
-    SymbolicParametricCurve directionVector = new SymbolicParametricCurve();
-    SymbolicParametricCurve wall = new SymbolicParametricCurve();
-    JLabel jLabel1 = new JLabel();
+    SymbolicParametricCurve bloodPath = new SymbolicParametricCurve(); // the curve that the projectile follows
+    SymbolicParametricCurve directionVector = new SymbolicParametricCurve(); // moved by user to change direction
+    SymbolicParametricCurve wall = new SymbolicParametricCurve(); // ?
+    JLabel jLabel1 = new JLabel(); // title (left side of program)
     JButton trackButton = new JButton();
-    JLabel floorOrWallLabel = new JLabel();
-    Ellipse spatterEllipse = new Ellipse();
-    MathTextField widthMathTextField = new MathTextField();
-    MathTextField lengthMathTextField = new MathTextField();
+    JLabel floorOrWallLabel = new JLabel(); // label explaninig if splatter window is on wall or floor
+    Ellipse spatterEllipse = new Ellipse(); // elipse inside splatter window
+    MathTextField widthMathTextField = new MathTextField(); // width of splatter
+    MathTextField lengthMathTextField = new MathTextField(); // height of splatter
     JLabel widthLabel = new JLabel();
     JLabel lengthLabel = new JLabel();
-    MathTextField angleMathTextField = new MathTextField();
-    JLabel jLabel2 = new JLabel();
+    MathTextField angleMathTextField = new MathTextField(); // angle of impact
+    JLabel jLabel2 = new JLabel(); // angle of impact label
     JButton resetButton = new JButton();
     
     // Get a parameter value
@@ -74,10 +79,12 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         animationTimer = new javax.swing.Timer(1, this);
         this.setSize(new Dimension(660,440));
         jPanel1.setLayout(null);
+
+        // graph setup (for curve and pink vector)
         graph.setTraceEnabled(false);
         graph.setF(bloodPath);
         graph.setG(directionVector);
-        graph.setGridLines(EDU.emporia.mathbeans.MathGrapher.GRIDOFF);
+        graph.setGridLines(MathGrapher.GRIDOFF);
         graph.setToolTipText("Drag left hand point to adjust height, right hand point to adjust direction and velocity");
         graph.setXMax(6.0);
         graph.setXMin(0.0);
@@ -86,6 +93,8 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         graph.setBounds(new Rectangle(140, 5, 364, 390));
         graph.addMouseMotionListener(new SpatterApplication_graph_mouseMotionAdapter(this));
         graph.addMouseListener(new SpatterApplication_graph_mouseAdapter(this));
+
+        // graph for projectile motion (?)
         dropShapeGraph.setTraceEnabled(false);
         dropShapeGraph.setAxesColor(Color.lightGray);
         dropShapeGraph.setGridColor(Color.lightGray);
@@ -98,9 +107,9 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         dropShapeGraph.setYMin(-5.0);
         dropShapeGraph.setBounds(new Rectangle(507, 7, 131, 124));
 
+        // projectile path and direction vector (?)
         bloodPath.setYFormula("1");
         directionVector.setXFormula("0");
-
         bloodPath.setTMax(20.0);
         bloodPath.setTMin(0.0);
         directionVector.setTMax(1.0);
@@ -175,11 +184,13 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     }
 
     // Get Application information
+    // TODO: figure out purpose
     public String getApplicationInfo() {
         return "Application Information";
     }
 
     // Get parameter info
+    // TODO: figure out purpose
     public String[][] getParameterInfo() {
         return null;
     }
@@ -199,11 +210,15 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
     public void windowDeactivated(WindowEvent e){}
     public void windowIconified(WindowEvent e){}
     public void windowDeiconified(WindowEvent e){}
-    public void actionPerformed( ActionEvent e) {
+
+    // TODO: analyze, comment
+    public void actionPerformed(ActionEvent e) {
         Point2D p = bloodPath.getPoint(t);
         graph.plotPoint(p.getX(),p.getY());
         t += 0.02;
         graph.updateGraph();
+
+        // projectile hits wall (time > time it would take for proj to hit wall)
         if(t>wallDistance/(x2-x1)) {
             animationTimer.stop();
             floorOrWallLabel.setText("Wall spatter shape");
@@ -215,6 +230,8 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
             lengthMathTextField.setMathValue(places1(10*spatterEllipse.getYRadius()));
             angleMathTextField.setMathValue(places1(90-angle(t)*180/Math.PI));
         }
+
+        // projectile hits floor (time > time it would take for proj. to hit ground)
         if(t>(((y2-y1)+Math.sqrt((y1-y2)*(y1-y2)+4*gravity*y1)))/(2*gravity)) {
             animationTimer.stop();
             floorOrWallLabel.setText("Floor spatter shape");
@@ -228,18 +245,15 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         }
     }
 
+    // determine if the user is moving either left or right handle
     void graph_mousePressed(MouseEvent e) {
         int xMouse=e.getX();
         int yMouse=e.getY();
-        int distance1Squared = (xMouse-graph.xMathToPixel(x1))
-                              *(xMouse-graph.xMathToPixel(x1))
-                              +(yMouse-graph.yMathToPixel(y1))
-                              *(yMouse-graph.yMathToPixel(y1));
+        int distance1Squared = (xMouse-graph.xMathToPixel(x1)) * (xMouse-graph.xMathToPixel(x1)) // x^2
+                              +(yMouse-graph.yMathToPixel(y1)) * (yMouse-graph.yMathToPixel(y1)); // + y^2
         if (distance1Squared < 9) dragging1 = true;
-        int distance2Squared = (xMouse-graph.xMathToPixel(x2))
-                              *(xMouse-graph.xMathToPixel(x2))
-                              +(yMouse-graph.yMathToPixel(y2))
-                              *(yMouse-graph.yMathToPixel(y2));
+        int distance2Squared = (xMouse-graph.xMathToPixel(x2)) * (xMouse-graph.xMathToPixel(x2)) // x^2
+                              +(yMouse-graph.yMathToPixel(y2)) * (yMouse-graph.yMathToPixel(y2)); // + y^2
         if (distance2Squared < 9 && distance1Squared >=9) dragging2 = true;
     }
 
@@ -248,6 +262,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         dragging2 = false;
     }
 
+    // rounds doubles to nearest tenth
     public double places1(double x) {
         x=10*x;
         x=Math.round(x);
@@ -255,6 +270,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         return x;
     }
 
+    // rounds doubles to nearest hundredth
     public double places2(double x) {
         x=100*x;
         x=Math.round(x);
@@ -262,10 +278,12 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         return x;
     }
 
+    // get the x value of the projectile given time t
     public double x(double t) {
         return ((x2-x1)*t);
     }
 
+    // get the y value of the projectile given time t
     public double y(double t) {
         return (y1+(y2-y1)*t-gravity*t*t);
     }
@@ -300,19 +318,35 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         if (dragging1) {
             oldy1=y1;
             oldy2=y2;
-            y1=graph.yPixelToMath(e.getY());
+
+            // keep handle inside graph
+            double newY = graph.yPixelToMath(e.getY());
+            if(newY > 6) newY = 6;
+            else if(newY < 0) newY = 0;
+
+            y1=newY;
             y2=oldy2-oldy1+y1;
             repaint();
         }
         if (dragging2) {
             oldx2=x2;
             oldy2=y2;
-            x2=graph.xPixelToMath(e.getX());
-            y2=graph.yPixelToMath(e.getY());
+
+            // keep handle inside graph
+            double newX = graph.xPixelToMath(e.getX());
+            double newY = graph.yPixelToMath(e.getY());
+            if(newX < 0) newX = 0;
+            else if(newX > 6) newX = 6;
+            if(newY < 0) newY = 0;
+            else if(newY > 6) newY = 6;
+
+            x2=newX;
+            y2=newY;
             repaint();
         }
     }
 
+    // start start animating the projectile
     void trackButton_actionPerformed(ActionEvent e) {
         dropShapeGraph.removeGraph(spatterEllipse);
         t=0;
@@ -353,6 +387,7 @@ public class SpatterApplication extends JFrame implements WindowListener, Action
         repaint();
     }
 }
+
 
 class SpatterApplication_graph_mouseAdapter extends java.awt.event.MouseAdapter {
     SpatterApplication adaptee;
