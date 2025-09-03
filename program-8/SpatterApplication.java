@@ -1,8 +1,11 @@
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
 import EDU.emporia.mathbeans.*;
 import EDU.emporia.mathtools.*;
+
 import java.util.*;
 
 public class SpatterApplication extends JFrame implements WindowListener, ActionListener {
